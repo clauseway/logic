@@ -39,14 +39,18 @@ public class Answer<R> {
 	}
 
 	/**
-	 * ask: extract the anchor's state from one answer {@link Knowledge} —
-	 * the walked image plus the residual knowledge conditioning it
-	 * ({@link Residues#all}), arriving as a one-region condition.
-	 * REFUSES under pending suspensions: a parked suspension is a
-	 * condition the answer still owes, and the owed condition cannot ride
-	 * the answer.
+	 * RAW capture: the anchor's state in one answer {@link Knowledge} — the
+	 * walked image plus the residual knowledge conditioning it
+	 * ({@link Residues#all}), arriving as a one-region condition. No
+	 * enforcement runs: this is the produce seam's operation, where a cache
+	 * or a data plane wants the REGION an answer denotes, labelling
+	 * deferred to consumption. A user-facing ask must commit the stores
+	 * first (Constraints.enforced) or wide answers smuggle un-enforced
+	 * knowledge into their conditions. REFUSES under pending suspensions:
+	 * a parked suspension is a condition the answer still owes, and the
+	 * owed condition cannot ride the answer.
 	 */
-	public static <R> Fiber<Answer<R>> of(R token, Knowledge answer, Unifiable<?> anchor) {
+	public static <R> Fiber<Answer<R>> capture(R token, Knowledge answer, Unifiable<?> anchor) {
 		if (Propagation.suspensionsPending(answer)) {
 			throw new IllegalStateException(
 					"an answer may not be asked while suspensions pend: "

@@ -5,6 +5,7 @@ package org.clauseway.logic;
 // ABOUTME: conditions, the bare-values refusal, and the suspensions refusal.
 
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
+import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.projection.Projection.project;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,10 +61,28 @@ public class AnswersTest {
 	}
 
 	@Test
-	public void aResidueArrivesAsAGuardedCondition() {
+	public void enforcementLabelsDomainsExactlyLikeSolve() {
+		// ask runs the same enforce stage reify does: a bare domain LABELS,
+		// forking one ground unconditional answer per value — never one
+		// wide answer with the domain smuggled into the condition
 		Unifiable<Long> x = lvar();
 		List<Answer<Unifiable<Long>>> answers = Utils.collect(
-				Query.of(dom(x, Longs.interval(1, 3))).ask(x).each());
+				Query.of(dom(x, Longs.range(1, 4))).ask(x).each());
+		assertThat(answers).hasSize(3);
+		assertThat(answers.stream()
+				.map(a -> (Long) a.getReified().get())
+				.collect(Collectors.toList()))
+				.containsExactlyInAnyOrder(1L, 2L, 3L);
+		assertThat(answers.stream().allMatch(a -> a.getCondition().isOne())).isTrue();
+	}
+
+	@Test
+	public void aResidueSurvivingEnforcementArrivesAsAGuardedCondition() {
+		// a live nogood survives enforce (the record rides the answer) —
+		// the same residue a regular solve renders through Constrained
+		Unifiable<Integer> x = lvar();
+		List<Answer<Unifiable<Integer>>> answers = Utils.collect(
+				Query.of(exclude(x.unifies(3))).ask(x).each());
 		assertThat(answers).hasSize(1);
 		assertThat(answers.get(0).getCondition().isOne()).isFalse();
 	}
@@ -79,9 +98,9 @@ public class AnswersTest {
 
 	@Test
 	public void valuesRefusesAGuardedAnswer() {
-		Unifiable<Long> x = lvar();
+		Unifiable<Integer> x = lvar();
 		assertThatThrownBy(() -> {
-			try (Stream<Reified<Long>> values = Query.of(dom(x, Longs.interval(1, 3))).ask(x).values()) {
+			try (Stream<Reified<Integer>> values = Query.of(exclude(x.unifies(3))).ask(x).values()) {
 				values.count();
 			}
 		})

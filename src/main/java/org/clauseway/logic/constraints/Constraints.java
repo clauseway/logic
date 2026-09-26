@@ -43,10 +43,21 @@ public class Constraints {
 		return unifyNc(u, LVal.lval(v));
 	}
 
+	/**
+	 * The enforcement stage of reification, alone: every store commits its
+	 * constraints about {@code x} (labelling may fork the answer), then the
+	 * answer may not leave while suspensions pend. What remains afterwards
+	 * is the answer's honest residue — {@link #reify} renders it into the
+	 * term, the front door's ask captures it as a condition.
+	 */
+	public static <T> Cont<Knowledge, Nothing> enforced(Knowledge s, Term<T> x) {
+		return enforce(s, x).apply(s)
+				.flatMap(Constraints::verifyNoPendingSuspensions);
+	}
+
 	public static <T> Cont<Reified<T>, Nothing> reify(Knowledge s, Term<T> x) {
 		// after renaming every node is an LVal, a Any, or a Constrained wrapper
-		return enforce(s, x).apply(s)
-				.flatMap(Constraints::verifyNoPendingSuspensions)
+		return enforced(s, x)
 				.flatMap(s1 -> Cont.defer(() ->
 						walkAndRename(x, s1)
 								.flatMap(vr -> vr.apply((v, r) ->
@@ -64,7 +75,9 @@ public class Constraints {
 	/** Answers may not leave while suspensions pend. */
 	private static Cont<Knowledge, Nothing> verifyNoPendingSuspensions(Knowledge s) {
 		if (Propagation.suspensionsPending(s)) {
-			throw new RuntimeException("Unbound variables during projection");
+			throw new IllegalStateException(
+					"an answer may not leave while suspensions pend: "
+							+ "the owed condition cannot ride the answer");
 		}
 		return Cont.just(s);
 	}

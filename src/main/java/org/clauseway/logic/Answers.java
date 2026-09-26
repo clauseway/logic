@@ -7,6 +7,7 @@ package org.clauseway.logic;
 
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
+import org.clauseway.logic.constraints.Constraints;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -15,8 +16,11 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
 /**
- * A {@link Query}'s answers about one anchor: per answer knowledge, the
- * anchor's walked image plus the residual knowledge conditioning it — an
+ * A {@link Query}'s answers about one anchor: per answer knowledge the
+ * stores first COMMIT their constraints about the anchor (the same enforce
+ * stage a regular reify runs -- labelling forks, verdicts fail), and what
+ * survives is captured: the anchor's walked image plus the residual
+ * knowledge conditioning it — an
  * {@link Answer} tagged with this ask's token. Duplicates ride: one
  * element per DERIVATION, the view weighted counting needs; folding to
  * answer-set semantics is a downstream choice, never a default.
@@ -36,10 +40,12 @@ public final class Answers<R, T> {
 	private final R token;
 	private final Unifiable<T> anchor;
 
-	/** The primitive: one answer per derivation, driven by the caller. */
+	/** The primitive: one answer per POST-ENFORCE derivation, driven by the caller. */
 	public Cont<Answer<R>, Nothing> each() {
 		return Cont.suspend(k -> query.run()
-				.apply(knowledge -> Answer.of(token, knowledge, anchor).flatMap(k::apply)));
+				.apply(knowledge -> Constraints.enforced(knowledge, anchor)
+						.apply(committed -> Answer.capture(token, committed, anchor)
+								.flatMap(k::apply))));
 	}
 
 	/** The pull harvest of {@link #each} under the query's driver. */
