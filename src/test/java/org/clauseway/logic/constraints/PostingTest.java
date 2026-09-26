@@ -12,7 +12,7 @@ import org.clauseway.logic.finitedomain.FiniteDomain;
 import org.clauseway.logic.finitedomain.Longs;
 import org.clauseway.logic.goals.Exhaustion;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import java.util.List;
@@ -45,8 +45,8 @@ public class PostingTest {
 		Unifiable<Long> x = lvar();
 		Posting in = FiniteDomain.dom(x, Longs.range(0, 5));
 
-		assertThat(in.answers(Package.empty().substitution())).isEqualTo(1L);
-		assertThat(in.answers(Package.empty())).isEqualTo(1L);
+		assertThat(in.answers(Knowledge.empty().substitution())).isEqualTo(1L);
+		assertThat(in.answers(Knowledge.empty())).isEqualTo(1L);
 	}
 
 	@Test
@@ -55,8 +55,8 @@ public class PostingTest {
 		// is disjoint with the post — doomed says so, and the price stays 1;
 		// the kill is the pruning pass's business (DoomPruner)
 		Unifiable<Long> x = lvar();
-		Package live = Exhaustion.collected(
-						dom(x, Longs.range(0, 5)).apply(Package.empty()))
+		Knowledge live = Exhaustion.collected(
+						dom(x, Longs.range(0, 5)).apply(Knowledge.empty()))
 				.ground().get(0);
 
 		Posting doomed = FiniteDomain.dom(x, Longs.range(6, 9));

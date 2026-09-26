@@ -6,7 +6,7 @@ package org.clauseway.logic.finitedomain.relations;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.finitedomain.FiniteDomainConstraints;
 import org.clauseway.logic.finitedomain.relations.Operators.VarWithDomain;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.Propagator;
 import org.clauseway.logic.lattice.Verdict;
 import org.clauseway.logic.unification.MiniKanren;
@@ -34,7 +34,7 @@ public final class Separate extends Propagator<FiniteDomainConstraints> {
 	}
 
 	@Override
-	public Verdict propagate(Package state) {
+	public Verdict propagate(Knowledge state) {
 		return Operators.letDomain(state, Operators.typed(watchedTerms()), order)
 				.map(ds -> verdict(ds.get(0), ds.get(1)))
 				.getOrElse(Verdict::keep);
@@ -79,7 +79,7 @@ public final class Separate extends Propagator<FiniteDomainConstraints> {
 	}
 
 	@Override
-	public boolean doomed(Package state) {
+	public boolean doomed(Knowledge state) {
 		Term<?> lw = state.substitution().walk(watchedTerms().get(0));
 		Term<?> rw = state.substitution().walk(watchedTerms().get(1));
 		return lw.isVal() && rw.isVal() && lw.get().equals(rw.get());

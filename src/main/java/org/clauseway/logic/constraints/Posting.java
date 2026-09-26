@@ -9,7 +9,7 @@ import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.constraints.store.Renaming;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.NamedGoal;
 import org.clauseway.logic.constraints.store.Atom;
 import org.clauseway.logic.goals.optimizer.Bounded;
@@ -108,7 +108,7 @@ public interface Posting extends Goal, Bounded, Postable {
 	 * Consumed by the doom pruning pass, never by pricing — a verdict and a
 	 * count are different trust surfaces.
 	 */
-	default boolean doomed(Package p) {
+	default boolean doomed(Knowledge p) {
 		return Trial.doomed(this, p);
 	}
 
@@ -143,7 +143,7 @@ public interface Posting extends Goal, Bounded, Postable {
 	}
 
 	@Override
-	default Posting named(Function<Package, String> label) {
+	default Posting named(Function<Knowledge, String> label) {
 		return new Named(this, NamedGoal.of(label, this, null));
 	}
 
@@ -157,7 +157,7 @@ public interface Posting extends Goal, Bounded, Postable {
 	}
 
 	/** {@link #all} with a joint doom check the parts alone cannot see. */
-	static Posting all(Predicate<Package> doomed, Posting... statements) {
+	static Posting all(Predicate<Knowledge> doomed, Posting... statements) {
 		return new AllOf(List.of(statements), doomed);
 	}
 
@@ -170,18 +170,18 @@ public interface Posting extends Goal, Bounded, Postable {
 	@EqualsAndHashCode(of = "item")
 	class Activation implements Posting {
 		private final Atom<?> item;
-		private final UnaryOperator<Package> registration;
-		private final Predicate<Package> doomCheck;
+		private final UnaryOperator<Knowledge> registration;
+		private final Predicate<Knowledge> doomCheck;
 
-		Activation(Atom<?> item, UnaryOperator<Package> registration,
-				Predicate<Package> doomCheck) {
+		Activation(Atom<?> item, UnaryOperator<Knowledge> registration,
+				Predicate<Knowledge> doomCheck) {
 			this.item = item;
 			this.registration = registration;
 			this.doomCheck = doomCheck;
 		}
 
 		@Override
-		public Cont<Package, Nothing> apply(Package pkg) {
+		public Cont<Knowledge, Nothing> apply(Knowledge pkg) {
 			return Propagation.activation(item).and(landed())
 					.apply(registration.apply(pkg));
 		}
@@ -204,7 +204,7 @@ public interface Posting extends Goal, Bounded, Postable {
 		}
 
 		@Override
-		public boolean doomed(Package p) {
+		public boolean doomed(Knowledge p) {
 			return doomCheck.test(p);
 		}
 
@@ -239,7 +239,7 @@ public interface Posting extends Goal, Bounded, Postable {
 		}
 
 		@Override
-		public Cont<Package, Nothing> apply(Package pkg) {
+		public Cont<Knowledge, Nothing> apply(Knowledge pkg) {
 			return Propagation.resolution(prefix).apply(pkg);
 		}
 
@@ -275,7 +275,7 @@ public interface Posting extends Goal, Bounded, Postable {
 		}
 
 		@Override
-		public Cont<Package, Nothing> apply(Package pkg) {
+		public Cont<Knowledge, Nothing> apply(Knowledge pkg) {
 			return Propagation.absorption(theory).apply(pkg);
 		}
 
@@ -313,7 +313,7 @@ public interface Posting extends Goal, Bounded, Postable {
 		}
 
 		@Override
-		public Cont<Package, Nothing> apply(Package pkg) {
+		public Cont<Knowledge, Nothing> apply(Knowledge pkg) {
 			return named.apply(pkg);
 		}
 
@@ -328,7 +328,7 @@ public interface Posting extends Goal, Bounded, Postable {
 		}
 
 		@Override
-		public boolean doomed(Package p) {
+		public boolean doomed(Knowledge p) {
 			return inner.doomed(p);
 		}
 
@@ -338,7 +338,7 @@ public interface Posting extends Goal, Bounded, Postable {
 		}
 
 		@Override
-		public long answers(Package p) {
+		public long answers(Knowledge p) {
 			return inner.answers(p);
 		}
 
@@ -356,16 +356,16 @@ public interface Posting extends Goal, Bounded, Postable {
 	@Value
 	class AllOf implements Posting {
 		List<Posting> parts;
-		Predicate<Package> jointDoom;
+		Predicate<Knowledge> jointDoom;
 
 		@Override
-		public Cont<Package, Nothing> apply(Package pkg) {
+		public Cont<Knowledge, Nothing> apply(Knowledge pkg) {
 			// applies exactly as the flat Goal conjunction would — head
 			// direct, rest flatMapped, no frame for the envelope itself
 			if (parts.isEmpty()) {
 				return Cont.just(pkg);
 			}
-			Cont<Package, Nothing> acc = parts.head().apply(pkg);
+			Cont<Knowledge, Nothing> acc = parts.head().apply(pkg);
 			for (Posting rest : parts.tail()) {
 				acc = acc.flatMap(rest);
 			}
@@ -373,7 +373,7 @@ public interface Posting extends Goal, Bounded, Postable {
 		}
 
 		@Override
-		public boolean doomed(Package p) {
+		public boolean doomed(Knowledge p) {
 			// the threaded trial sees JOINT contradictions the parts alone cannot
 			return jointDoom.test(p) || parts.exists(part -> part.doomed(p))
 					|| Trial.doomed(this, p);

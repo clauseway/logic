@@ -15,7 +15,7 @@ import org.clauseway.logic.finitedomain.FiniteDomain;
 import org.clauseway.logic.finitedomain.Ints;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Logic;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.tabling.table.TableEntry;
 import org.clauseway.logic.unification.terms.Term;
@@ -142,7 +142,7 @@ public class WhodunnitTest {
 	public void theGardenerDidIt() {
 		Tabled<Tuple1<Unifiable<Integer>>> investigation =
 				couldHaveDoneIt(reachableFromGarden());
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		Unifiable<Integer> who = lvar();
 		List<Integer> culprits = investigation.apply(Tuple.of(who))
@@ -168,7 +168,7 @@ public class WhodunnitTest {
 	public void accusingTheCookReusesTheInvestigation() {
 		Tabled<Tuple1<Unifiable<Integer>>> investigation =
 				couldHaveDoneIt(reachableFromGarden());
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		// the inspector's open question first — this runs the masters once
 		Unifiable<Integer> who = lvar();

@@ -14,7 +14,7 @@ import org.clauseway.logic.constraints.store.Revision;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.constraints.store.Verifier;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Name;
 import org.clauseway.logic.unification.Prefix;
 import org.clauseway.logic.unification.terms.Term;
@@ -48,7 +48,7 @@ public final class NogoodConstraints implements Factor<NogoodConstraints>, Verif
 	private NogoodConstraints() {
 	}
 
-	public static Package register(Package a) {
+	public static Knowledge register(Knowledge a) {
 		return Constraint.register(a, EMPTY);
 	}
 
@@ -80,11 +80,11 @@ public final class NogoodConstraints implements Factor<NogoodConstraints>, Verif
 	 */
 	@Override
 	public Fiber<Revision> normalize(Theory<NogoodConstraints> incoming,
-			LinkedHashSet<Atom<NogoodConstraints>> focus, Package state) {
+			LinkedHashSet<Atom<NogoodConstraints>> focus, Knowledge state) {
 		return wholesale(incoming, state);
 	}
 
-	private Fiber<Revision> wholesale(Theory<NogoodConstraints> incoming, Package state) {
+	private Fiber<Revision> wholesale(Theory<NogoodConstraints> incoming, Knowledge state) {
 		return Verification.verify(residents(incoming), state.withoutStore(NogoodConstraints.class))
 				.map(kept -> kept.isDefined() ?
 						revisedTo(incoming, LinkedHashSet.ofAll(kept.get())) :
@@ -99,7 +99,7 @@ public final class NogoodConstraints implements Factor<NogoodConstraints>, Verif
 	}
 
 	@Override
-	public Fiber<Revision> normalize(Theory<NogoodConstraints> incoming, Prefix prefix, Package state) {
+	public Fiber<Revision> normalize(Theory<NogoodConstraints> incoming, Prefix prefix, Knowledge state) {
 		// the reaction was always wholesale — revise is normalize by another trigger
 		return wholesale(incoming, state);
 	}
@@ -113,7 +113,7 @@ public final class NogoodConstraints implements Factor<NogoodConstraints>, Verif
 	 * whose every literal pruned stays invisible, as it always was.
 	 */
 	@Override
-	public <A> Term<A> reify(Theory<NogoodConstraints> incoming, Term<A> unifiable, Renaming renaming, Package s) {
+	public <A> Term<A> reify(Theory<NogoodConstraints> incoming, Term<A> unifiable, Renaming renaming, Knowledge s) {
 		// renameSubstitutions is the answer's canonical seed: a live name it
 		// binds is part of the rendered answer
 		List<Atom<?>> residuals = List.empty();
@@ -134,7 +134,7 @@ public final class NogoodConstraints implements Factor<NogoodConstraints>, Verif
 				Constrained.of(unifiable, residuals);
 	}
 
-	private static List<Posting> getUnboundNames(Renaming renaming, Package s, Nogood nogood) {
+	private static List<Posting> getUnboundNames(Renaming renaming, Knowledge s, Nogood nogood) {
 		return literals(nogood)
 				.filter(literal -> {
 					java.util.List<Term<?>> names = literal.terms()
@@ -146,7 +146,7 @@ public final class NogoodConstraints implements Factor<NogoodConstraints>, Verif
 				});
 	}
 
-	private static Map<Name<?>, Term<?>> renameKept(Renaming renaming, Package s, List<Posting> kept) {
+	private static Map<Name<?>, Term<?>> renameKept(Renaming renaming, Knowledge s, List<Posting> kept) {
 		return kept.toJavaStream()
 				.flatMap(Posting::terms)
 				.flatMap(term -> s.substitution().namesIn(term))

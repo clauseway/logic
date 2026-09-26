@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import java.util.List;
@@ -56,7 +56,7 @@ public class PropagationPinTest {
 		Unifiable<Long> x = lvar();
 		Unifiable<Long> y = lvar();
 		Unifiable<Long> z = lvar();
-		Package[] beforeLabelling = new Package[1];
+		Knowledge[] beforeLabelling = new Knowledge[1];
 		Goal probe = s -> {
 			beforeLabelling[0] = s;
 			return Cont.just(s);
@@ -86,7 +86,7 @@ public class PropagationPinTest {
 		Unifiable<Long> x = lvar();
 		Unifiable<Long> y = lvar();
 		Unifiable<Long> z = lvar();
-		Package[] beforeLabelling = new Package[1];
+		Knowledge[] beforeLabelling = new Knowledge[1];
 		Goal probe = s -> {
 			beforeLabelling[0] = s;
 			return Cont.just(s);

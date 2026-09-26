@@ -6,7 +6,7 @@ import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.Utils;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.LVar;
 import org.clauseway.logic.unification.terms.Unifiable;
 import java.util.List;
@@ -21,8 +21,8 @@ public class ConstraintsTest {
 	public void shouldUnify() {
 		Unifiable<Integer> u = LVar.lvar();
 		Unifiable<Integer> v = lval(1);
-		Cont<Package, Nothing> s = Constraints.unify(u, v)
-				.apply(Package.empty());
+		Cont<Knowledge, Nothing> s = Constraints.unify(u, v)
+				.apply(Knowledge.empty());
 		List<Integer> map = Utils.collect(s
 				.map(p -> Fiber.done(p.walk(v))
 						.map(v1 -> Utils.collect(Constraints.

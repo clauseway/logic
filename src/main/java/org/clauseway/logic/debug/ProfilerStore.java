@@ -6,7 +6,7 @@ package org.clauseway.logic.debug;
 import org.clauseway.logic.constraints.Posting;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.NamedGoal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.vavr.control.Option;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,7 +35,7 @@ public final class ProfilerStore implements Packaged {
 		return new ProfilerStore();
 	}
 
-	public static Option<ProfilerStore> from(Package pkg) {
+	public static Option<ProfilerStore> from(Knowledge pkg) {
 		return pkg.getStores().get(ProfilerStore.class).map(ProfilerStore.class::cast);
 	}
 

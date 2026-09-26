@@ -7,7 +7,7 @@ import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -37,13 +37,13 @@ import java.util.function.Predicate;
 public final class Trace {
 
 	public interface Tracer {
-		void onCall(String label, Package state);
+		void onCall(String label, Knowledge state);
 
-		void onExit(String label, Package state);
+		void onExit(String label, Knowledge state);
 
-		void onRedo(String label, Package state);
+		void onRedo(String label, Knowledge state);
 
-		void onFail(String label, Package state);
+		void onFail(String label, Knowledge state);
 
 		/**
 		 * A tracer that forwards a port to this one only when its label passes
@@ -54,28 +54,28 @@ public final class Trace {
 			Tracer inner = this;
 			return new Tracer() {
 				@Override
-				public void onCall(String label, Package state) {
+				public void onCall(String label, Knowledge state) {
 					if (keep.test(label)) {
 						inner.onCall(label, state);
 					}
 				}
 
 				@Override
-				public void onExit(String label, Package state) {
+				public void onExit(String label, Knowledge state) {
 					if (keep.test(label)) {
 						inner.onExit(label, state);
 					}
 				}
 
 				@Override
-				public void onRedo(String label, Package state) {
+				public void onRedo(String label, Knowledge state) {
 					if (keep.test(label)) {
 						inner.onRedo(label, state);
 					}
 				}
 
 				@Override
-				public void onFail(String label, Package state) {
+				public void onFail(String label, Knowledge state) {
 					if (keep.test(label)) {
 						inner.onFail(label, state);
 					}
@@ -98,8 +98,8 @@ public final class Trace {
 	 * The label is rendered against the state at each port, so Call shows the
 	 * arguments as entered and Exit shows them walked to their solution bindings.
 	 */
-	public static Cont<Package, Nothing> tracedCont(Function<Package, String> label, Goal goal, Tracer tracer,
-			Package entered, Function<Package, Package> restore) {
+	public static Cont<Knowledge, Nothing> tracedCont(Function<Knowledge, String> label, Goal goal, Tracer tracer,
+			Knowledge entered, Function<Knowledge, Knowledge> restore) {
 		return k -> {
 			tracer.onCall(label.apply(entered), entered);
 			AtomicInteger exits = new AtomicInteger(0);
@@ -134,28 +134,28 @@ public final class Trace {
 	public static Tracer printing(Consumer<String> out) {
 		return new Tracer() {
 			@Override
-			public void onCall(String label, Package state) {
+			public void onCall(String label, Knowledge state) {
 				out.accept(line("Call", label, state));
 			}
 
 			@Override
-			public void onExit(String label, Package state) {
+			public void onExit(String label, Knowledge state) {
 				out.accept(line("Exit", label, state));
 			}
 
 			@Override
-			public void onRedo(String label, Package state) {
+			public void onRedo(String label, Knowledge state) {
 				out.accept(line("Redo", label, state));
 			}
 
 			@Override
-			public void onFail(String label, Package state) {
+			public void onFail(String label, Knowledge state) {
 				out.accept(line("Fail", label, state));
 			}
 		};
 	}
 
-	private static String line(String port, String label, Package state) {
+	private static String line(String port, String label, Knowledge state) {
 		int depth = DebugStore.from(state).map(DebugStore::depth).getOrElse(0);
 		StringBuilder indent = new StringBuilder();
 		for (int i = 1; i < depth; i++) {

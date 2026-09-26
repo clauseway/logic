@@ -14,7 +14,7 @@ import org.clauseway.functional.fibers.Scheduler;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.constraints.Constraints;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.optimizer.Bounded;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.unification.terms.Reified;
@@ -99,7 +99,7 @@ public final class Weights {
 	 */
 	public static <T> Stream<Tuple2<Reified<T>, SemiringStore>> solveBounded(Goal goal, Unifiable<T> out,
 			BoundedSemiring<SemiringStore> product, Function<Fiber<Nothing>, Scheduler<Nothing>> factory) {
-		Package root = Package.empty().withStore(weightedTable(product)).withStore(product.one());
+		Knowledge root = Knowledge.empty().withStore(weightedTable(product)).withStore(product.one());
 		return lazily(sink -> goal.apply(root)
 				.flatMap(s -> Constraints.reify(s, out)
 						.map(answer -> Tuple.of(answer, s.getStore(SemiringStore.class))))
@@ -128,7 +128,7 @@ public final class Weights {
 	 */
 	public static <T> Stream<Tuple2<Reified<T>, SemiringStore>> solveClosed(Goal goal, Unifiable<T> out,
 			ClosedSemiring<SemiringStore> ring, Function<Fiber<Nothing>, Scheduler<Nothing>> factory) {
-		Package root = Package.empty()
+		Knowledge root = Knowledge.empty()
 				.withStore(closedTable(ring))
 				.withStore(ring.one());
 		return lazily(sink -> goal.apply(root)
@@ -150,8 +150,8 @@ public final class Weights {
 		return Table.of(new Closed(ring));
 	}
 
-	private static Package seed(Semiring<SemiringStore> product) {
-		return Package.empty()
+	private static Knowledge seed(Semiring<SemiringStore> product) {
+		return Knowledge.empty()
 				.withStore(Table.refusingTabling(
 						"weighted tabling needs solveBounded (or solveClosed); "
 								+ "solve/solveEach do not thread weights through tabled calls"))

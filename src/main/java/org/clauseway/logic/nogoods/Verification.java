@@ -7,7 +7,7 @@ import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.logic.constraints.Trial;
 import org.clauseway.logic.constraints.Posting;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.vavr.collection.List;
 import org.clauseway.vavr.control.Option;
 import java.util.Map;
@@ -59,7 +59,7 @@ public final class Verification {
 	 * imposition drains instead of appending to the inherited agenda). The
 	 * value-family half of the presupposition is verifier-last's.
 	 */
-	public static Fiber<Option<List<Nogood>>> verify(Stream<Nogood> nogoods, Package state) {
+	public static Fiber<Option<List<Nogood>>> verify(Stream<Nogood> nogoods, Knowledge state) {
 		Map<Boolean, List<Nogood>> byShape = nogoods.collect(
 				Collectors.partitioningBy(n -> Trial.bindingShaped(n.conjunct()),
 						List.collector()));
@@ -90,7 +90,7 @@ public final class Verification {
 	 * None, so a broken shape assumption turns into a kept nogood — wider,
 	 * never wrong.
 	 */
-	static List<Nogood> pruneSubsumed(List<Nogood> nogoods, Package base) {
+	static List<Nogood> pruneSubsumed(List<Nogood> nogoods, Knowledge base) {
 		List<Nogood> kept = List.empty();
 		List<Nogood> pending = nogoods;
 		while (!pending.isEmpty()) {
@@ -103,8 +103,8 @@ public final class Verification {
 		return kept;
 	}
 
-	private static boolean subsumed(Nogood nogood, List<Nogood> others, Package base) {
-		Option<Package> assumed = Trial.now(nogood.conjunct(), base)
+	private static boolean subsumed(Nogood nogood, List<Nogood> others, Knowledge base) {
+		Option<Knowledge> assumed = Trial.now(nogood.conjunct(), base)
 				.map(Trial.Outcome::getGrown)
 				.filter(grown -> grown != null);
 		return assumed.isDefined() && others.exists(other ->
@@ -114,7 +114,7 @@ public final class Verification {
 	}
 
 	/** The binding pass: every trial answers now, the fold is a plain loop. */
-	private static Option<List<Nogood>> foldNow(List<Nogood> nogoods, Package base) {
+	private static Option<List<Nogood>> foldNow(List<Nogood> nogoods, Knowledge base) {
 		List<Nogood> kept = List.empty();
 		for (Nogood nogood : nogoods) {
 			Trial.Outcome outcome = Trial.now(nogood.conjunct(), base)
@@ -130,7 +130,7 @@ public final class Verification {
 		return Option.of(kept);
 	}
 
-	private static Fiber<Option<List<Nogood>>> fold(List<Nogood> nogoods, Package base) {
+	private static Fiber<Option<List<Nogood>>> fold(List<Nogood> nogoods, Knowledge base) {
 		return nogoods.foldLeft(
 				Fiber.done(Option.of(List.empty())),
 				(acc, nogood) -> acc.flatMap(kept -> kept.isDefined() ?

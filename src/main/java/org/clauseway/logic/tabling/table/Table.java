@@ -7,7 +7,7 @@ import org.clauseway.functional.algebra.BoundedSemiring;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.logic.tabling.Tabling;
 import org.clauseway.logic.tabling.TablingMode;
@@ -81,8 +81,8 @@ public class Table implements Packaged {
 	 * unbounded ring belongs to the closed mode.
 	 */
 	public static Table weighted(BoundedSemiring<Object> semiring,
-			Function<Package, Object> weightReader,
-			BiFunction<Package, Object, Package> weightWriter) {
+			Function<Knowledge, Object> weightReader,
+			BiFunction<Knowledge, Object, Knowledge> weightWriter) {
 		return new Table(new Streaming(semiring, weightReader, weightWriter, false), null);
 	}
 
@@ -110,17 +110,17 @@ public class Table implements Packaged {
 
 	// ---- the mode's per-step hooks (see TablingMode) ----
 
-	public Package bodyState(Package callerPkg) {
+	public Knowledge bodyState(Knowledge callerPkg) {
 		// the delivery-boundary bit: every body package says so (InBody)
 		return mode.bodyState(callerPkg).putStore(InBody.MARKER);
 	}
 
-	public Package absorb(Package unifiedPkg, TableEntry<Object> entry, Reified<?> consumedAnswer,
+	public Knowledge absorb(Knowledge unifiedPkg, TableEntry<Object> entry, Reified<?> consumedAnswer,
 			Object cellValue) {
 		return mode.absorb(unifiedPkg, entry, consumedAnswer, cellValue);
 	}
 
-	public Tuple2<Reified<?>, Object> capture(TableEntry<Object> entry, Package answerPkg, Reified<?> answerTerm,
+	public Tuple2<Reified<?>, Object> capture(TableEntry<Object> entry, Knowledge answerPkg, Reified<?> answerTerm,
 			Residues residues) {
 		return mode.capture(entry, answerPkg, answerTerm, residues);
 	}

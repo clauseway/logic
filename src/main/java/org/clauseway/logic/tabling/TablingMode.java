@@ -6,7 +6,7 @@ package org.clauseway.logic.tabling;
 import org.clauseway.functional.algebra.IdempotentSemiring;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.conditions.Condition;
 import org.clauseway.logic.tabling.conditions.Residues;
 import org.clauseway.logic.tabling.table.Reader;
@@ -47,7 +47,7 @@ public interface TablingMode {
 	 * state (running value reset to ONE) — derived from the first caller's
 	 * package, whose substitutions carry the call pattern.
 	 */
-	Package bodyState(Package callerPkg);
+	Knowledge bodyState(Knowledge callerPkg);
 
 	/**
 	 * The reader's state after taking in a cached answer it just unified
@@ -59,7 +59,7 @@ public interface TablingMode {
 	 * (its capture folds it in) and stays a fragment for a top-level one
 	 * (the replay at its chain's end delivers).
 	 */
-	Package absorb(Package unifiedPkg, TableEntry<Object> entry, Reified<?> consumedAnswer,
+	Knowledge absorb(Knowledge unifiedPkg, TableEntry<Object> entry, Reified<?> consumedAnswer,
 			Object cellValue);
 
 	/**
@@ -70,7 +70,7 @@ public interface TablingMode {
 	 * orthogonal interaction); closed captures the derivation's base/edge
 	 * on the entry as a side effect and caches 1.
 	 */
-	Tuple2<Reified<?>, Object> capture(TableEntry<Object> entry, Package answerPkg,
+	Tuple2<Reified<?>, Object> capture(TableEntry<Object> entry, Knowledge answerPkg,
 			Reified<?> answerTerm, Residues residues);
 
 	/**

@@ -35,10 +35,10 @@ public class Condu implements Goal {
 	}
 
 	@Override
-	public Cont<Package, Nothing> apply(Package s) {
+	public Cont<Knowledge, Nothing> apply(Knowledge s) {
 		return Cont.callCC(exit -> Cont.suspend(k -> {
 			AtomicBoolean committed = new AtomicBoolean(false);
-			List<Package> results = new ArrayList<>();
+			List<Knowledge> results = new ArrayList<>();
 			return clauses.stream()
 					.reduce(Fiber.done(nothing()),
 							(acc, g) -> acc.flatMap(_0 ->
@@ -51,7 +51,7 @@ public class Condu implements Goal {
 										}
 										committed.set(true);
 										return results.stream()
-												.map(exit::<Package>with)
+												.map(exit::<Knowledge>with)
 												.map(c -> c.runRec(k))
 												.reduce(done(nothing()),
 														(l, r) -> l.flatMap(_2 -> r));

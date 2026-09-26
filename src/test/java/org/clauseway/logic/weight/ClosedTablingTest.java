@@ -16,7 +16,7 @@ import org.clauseway.functional.algebra.Provenance;
 import org.clauseway.functional.algebra.Semirings;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.tabling.table.TableEntry;
 import org.clauseway.logic.tabling.Tabled;
@@ -102,7 +102,7 @@ public class ClosedTablingTest {
 		Closed closed = new Closed(ring);
 		Table table = Table.of(closed);
 		Unifiable<Integer> out = lvar();
-		Package root = Package.empty().withStore(table).withStore(ring.one());
+		Knowledge root = Knowledge.empty().withStore(table).withStore(ring.one());
 
 		loop.apply(Tuple.of(lval(1))).solveFrom(root, out, BreadthFirstScheduler::new).count();
 
@@ -126,7 +126,7 @@ public class ClosedTablingTest {
 		Table table = Table.of(closed);
 		Unifiable<Integer> out = lvar();
 		loop.apply(Tuple.of(lval(1)))
-				.solveFrom(Package.empty().withStore(table).withStore(ring.one()), out, BreadthFirstScheduler::new)
+				.solveFrom(Knowledge.empty().withStore(table).withStore(ring.one()), out, BreadthFirstScheduler::new)
 				.count();
 
 		assertThat(closed.graph().bases().values()).hasSize(1);
@@ -146,7 +146,7 @@ public class ClosedTablingTest {
 		Table table = Table.of(closed);
 		Unifiable<Integer> out = lvar();
 		r.apply(Tuple.of(out))
-				.solveFrom(Package.empty().withStore(table).withStore(ring.one()), out, BreadthFirstScheduler::new)
+				.solveFrom(Knowledge.empty().withStore(table).withStore(ring.one()), out, BreadthFirstScheduler::new)
 				.count();
 
 		List<String> bases = closed.graph().bases().values().stream()
@@ -169,7 +169,7 @@ public class ClosedTablingTest {
 		Table table = Table.of(closed);
 		Unifiable<Integer> out = lvar();
 		r.apply(Tuple.of(out))
-				.solveFrom(Package.empty().withStore(table).withStore(ring.one()), out, BreadthFirstScheduler::new)
+				.solveFrom(Knowledge.empty().withStore(table).withStore(ring.one()), out, BreadthFirstScheduler::new)
 				.count();
 
 		assertThat(closed.graph().bases().values()).hasSize(1);
@@ -192,7 +192,7 @@ public class ClosedTablingTest {
 		Table table = Table.of(closed);
 		Unifiable<Integer> out = lvar();
 		loop.apply(Tuple.of(lval(1)))
-				.solveFrom(Package.empty().withStore(table).withStore(ring.one()), out, BreadthFirstScheduler::new)
+				.solveFrom(Knowledge.empty().withStore(table).withStore(ring.one()), out, BreadthFirstScheduler::new)
 				.count();
 
 		assertThat(closed.graph().coefficients()).hasSize(1);
@@ -229,7 +229,7 @@ public class ClosedTablingTest {
 		Closed closed = new Closed(ring);
 		Table table = Table.of(closed);
 		loop.apply(Tuple.of(lval(1)))
-				.solveFrom(Package.empty().withStore(table).withStore(ring.one()), lvar(), BreadthFirstScheduler::new)
+				.solveFrom(Knowledge.empty().withStore(table).withStore(ring.one()), lvar(), BreadthFirstScheduler::new)
 				.count();
 
 		TableEntry<Object> entry = table.entries().iterator().next();

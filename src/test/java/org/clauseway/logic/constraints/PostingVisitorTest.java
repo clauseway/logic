@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.logic.finitedomain.FiniteDomain;
 import org.clauseway.logic.finitedomain.Longs;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.LVar;
 import org.clauseway.logic.unification.Prefix;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -51,7 +51,7 @@ public class PostingVisitorTest {
 
 		Posting unification = x.unifies(3);
 		Posting resolution = Propagation.resolve(Prefix.binding(
-				Package.empty().substitution(), (LVar<?>) x.asVar().get(), lval(3)).get());
+				Knowledge.empty().substitution(), (LVar<?>) x.asVar().get(), lval(3)).get());
 		Posting activation = FiniteDomain.dom(y, Longs.range(0, 5));
 		Posting all = Posting.all(x.unifies(3), x.unifies(4));
 

@@ -11,7 +11,7 @@ import org.clauseway.logic.TestSchedulers;
 import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.LatticeFactorTest.FlatConstraints;
 import org.clauseway.logic.lattice.LatticeFactorTest.FlatSet;
 import org.clauseway.logic.unification.terms.Term;
@@ -36,7 +36,7 @@ public class ParkingPropagatorTest {
 		}
 
 		@Override
-		public Fiber<Verdict> propagate(Package state) {
+		public Fiber<Verdict> propagate(Knowledge state) {
 			return Fiber.done(Verdict.keep());
 		}
 
@@ -84,8 +84,8 @@ public class ParkingPropagatorTest {
 	public void watchesItsTermsThroughTheChain() {
 		Unifiable<Integer> x = lvar();
 		Keeping parked = Keeping.on(x);
-		assertThat(parked.watches(Package.empty(), x.getObjectTerm())).isTrue();
-		assertThat(parked.watches(Package.empty(), lvar().getObjectTerm())).isFalse();
+		assertThat(parked.watches(Knowledge.empty(), x.getObjectTerm())).isTrue();
+		assertThat(parked.watches(Knowledge.empty(), lvar().getObjectTerm())).isFalse();
 	}
 
 	// ---- the wiring: the store administers the parking kind ----

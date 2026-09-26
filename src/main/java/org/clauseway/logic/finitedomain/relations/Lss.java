@@ -7,7 +7,7 @@ import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.finitedomain.Domain;
 import org.clauseway.logic.finitedomain.FiniteDomainConstraints;
 import org.clauseway.logic.finitedomain.relations.Operators.VarWithDomain;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.Propagator;
 import org.clauseway.logic.lattice.Verdict;
 import org.clauseway.logic.unification.terms.Term;
@@ -30,7 +30,7 @@ public final class Lss extends Propagator<FiniteDomainConstraints> {
 	}
 
 	@Override
-	public Verdict propagate(Package state) {
+	public Verdict propagate(Knowledge state) {
 		return Operators.gated(order,
 						vds -> lssVerdict(vds.get(0), vds.get(1), order))
 				.apply(watchedTerms(), state);
@@ -47,7 +47,7 @@ public final class Lss extends Propagator<FiniteDomainConstraints> {
 	}
 
 	@Override
-	public boolean doomed(Package state) {
+	public boolean doomed(Knowledge state) {
 		return Operators.cmpOrder(state.substitution(),
 				watchedTerms().get(0), watchedTerms().get(1), c -> c < 0, order) == 0;
 	}

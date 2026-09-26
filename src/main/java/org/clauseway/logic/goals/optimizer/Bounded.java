@@ -4,7 +4,7 @@ package org.clauseway.logic.goals.optimizer;
 // ABOUTME: the order function driving the ordering optimizer's ascending sort.
 
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.Substitutions;
 import java.util.function.ToLongFunction;
 
@@ -25,12 +25,12 @@ public interface Bounded {
 	long answers(Substitutions s);
 
 	/**
-	 * Package-sighted order: store knowledge (live domains, completed table
+	 * Knowledge-sighted order: store knowledge (live domains, completed table
 	 * counts) is congealed speculation — exactly the estimator's diet
 	 * (docs/reference/lattice.md §5a). Store-aware leaves override; the default
 	 * delegates to the substitution-blind estimate.
 	 */
-	default long answers(Package p) {
+	default long answers(Knowledge p) {
 		return answers(p.substitution());
 	}
 
@@ -54,7 +54,7 @@ public interface Bounded {
 	 * substitution variant plus read access to store knowledge (live domains,
 	 * table state). Still O(walk)-class — store lookups, never store trials.
 	 */
-	static Goal sighted(ToLongFunction<Package> order, Goal goal) {
+	static Goal sighted(ToLongFunction<Knowledge> order, Goal goal) {
 		return BoundedGoal.of(order, goal);
 	}
 }

@@ -8,7 +8,7 @@ import static org.clauseway.functional.Nothing.nothing;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.goals.NamedGoal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.terms.Term;
 import java.util.stream.Stream;
@@ -23,7 +23,7 @@ public class Unification<T> implements Posting {
 	boolean noCheck;
 
 	@Override
-	public Cont<Package, Nothing> apply(Package s) {
+	public Cont<Knowledge, Nothing> apply(Knowledge s) {
 		return Cont.defer(() -> (noCheck ?
 				MiniKanren.unifyPrefixUnsafe(s.substitution(), u, v) :
 				MiniKanren.unifyPrefix(s.substitution(), u, v))
@@ -39,7 +39,7 @@ public class Unification<T> implements Posting {
 	 * O(walk), no trial — the price stays 1 either way.
 	 */
 	@Override
-	public boolean doomed(Package p) {
+	public boolean doomed(Knowledge p) {
 		return !MiniKanren.unifyPrefix(p.substitution(), u, v).ground().isPresent();
 	}
 
@@ -51,7 +51,7 @@ public class Unification<T> implements Posting {
 	/** The label pattern {@link NamedGoal} renders with, against the empty state. */
 	@Override
 	public String toString() {
-		Package empty = Package.empty();
+		Knowledge empty = Knowledge.empty();
 		return empty.format(u) + " ≡ " + empty.format(v);
 	}
 

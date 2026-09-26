@@ -10,7 +10,7 @@ import org.clauseway.functional.algebra.BoundedSemiring;
 import org.clauseway.functional.algebra.IdempotentSemiring;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.TablingMode;
 import org.clauseway.logic.tabling.conditions.Condition;
 import org.clauseway.logic.tabling.conditions.Residues;
@@ -35,14 +35,14 @@ import java.util.function.Function;
 final class Streaming implements TablingMode {
 
 	private final BoundedSemiring<Object> semiring;
-	private final Function<Package, Object> weightReader;
-	private final BiFunction<Package, Object, Package> weightWriter;
+	private final Function<Knowledge, Object> weightReader;
+	private final BiFunction<Knowledge, Object, Knowledge> weightWriter;
 	/** The plain instance (conditions cell) — the only one residues may ride. */
 	private final boolean plain;
 
 	Streaming(BoundedSemiring<Object> semiring,
-			Function<Package, Object> weightReader,
-			BiFunction<Package, Object, Package> weightWriter,
+			Function<Knowledge, Object> weightReader,
+			BiFunction<Knowledge, Object, Knowledge> weightWriter,
 			boolean plain) {
 		this.semiring = semiring;
 		this.weightReader = weightReader;
@@ -56,12 +56,12 @@ final class Streaming implements TablingMode {
 	}
 
 	@Override
-	public Package bodyState(Package callerPkg) {
+	public Knowledge bodyState(Knowledge callerPkg) {
 		return weightWriter.apply(callerPkg, semiring.one());
 	}
 
 	@Override
-	public Package absorb(Package unifiedPkg, TableEntry<Object> entry, Reified<?> consumedAnswer,
+	public Knowledge absorb(Knowledge unifiedPkg, TableEntry<Object> entry, Reified<?> consumedAnswer,
 			Object cellValue) {
 		if (plain) {
 			// the condition was imposed by the delivery's restate; no value threads
@@ -71,7 +71,7 @@ final class Streaming implements TablingMode {
 	}
 
 	@Override
-	public Tuple2<Reified<?>, Object> capture(TableEntry<Object> entry, Package answerPkg,
+	public Tuple2<Reified<?>, Object> capture(TableEntry<Object> entry, Knowledge answerPkg,
 			Reified<?> answerTerm, Residues residues) {
 		if (plain) {
 			// the answer's value IS its condition: ground = 1, conditional = its region

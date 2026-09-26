@@ -17,7 +17,7 @@ import org.clauseway.logic.lattice.Imposition;
 import org.clauseway.vavr.collection.HashSet;
 import org.clauseway.vavr.control.Option;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.Propagator;
 import org.clauseway.logic.lattice.Verdict;
 import org.clauseway.logic.lattice.TestPropagators;
@@ -44,7 +44,7 @@ public class ProjectionTest {
 		return (LVar<?>) u.asVar().get();
 	}
 
-	private static Theory<FiniteDomainConstraints> theoryIn(Package p) {
+	private static Theory<FiniteDomainConstraints> theoryIn(Knowledge p) {
 		return Constraint.in(p, FiniteDomainConstraints.class).get().getTheory();
 	}
 
@@ -172,7 +172,7 @@ public class ProjectionTest {
 		Unifiable<Integer> w = lvar();
 		Unifiable<Integer> a = lvar();
 		Propagator coupling = keeper(x, w);
-		Package p = FiniteDomainTestSupport.withDomain(x, dom(1, 2));
+		Knowledge p = FiniteDomainTestSupport.withDomain(x, dom(1, 2));
 		Theory<FiniteDomainConstraints> store = domained(theoryIn(p), w, dom(2, 3))
 				.with(coupling);
 
@@ -203,7 +203,7 @@ public class ProjectionTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Unifiable<Integer> z = lvar();
-		Package p = FiniteDomainTestSupport.withDomain(x, dom(1, 2, 3));
+		Knowledge p = FiniteDomainTestSupport.withDomain(x, dom(1, 2, 3));
 		Theory<FiniteDomainConstraints> store = domained(theoryIn(p), y, dom(7, 8));
 
 		Theory<FiniteDomainConstraints> keyed = projected(store, slots(varOf(x), varOf(y))).ground();
@@ -223,7 +223,7 @@ public class ProjectionTest {
 		// NAME over the anys — comparable across packages
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		Package p = FiniteDomainTestSupport.withDomain(x, dom(1, 2, 3));
+		Knowledge p = FiniteDomainTestSupport.withDomain(x, dom(1, 2, 3));
 		Theory<FiniteDomainConstraints> store = domained(theoryIn(p), y, dom(1, 2, 3))
 				.with(keeper(x, y, lval(4)));
 
@@ -242,7 +242,7 @@ public class ProjectionTest {
 		// to do with it (keys discard; nothing is ever silently widened here)
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> w = lvar();
-		Package p = FiniteDomainTestSupport.withDomain(x, dom(1, 2, 3));
+		Knowledge p = FiniteDomainTestSupport.withDomain(x, dom(1, 2, 3));
 		Theory<FiniteDomainConstraints> store = domained(theoryIn(p), w, dom(2, 3))
 				.with(keeper(x, w, lval(6)));
 
@@ -262,7 +262,7 @@ public class ProjectionTest {
 		// same-shaped post projects the same key: name over slots, no lineage
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		Package p = FiniteDomainTestSupport.withDomain(x, dom(1, 2));
+		Knowledge p = FiniteDomainTestSupport.withDomain(x, dom(1, 2));
 		Theory<FiniteDomainConstraints> store = theoryIn(p).with(keeper(x, y));
 
 		Theory<FiniteDomainConstraints> first = projected(store, slots(varOf(x), varOf(y))).ground();
@@ -279,7 +279,7 @@ public class ProjectionTest {
 	@Test
 	public void anAbsorbedStoreReimposesItsKnowledge() {
 		Unifiable<Integer> x = lvar();
-		Package p = FiniteDomainTestSupport.withDomain(x, dom(1, 2));
+		Knowledge p = FiniteDomainTestSupport.withDomain(x, dom(1, 2));
 
 		List<Integer> values = Propagation.absorb(theoryIn(p))
 				.solve(x, TestSchedulers.factory())
@@ -297,7 +297,7 @@ public class ProjectionTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Propagator posted = keeper(x, y);
-		Package p = FiniteDomainTestSupport.withDomain(x, dom(1, 2));
+		Knowledge p = FiniteDomainTestSupport.withDomain(x, dom(1, 2));
 		Theory<FiniteDomainConstraints> store = theoryIn(p).with(posted);
 
 		Theory<FiniteDomainConstraints> keyed = projected(store, slots(varOf(x), varOf(y))).ground();

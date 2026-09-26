@@ -7,7 +7,7 @@ import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.vavr.collection.LinkedHashMap;
 import java.util.function.ToLongFunction;
@@ -26,9 +26,9 @@ import lombok.Value;
 @Value
 public class Barrier implements Goal, Bounded {
 	Goal goal;
-	ToLongFunction<Package> order;
+	ToLongFunction<Knowledge> order;
 
-	private Barrier(Goal goal, ToLongFunction<Package> order) {
+	private Barrier(Goal goal, ToLongFunction<Knowledge> order) {
 		this.goal = goal;
 		this.order = order;
 	}
@@ -43,22 +43,22 @@ public class Barrier implements Goal, Bounded {
 	 * exactly as an unpriced barrier does; a finite price is the immovability
 	 * transition (docs/reference/optimizer.md).
 	 */
-	public static Barrier priced(ToLongFunction<Package> order, Goal goal) {
+	public static Barrier priced(ToLongFunction<Knowledge> order, Goal goal) {
 		return new Barrier(goal, order);
 	}
 
 	@Override
 	public long answers(Substitutions s) {
-		return order.applyAsLong(Package.of(s, LinkedHashMap.empty()));
+		return order.applyAsLong(Knowledge.of(s, LinkedHashMap.empty()));
 	}
 
 	@Override
-	public long answers(Package p) {
+	public long answers(Knowledge p) {
 		return order.applyAsLong(p);
 	}
 
 	@Override
-	public Cont<Package, Nothing> apply(Package s) {
+	public Cont<Knowledge, Nothing> apply(Knowledge s) {
 		return goal.apply(s);
 	}
 

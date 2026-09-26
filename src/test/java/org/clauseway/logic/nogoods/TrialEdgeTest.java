@@ -15,7 +15,7 @@ import org.clauseway.logic.constraints.Posting;
 import org.clauseway.logic.finitedomain.Longs;
 import org.clauseway.logic.goals.Exhaustion;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import java.util.Collections;
@@ -31,15 +31,15 @@ public class TrialEdgeTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 
-		Package state = Exhaustion.collected(
+		Knowledge state = Exhaustion.collected(
 						Propagation.suspend(
 										Collections.singletonList(y),
 										s -> s.walk(y).isVal(),
 										x.unifies(1).or(x.unifies(2)))
-								.apply(Package.empty()))
+								.apply(Knowledge.empty()))
 				.ground().get(0);
 
-		org.clauseway.vavr.collection.List<Package> worlds = Trial.imposed(y.unifies(5), state).ground();
+		org.clauseway.vavr.collection.List<Knowledge> worlds = Trial.imposed(y.unifies(5), state).ground();
 		assertThat(worlds).hasSize(2);
 	}
 
@@ -49,7 +49,7 @@ public class TrialEdgeTest {
 		// x ∈ 5..8 stays OWED (the package trial would discharge it at first
 		// examination through the FD veto) — kept wider, never wrong: every
 		// labelled value refutes the bind branch-wise and the full answer
-		// set delivers. The eager discharge is the doomed(Package) seam's
+		// set delivers. The eager discharge is the doomed(Knowledge) seam's
 		// future earliness, not a soundness need
 		Unifiable<Long> x = lvar();
 

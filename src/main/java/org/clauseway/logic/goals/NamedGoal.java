@@ -17,7 +17,7 @@ import lombok.Value;
 @RequiredArgsConstructor(staticName = "of")
 public
 class NamedGoal implements Goal {
-	Function<Package, String> label;
+	Function<Knowledge, String> label;
 	Goal goal;
 	/** The static name when {@code named(String)} minted this; null for rendered labels. */
 	String name;
@@ -30,16 +30,16 @@ class NamedGoal implements Goal {
 	Throwable origin = OriginCapture.enabled() ? new Throwable("named at") : null;
 
 	@Override
-	public Cont<Package, Nothing> apply(Package aPackage) {
-		Cont<Package, Nothing> cont = DebugStore.from(aPackage)
+	public Cont<Knowledge, Nothing> apply(Knowledge aPackage) {
+		Cont<Knowledge, Nothing> cont = DebugStore.from(aPackage)
 				.map(store -> Trace.tracedCont(label, goal, store.getTracer(),
 						aPackage.putStore(store.push(label.apply(aPackage))),
 						answer -> answer.putStore(store)))
 				.getOrElse(() -> goal.apply(aPackage));
 		return ProfilerStore.from(aPackage)
-				.<Cont<Package, Nothing>> map(store -> k -> Fiber.named(
+				.<Cont<Knowledge, Nothing>> map(store -> k -> Fiber.named(
 						applySite -> store.label(name, label.getClass(), origin,
-								() -> label.apply(Package.empty())),
+								() -> label.apply(Knowledge.empty())),
 						cont.apply(k)))
 				.getOrElse(cont);
 	}
@@ -51,6 +51,6 @@ class NamedGoal implements Goal {
 
 	@Override
 	public String toString() {
-		return label.apply(Package.empty());
+		return label.apply(Knowledge.empty());
 	}
 }

@@ -11,7 +11,7 @@ import org.clauseway.functional.algebra.ClosedSemiring;
 import org.clauseway.functional.algebra.IdempotentSemiring;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.conditions.Condition;
 import org.clauseway.logic.tabling.table.Reader;
 import org.clauseway.logic.tabling.conditions.Residues;
@@ -84,7 +84,7 @@ final class Closed implements TablingMode {
 		return graph;
 	}
 
-	private SemiringStore storeOf(Package pkg) {
+	private SemiringStore storeOf(Knowledge pkg) {
 		return pkg.getStores().get(SemiringStore.class)
 				.map(SemiringStore.class::cast)
 				.getOrElse(ring::one);
@@ -96,13 +96,13 @@ final class Closed implements TablingMode {
 	}
 
 	@Override
-	public Package bodyState(Package callerPkg) {
+	public Knowledge bodyState(Knowledge callerPkg) {
 		// fresh derivation: real value reset to ONE, no loop record
 		return callerPkg.putStore(ring.one()).putStore(Recurrent.NONE);
 	}
 
 	@Override
-	public Package absorb(Package unifiedPkg, TableEntry<Object> entry, Reified<?> consumedAnswer,
+	public Knowledge absorb(Knowledge unifiedPkg, TableEntry<Object> entry, Reified<?> consumedAnswer,
 			Object cellValue) {
 		Map<Reified<?>, SemiringStore> solved = solvedValues.get(entry);
 		if (solved == null) {
@@ -123,7 +123,7 @@ final class Closed implements TablingMode {
 	}
 
 	@Override
-	public Tuple2<Reified<?>, Object> capture(TableEntry<Object> entry, Package answerPkg,
+	public Tuple2<Reified<?>, Object> capture(TableEntry<Object> entry, Knowledge answerPkg,
 			Reified<?> answerTerm, Residues residues) {
 		if (!residues.isTrue()) {
 			// replay-at-seal has no way to re-impose a region on a chain
@@ -215,7 +215,7 @@ final class Closed implements TablingMode {
 	 * reached during some entry's explore. Never replayed: the upstream replay
 	 * re-runs the continuation with values, spawning this chain's valued twin.
 	 */
-	private static boolean isFragment(Package pkg) {
+	private static boolean isFragment(Knowledge pkg) {
 		return pkg.getStores().get(Fragment.class).isDefined();
 	}
 
@@ -224,7 +224,7 @@ final class Closed implements TablingMode {
 	 * {@code Recurrent.NONE} on every body package, so the store's presence
 	 * IS the inside-a-body fact — no separate tracking.
 	 */
-	private static boolean insideBody(Package pkg) {
+	private static boolean insideBody(Knowledge pkg) {
 		return pkg.getStores().get(Recurrent.class).isDefined();
 	}
 
@@ -233,7 +233,7 @@ final class Closed implements TablingMode {
 	 * to bind the reader's variables, set the folded value on the SemiringStore,
 	 * then hand it to {@code k} under the reader's own call-site package.
 	 */
-	private static Fiber<Nothing> emitAnswer(Fiber.Fn<Package, Nothing> k, Package callerPkg,
+	private static Fiber<Nothing> emitAnswer(Fiber.Fn<Knowledge, Nothing> k, Knowledge callerPkg,
 			Unifiable<?> argsTerm, Reified<?> answerTerm, SemiringStore value) {
 		return MiniKanren.instantiate(answerTerm).flatMap(freshTerm ->
 				MiniKanren.unify(callerPkg.substitution(), argsTerm.getObjectTerm(), freshTerm.getObjectTerm())

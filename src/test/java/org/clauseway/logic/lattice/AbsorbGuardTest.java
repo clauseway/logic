@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.logic.Utils;
 import org.clauseway.logic.constraints.Propagation;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.lattice.LatticeFactorTest.FlatConstraints;
 import org.clauseway.logic.unification.terms.Term;
@@ -23,12 +23,12 @@ public class AbsorbGuardTest {
 		Unifiable<Integer> x = lvar();
 		Theory<FlatConstraints> store = LatticeFactorTest.valued((Term<?>) x, 1, 2);
 
-		List<Package> seeded = Utils.collect(Propagation.absorb(store).apply(Package.empty()));
+		List<Knowledge> seeded = Utils.collect(Propagation.absorb(store).apply(Knowledge.empty()));
 		assertThat(seeded).hasSize(1);
 
 		// the same knowledge arrives again: the resident covers it, so the
 		// door neither meets nor queues normalize — the package rides through
-		List<Package> again = Utils.collect(Propagation.absorb(store).apply(seeded.get(0)));
+		List<Knowledge> again = Utils.collect(Propagation.absorb(store).apply(seeded.get(0)));
 		assertThat(again).hasSize(1);
 		assertThat(again.get(0)).isSameAs(seeded.get(0));
 	}
@@ -44,8 +44,8 @@ public class AbsorbGuardTest {
 		Theory<FlatConstraints> narrow = LatticeFactorTest.valued((Term<?>) x, 1);
 		Theory<FlatConstraints> wide = LatticeFactorTest.valued((Term<?>) x, 1, 2);
 
-		Package seeded = Utils.collect(Propagation.absorb(narrow).apply(Package.empty())).get(0);
-		Package again = Utils.collect(Propagation.absorb(wide).apply(seeded)).get(0);
+		Knowledge seeded = Utils.collect(Propagation.absorb(narrow).apply(Knowledge.empty())).get(0);
+		Knowledge again = Utils.collect(Propagation.absorb(wide).apply(seeded)).get(0);
 		assertThat(again).isEqualTo(seeded);
 	}
 }

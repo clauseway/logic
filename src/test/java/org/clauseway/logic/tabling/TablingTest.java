@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -456,7 +456,7 @@ public class TablingTest {
 		// seal under them and lose answers), so the produce chokepoint checks
 		// the coat and refuses loudly instead
 		Tabled<Unifiable<Integer>> rel = Tabling.define(x ->
-				x.unifies(1).and(Goal.goal(s -> Cont.just(Package.empty()))));
+				x.unifies(1).and(Goal.goal(s -> Cont.just(Knowledge.empty()))));
 		Unifiable<Integer> out = lvar();
 
 		assertThatThrownBy(() -> rel.apply(out).solve(out, TestSchedulers.factory()).count())

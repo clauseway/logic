@@ -38,7 +38,7 @@ public class Conde implements Goal {
 	}
 
 	@Override
-	public Cont<Package, Nothing> apply(Package s) {
+	public Cont<Knowledge, Nothing> apply(Knowledge s) {
 		return k -> Fiber.fork(
 				clauses.stream()
 						.map(g -> g.apply(s).apply(k))

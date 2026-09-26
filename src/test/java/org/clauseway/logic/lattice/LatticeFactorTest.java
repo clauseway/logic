@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.constraints.Propagation;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.constraints.store.Renaming;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.unification.terms.Any;
@@ -111,14 +111,14 @@ public class LatticeFactorTest {
 		// verify it against the domain, not skip it as live-at-root
 		Theory<FlatConstraints> inadmissible = valued(lval(5), 1, 2);
 		boolean failed = new BreadthFirstScheduler<>(
-				FlatConstraints.empty().normalize(inadmissible, inadmissible.atoms(), Package.empty()))
+				FlatConstraints.empty().normalize(inadmissible, inadmissible.atoms(), Knowledge.empty()))
 				.get()
 				.match(() -> true, () -> false, upd -> false);
 		assertThat(failed).isTrue();
 
 		Theory<FlatConstraints> admissible = valued(lval(1), 1, 2);
 		Theory<FlatConstraints> spent = new BreadthFirstScheduler<>(
-				FlatConstraints.empty().normalize(admissible, admissible.atoms(), Package.empty()))
+				FlatConstraints.empty().normalize(admissible, admissible.atoms(), Knowledge.empty()))
 				.get()
 				.<Theory<FlatConstraints>> match(() -> null, () -> null,
 						upd -> (Theory<FlatConstraints>) upd.constraint().getTheory());

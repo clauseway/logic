@@ -15,7 +15,7 @@ import org.clauseway.logic.constraints.store.Renaming;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.LVar;
 import org.clauseway.logic.unification.MiniKanren;
@@ -113,7 +113,7 @@ public class Residues implements Semilattice<Residues>, PartialOrder<Residues> {
 	 * A store that cannot project cannot enter the key, and unkeyed
 	 * knowledge means silently wrong reuse — refused loudly.
 	 */
-	public static Fiber<Tuple2<Reified<?>, Residues>> about(Package world, Unifiable<?> anchor) {
+	public static Fiber<Tuple2<Reified<?>, Residues>> about(Knowledge world, Unifiable<?> anchor) {
 		return MiniKanren.reifyWithAnys(world.substitution(), anchor.getObjectTerm())
 				.flatMap(reified -> ofRelevant(world, reified._2)
 						.map(factors -> Tuple.of((Reified<?>) reified._1, factors)));
@@ -126,7 +126,7 @@ public class Residues implements Semilattice<Residues>, PartialOrder<Residues> {
 	 * widen (consumption filters), answers may not drop (an answer is a
 	 * claim, and the stores are not closed under ∃-elimination).
 	 */
-	public static Fiber<Tuple2<Reified<?>, Residues>> all(Package world, Unifiable<?> anchor) {
+	public static Fiber<Tuple2<Reified<?>, Residues>> all(Knowledge world, Unifiable<?> anchor) {
 		return MiniKanren.reifyWithAnys(world.substitution(), anchor.getObjectTerm())
 				.flatMap(reified -> ofAll(world, reified._2)
 						.map(factors -> Tuple.of((Reified<?>) reified._1, factors)));
@@ -160,7 +160,7 @@ public class Residues implements Semilattice<Residues>, PartialOrder<Residues> {
 		return Constraints.unify(anchor, instantiated);
 	}
 
-	private static Fiber<Residues> ofRelevant(Package callerPkg, java.util.Map<LVar<?>, Any<?>> callVars) {
+	private static Fiber<Residues> ofRelevant(Knowledge callerPkg, java.util.Map<LVar<?>, Any<?>> callVars) {
 		java.util.List<LVar<?>> slots = new java.util.ArrayList<>(callVars.keySet());
 		Renaming canonical = Renaming.of(callVars);
 		return callerPkg.getStores().values().foldLeft(
@@ -189,7 +189,7 @@ public class Residues implements Semilattice<Residues>, PartialOrder<Residues> {
 	 * conservatively incomparable across answers. Non-projectable live
 	 * knowledge refuses loudly.
 	 */
-	private static Fiber<Residues> ofAll(Package answerPkg, java.util.Map<LVar<?>, Any<?>> anyVars) {
+	private static Fiber<Residues> ofAll(Knowledge answerPkg, java.util.Map<LVar<?>, Any<?>> anyVars) {
 		Renaming canonicalization = Renaming.of(anyVars);
 		return resolution(answerPkg.substitution()).flatMap(resolution ->
 						answerPkg.getStores().values().foldLeft(

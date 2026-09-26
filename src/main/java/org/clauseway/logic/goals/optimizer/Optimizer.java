@@ -13,7 +13,7 @@ import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.NamedGoal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 
 /**
  * Rewrites goal trees before execution. Dispatch is double: goals implement
@@ -82,7 +82,7 @@ public interface Optimizer {
 	 * {@code p}; static passes ignore it. Called by {@link OptimizerStore} at
 	 * the defer hook with the live state.
 	 */
-	default Optimizer with(Package p) {
+	default Optimizer with(Knowledge p) {
 		return this;
 	}
 
@@ -122,7 +122,7 @@ public interface Optimizer {
 			}
 
 			@Override
-			public Optimizer with(Package p) {
+			public Optimizer with(Knowledge p) {
 				return pipeline(Arrays.stream(optimizers)
 						.map(o -> o.with(p))
 						.toArray(Optimizer[]::new));

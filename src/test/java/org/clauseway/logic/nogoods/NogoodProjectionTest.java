@@ -91,7 +91,7 @@ public class NogoodProjectionTest {
 
 		org.clauseway.logic.constraints.Posting resolved = org.clauseway.logic.constraints.Propagation.resolve(
 				org.clauseway.logic.unification.Prefix.binding(
-								org.clauseway.logic.goals.Package.empty().substitution(),
+								org.clauseway.logic.goals.Knowledge.empty().substitution(),
 								(LVar<?>) x.asVar().get(),
 								LVal.lval(3))
 						.get());

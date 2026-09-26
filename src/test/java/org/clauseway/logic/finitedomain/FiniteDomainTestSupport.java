@@ -7,7 +7,7 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 
 import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.constraints.store.Theory;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.Propagator;
 import org.clauseway.logic.lattice.Verdict;
 import org.clauseway.logic.lattice.TestPropagators;
@@ -21,8 +21,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FiniteDomainTestSupport {
 
-	public static <T> Package withDomain(Unifiable<T> x, Domain<T> d) {
-		Package p = FiniteDomainConstraints.register(Package.empty());
+	public static <T> Knowledge withDomain(Unifiable<T> x, Domain<T> d) {
+		Knowledge p = FiniteDomainConstraints.register(Knowledge.empty());
 		Theory<FiniteDomainConstraints> theory = FiniteDomainConstraints.withDomain(
 				Theory.empty(), (LVar<?>) x.asVar().get(), d);
 		return p.putStore(FiniteDomainConstraints.class,

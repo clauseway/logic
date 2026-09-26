@@ -33,7 +33,7 @@ public class Conda implements Goal {
 	}
 
 	@Override
-	public Cont<Package, Nothing> apply(Package s) {
+	public Cont<Knowledge, Nothing> apply(Knowledge s) {
 		return Cont.callCC(exit -> Cont.suspend(k -> {
 			AtomicBoolean committed = new AtomicBoolean(false);
 			return clauses.stream()
@@ -44,7 +44,7 @@ public class Conda implements Goal {
 								// solution inside the claimed exploration, hand it to the
 								// continuation only after the seal - running k inside
 								// would bill downstream work to the clause's workforce
-								AtomicReference<Package> won = new AtomicReference<>();
+								AtomicReference<Knowledge> won = new AtomicReference<>();
 								Fiber<Nothing> collected = Exhaustion.exhausted(g.apply(s).runRec(s1 -> {
 									if (committed.compareAndSet(false, true)) {
 										won.set(s1);
@@ -52,7 +52,7 @@ public class Conda implements Goal {
 									return Fiber.done(Nothing.nothing()); // ignore subsequent solutions
 								}));
 								return collected.flatMap(_1 -> won.get() != null
-										? exit.<Package> with(won.get()).runRec(k)
+										? exit.<Knowledge> with(won.get()).runRec(k)
 										: Fiber.done(Nothing.nothing()));
 							}),
 							Exceptions.throwingBiOp(UnsupportedOperationException::new)

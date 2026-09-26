@@ -49,7 +49,7 @@ public class Conjunction implements Goal {
 	}
 
 	@Override
-	public Cont<Package, Nothing> apply(Package s) {
+	public Cont<Knowledge, Nothing> apply(Knowledge s) {
 		return clauses.stream()
 				.reduce(suspend(k -> k.apply(s)),
 						Cont::flatMap,

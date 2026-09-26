@@ -9,7 +9,7 @@ import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.NamedGoal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -28,18 +28,18 @@ import lombok.Value;
  */
 public class OrderingOptimizer implements Optimizer {
 
-	private final Package bound;
+	private final Knowledge bound;
 
 	public OrderingOptimizer() {
-		this(Package.empty());
+		this(Knowledge.empty());
 	}
 
-	private OrderingOptimizer(Package bound) {
+	private OrderingOptimizer(Knowledge bound) {
 		this.bound = bound;
 	}
 
 	@Override
-	public Optimizer with(Package p) {
+	public Optimizer with(Knowledge p) {
 		return new OrderingOptimizer(p);
 	}
 

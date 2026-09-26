@@ -7,7 +7,7 @@ import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.LVar;
 import org.clauseway.logic.unification.Prefix;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -15,8 +15,8 @@ import org.junit.Test;
 
 public class PostingDoomTest {
 
-	private static Package bound(Unifiable<Integer> x, int value) {
-		return Trial.imposed(Posting.bind(x, lval(value)), Package.empty())
+	private static Knowledge bound(Unifiable<Integer> x, int value) {
+		return Trial.imposed(Posting.bind(x, lval(value)), Knowledge.empty())
 				.ground().head();
 	}
 
@@ -25,7 +25,7 @@ public class PostingDoomTest {
 		// no door passed a doom check: the default must see it through the trial
 		Unifiable<Integer> x = lvar();
 		Posting resolution = Propagation.resolve(Prefix.binding(
-				Package.empty().substitution(), (LVar<Integer>) x.asVar().get(), lval(1)).get());
+				Knowledge.empty().substitution(), (LVar<Integer>) x.asVar().get(), lval(1)).get());
 
 		assertThat(resolution.doomed(bound(x, 2))).isTrue();
 		// the verdict never leaks into the count
@@ -36,9 +36,9 @@ public class PostingDoomTest {
 	public void anOpenResolutionClaimsNothing() {
 		Unifiable<Integer> x = lvar();
 		Posting resolution = Propagation.resolve(Prefix.binding(
-				Package.empty().substitution(), (LVar<Integer>) x.asVar().get(), lval(1)).get());
+				Knowledge.empty().substitution(), (LVar<Integer>) x.asVar().get(), lval(1)).get());
 
-		assertThat(resolution.doomed(Package.empty())).isFalse();
+		assertThat(resolution.doomed(Knowledge.empty())).isFalse();
 	}
 
 	@Test
@@ -49,10 +49,10 @@ public class PostingDoomTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Posting joint = x.unifies(1).and(x.unifies(2));
-		assertThat(joint.doomed(Package.empty())).isTrue();
+		assertThat(joint.doomed(Knowledge.empty())).isTrue();
 
 		Posting three = x.unifies(1).and(y.unifies(2), x.unifies(1));
-		assertThat(three.doomed(Package.empty())).isFalse();
+		assertThat(three.doomed(Knowledge.empty())).isFalse();
 	}
 
 	@Test
@@ -61,6 +61,6 @@ public class PostingDoomTest {
 		Unifiable<Integer> x = lvar();
 		Posting joint = Posting.all(x.unifies(1), x.unifies(2));
 
-		assertThat(joint.doomed(Package.empty())).isTrue();
+		assertThat(joint.doomed(Knowledge.empty())).isTrue();
 	}
 }

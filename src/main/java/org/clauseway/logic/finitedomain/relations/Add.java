@@ -14,7 +14,7 @@ import org.clauseway.logic.finitedomain.capabilities.Arithmetic;
 import org.clauseway.logic.finitedomain.capabilities.Discrete;
 import org.clauseway.logic.finitedomain.domains.Interval;
 import org.clauseway.logic.finitedomain.relations.Operators.VarWithDomain;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.Propagator;
 import org.clauseway.logic.lattice.Verdict;
 import org.clauseway.logic.unification.terms.Term;
@@ -64,7 +64,7 @@ public final class Add extends Propagator<FiniteDomainConstraints> {
 	}
 
 	@Override
-	public Verdict propagate(Package state) {
+	public Verdict propagate(Knowledge state) {
 		return Operators.gated(this::orderAt,
 						(Array<VarWithDomain<Object>> vds) ->
 								addVerdict(vds.get(0), vds.get(1), vds.get(2)),

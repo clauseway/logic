@@ -23,7 +23,7 @@ import org.clauseway.logic.constraints.store.Revision;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.finitedomain.FiniteDomain;
 import org.clauseway.logic.finitedomain.Longs;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.Prefix;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -52,7 +52,7 @@ public class NormalizeAgreementLawsTest {
 			Random r = new Random(seed);
 			Unifiable<Long> x = lvar();
 			Unifiable<Long> y = lvar();
-			Package p = Package.empty();
+			Knowledge p = Knowledge.empty();
 			p = impose(p, FiniteDomain.dom(x, Longs.range(0, 5)));
 			p = impose(p, FiniteDomain.dom(y, Longs.range(0, 5)));
 			p = impose(p, exclude(x.unifies(lval((long) r.nextInt(5)))));
@@ -75,7 +75,7 @@ public class NormalizeAgreementLawsTest {
 				continue;
 			}
 			Prefix kept = examined.get()._2;
-			Package extended = p.withSubstitutions(examined.get()._1);
+			Knowledge extended = p.withSubstitutions(examined.get()._1);
 
 			for (Object store : extended.getStores().values()) {
 				if (!(store instanceof Constraint)) {
@@ -120,7 +120,7 @@ public class NormalizeAgreementLawsTest {
 			Random r = new Random(seed);
 			Unifiable<Long> x = lvar();
 			Unifiable<Long> y = lvar();
-			Package p = Package.empty();
+			Knowledge p = Knowledge.empty();
 			boolean conflicting = r.nextBoolean();
 			p = impose(p, FiniteDomain.dom(x, conflicting
 					? Longs.range(3, 5)
@@ -139,7 +139,7 @@ public class NormalizeAgreementLawsTest {
 					.get(atom.getFactorClass()).get();
 			Theory met = resident.getTheory()
 					.meet(Theory.of((Iterable) Collections.singletonList(atom)));
-			Package parked = p.putStore(atom.getFactorClass(),
+			Knowledge parked = p.putStore(atom.getFactorClass(),
 					Constraint.of(met, (Factor) resident.getFactor()));
 			Constraint<?> pair = (Constraint<?>) parked.getStores()
 					.get(atom.getFactorClass()).get();
@@ -184,8 +184,8 @@ public class NormalizeAgreementLawsTest {
 				updated -> Option.of(updated.constraint().getTheory()));
 	}
 
-	private static Package impose(Package p, Posting literal) {
-		List<Package> worlds = new BreadthFirstScheduler<>(Trial.imposed(literal, p)).get();
+	private static Knowledge impose(Knowledge p, Posting literal) {
+		List<Knowledge> worlds = new BreadthFirstScheduler<>(Trial.imposed(literal, p)).get();
 		assertThat(worlds).describedAs("fixture imposition must be deterministic").hasSize(1);
 		return worlds.head();
 	}

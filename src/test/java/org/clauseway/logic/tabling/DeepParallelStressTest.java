@@ -9,7 +9,7 @@ import static org.junit.Assert.fail;
 
 import org.clauseway.functional.fibers.schedulers.ForkJoinScheduler;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.tabling.table.TableEntry;
 import org.clauseway.logic.unification.terms.Term;
@@ -54,7 +54,7 @@ public class DeepParallelStressTest {
 			Unifiable<Integer> y = lvar();
 
 			List<Integer> descendants = x.unifies(1).and(anc.apply(Tuple.of(x, y)))
-					.solveFrom(Package.empty().withStore(table), y, ForkJoinScheduler::new)
+					.solveFrom(Knowledge.empty().withStore(table), y, ForkJoinScheduler::new)
 					.map(Term::get)
 					.sorted()
 					.collect(Collectors.toList());

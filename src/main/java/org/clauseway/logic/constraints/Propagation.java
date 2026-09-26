@@ -19,7 +19,7 @@ import org.clauseway.logic.constraints.store.Verifier;
 import org.clauseway.logic.debug.ProfilerStore;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.logic.goals.Watermark;
 import org.clauseway.logic.unification.terms.LVar;
@@ -212,9 +212,9 @@ public final class Propagation {
 	 * lane. Intra-store re-examination notes ride {@code Update}, not Revision —
 	 * leaking one to the driver is unrepresentable.
 	 */
-	private static Cont<Package, Nothing> reviseAll(
-			Package s,
-			BiFunction<Constraint<?>, Package, Fiber<Revision>> trigger) {
+	private static Cont<Knowledge, Nothing> reviseAll(
+			Knowledge s,
+			BiFunction<Constraint<?>, Knowledge, Fiber<Revision>> trigger) {
 		return Cont.defer(() ->
 				constraintStores(s)
 						.reduce(MFiber.mdone(s),
@@ -226,17 +226,17 @@ public final class Propagation {
 														upd -> MFiber.mdone(queue(
 																landed(pkg, cs, upd), upd))))),
 								Exceptions.throwingBiOp(UnsupportedOperationException::new))
-						.map(Cont::<Package, Nothing>just)
+						.map(Cont::<Knowledge, Nothing>just)
 						.getOrElse(() -> Cont.complete(Nothing.nothing())));
 	}
 
 	/**
 	 * Custody: a revision may only replace its own entry — the javadoc
-	 * contract, enforced. Package store entries are keyed by class, so a
+	 * contract, enforced. Knowledge store entries are keyed by class, so a
 	 * foreign-class replacement would silently overwrite ANOTHER family's
 	 * pair.
 	 */
-	private static Package landed(Package pkg, Constraint<?> author, Revision.Updated upd) {
+	private static Knowledge landed(Knowledge pkg, Constraint<?> author, Revision.Updated upd) {
 		Constraint<?> own = upd.constraint();
 		if (own.getFactor().getClass() != author.getFactor().getClass()) {
 			throw new IllegalStateException("a revision may only replace its own factor: "
@@ -247,8 +247,8 @@ public final class Propagation {
 	}
 
 	/** Queues a revision's harvest: binds to the agenda, suspensions ripe-or-parked. */
-	private static Package queue(Package pkg, Revision.Updated upd) {
-		Package current = pkg;
+	private static Knowledge queue(Knowledge pkg, Revision.Updated upd) {
+		Knowledge current = pkg;
 		for (Suspension suspension : upd.suspensions()) {
 			current = suspension.isRipe(current) ?
 					current.putStore(agendaOf(current).appendRun(suspension.body())) :
@@ -258,7 +258,7 @@ public final class Propagation {
 		return current.putStore(agendaOf(current).queue(upd));
 	}
 
-	private static Agenda agendaOf(Package pkg) {
+	private static Agenda agendaOf(Knowledge pkg) {
 		return (Agenda) pkg.getStores().get(Agenda.class).get();
 	}
 
@@ -272,7 +272,7 @@ public final class Propagation {
 			if (!s.getStores().get(Suspensions.class).isDefined()) {
 				return Cont.just(s);
 			}
-			Package current = s;
+			Knowledge current = s;
 			Suspensions parked = (Suspensions) s.getStores().get(Suspensions.class).get();
 			for (Suspension suspension : parked.parked) {
 				boolean touched = false;
@@ -293,7 +293,7 @@ public final class Propagation {
 	}
 
 	/** Answers may not leave while suspensions pend. */
-	public static boolean suspensionsPending(Package p) {
+	public static boolean suspensionsPending(Knowledge p) {
 		return p.getStores().get(Suspensions.class)
 				.map(sus -> !((Suspensions) sus).parked.isEmpty())
 				.getOrElse(false);
@@ -306,13 +306,13 @@ public final class Propagation {
 	 * honors it structurally (registration order must never decide whether
 	 * a veto fires).
 	 */
-	private static Stream<Constraint<?>> constraintStores(Package p) {
+	private static Stream<Constraint<?>> constraintStores(Knowledge p) {
 		return Stream.concat(
 				pairs(p).filter(cs -> !(cs.getFactor() instanceof Verifier)),
 				pairs(p).filter(cs -> cs.getFactor() instanceof Verifier));
 	}
 
-	private static Stream<Constraint<?>> pairs(Package p) {
+	private static Stream<Constraint<?>> pairs(Knowledge p) {
 		return p.getStores().values().toJavaStream()
 				.filter(Constraint.class::isInstance)
 				.map(entry -> (Constraint<?>) entry);
@@ -328,7 +328,7 @@ public final class Propagation {
 	 * knowledge — the binding lane's standing doctrine), and a late verdict
 	 * re-verifies when the queued work lands as its own trigger.
 	 */
-	public static Package scratch(Package p) {
+	public static Knowledge scratch(Knowledge p) {
 		return p.withoutStore(Agenda.class);
 	}
 
@@ -338,7 +338,7 @@ public final class Propagation {
 	 * {@code atExhaustion}. The continuation is a plain call, not a composed
 	 * goal, so the loop prices exactly as a single-loop drain.
 	 */
-	private static Goal drainItems(Function<Package, Cont<Package, Nothing>> atExhaustion) {
+	private static Goal drainItems(Function<Knowledge, Cont<Knowledge, Nothing>> atExhaustion) {
 		return Goal.defer(() -> s -> {
 			Agenda agenda = (Agenda) s.getStores().get(Agenda.class).get();
 			if (agenda.itemsExhausted()) {
@@ -356,9 +356,9 @@ public final class Propagation {
 	 * Append — the running loop will reach the item. Otherwise this is a trigger:
 	 * install the agenda, drain to quiescence, then splice the collected runs.
 	 */
-	private static Cont<Package, Nothing> enqueue(Package p, Agenda.Item item) {
+	private static Cont<Knowledge, Nothing> enqueue(Knowledge p, Agenda.Item item) {
 		return p.getStores().get(Agenda.class)
-				.map(a -> Cont.<Package, Nothing> just(p.putStore(((Agenda) a).append(item))))
+				.map(a -> Cont.<Knowledge, Nothing> just(p.putStore(((Agenda) a).append(item))))
 				.getOrElse(() -> drain().apply(p.putStore(Agenda.seeded(item))));
 	}
 
@@ -418,7 +418,7 @@ public final class Propagation {
 			abstract Goal apply();
 		}
 
-		private static Fiber<Revision> getRevisionFiber(String name, Constraint<?> cs, Package p, Fiber<Revision> revise) {
+		private static Fiber<Revision> getRevisionFiber(String name, Constraint<?> cs, Knowledge p, Fiber<Revision> revise) {
 			return ProfilerStore.from(p).isDefined() ?
 					Fiber.named(origin -> name + " @ " + cs.getFactor().getClass().getSimpleName(), revise) :
 					revise;
@@ -442,12 +442,12 @@ public final class Propagation {
 			@SuppressWarnings({"unchecked", "rawtypes"})
 			Goal apply() {
 				return s -> s.substitution().extended(prefix)
-						.<Cont<Package, Nothing>> map(examined -> {
+						.<Cont<Knowledge, Nothing>> map(examined -> {
 							Prefix kept = examined._2;
 							if (kept.isEmpty()) {
 								return Cont.just(s);
 							}
-							Package extended = s.withSubstitutions(examined._1);
+							Knowledge extended = s.withSubstitutions(examined._1);
 							// each store's revise is COMPLETE: custody, its own watchers of the
 							// newly bound variables, and its own cascade
 							return ((Goal) s2 -> reviseAll(s2, (cs, p) ->

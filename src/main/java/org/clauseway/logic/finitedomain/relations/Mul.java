@@ -15,7 +15,7 @@ import org.clauseway.logic.finitedomain.capabilities.Discrete;
 import org.clauseway.logic.finitedomain.capabilities.Multiplicative;
 import org.clauseway.logic.finitedomain.domains.Interval;
 import org.clauseway.logic.finitedomain.relations.Operators.VarWithDomain;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.Propagator;
 import org.clauseway.logic.lattice.Verdict;
 import org.clauseway.logic.unification.terms.Term;
@@ -51,7 +51,7 @@ public final class Mul extends Propagator<FiniteDomainConstraints> {
 	}
 
 	@Override
-	public Verdict propagate(Package state) {
+	public Verdict propagate(Knowledge state) {
 		return Operators.gated(order,
 						vds -> mulVerdict(vds.get(0), vds.get(1), vds.get(2), multiplicative, order, step),
 						this::computedThird)

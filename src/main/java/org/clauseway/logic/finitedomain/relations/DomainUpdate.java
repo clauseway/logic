@@ -7,7 +7,7 @@ import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.finitedomain.Domain;
 import org.clauseway.logic.finitedomain.FiniteDomainConstraints;
 import org.clauseway.logic.finitedomain.relations.Operators.VarWithDomain;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.Update;
 import org.clauseway.logic.unification.Prefix;
 import org.clauseway.logic.unification.terms.Term;
@@ -31,7 +31,7 @@ final class DomainUpdate {
 	}
 
 	@SuppressWarnings("unchecked")
-	static Update apply(Package state, Theory<FiniteDomainConstraints> theory, Term<?> target, Domain<?> dom) {
+	static Update apply(Knowledge state, Theory<FiniteDomainConstraints> theory, Term<?> target, Domain<?> dom) {
 		return FiniteDomainConstraints.empty().update(theory, state, target, (Domain<Object>) dom);
 	}
 
@@ -41,7 +41,7 @@ final class DomainUpdate {
 	 * accumulate inferred prefixes.
 	 */
 	@SuppressWarnings("unchecked")
-	static Update narrowAll(Package state, Theory<FiniteDomainConstraints> theory,
+	static Update narrowAll(Knowledge state, Theory<FiniteDomainConstraints> theory,
 			List<VarWithDomain<?>> updates) {
 		Theory<FiniteDomainConstraints> current = theory;
 		List<Prefix> inferred = new ArrayList<>();

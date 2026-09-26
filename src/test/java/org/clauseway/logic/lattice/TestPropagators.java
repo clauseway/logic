@@ -5,7 +5,7 @@ package org.clauseway.logic.lattice;
 
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.constraints.store.Factor;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.vavr.collection.Array;
 import java.util.function.BiFunction;
@@ -27,7 +27,7 @@ public final class TestPropagators {
 			F empty,
 			String name,
 			Iterable<? extends Term<?>> watchedTerms,
-			BiFunction<Array<? extends Term<?>>, Package, Verdict> body) {
+			BiFunction<Array<? extends Term<?>>, Knowledge, Verdict> body) {
 		return of(empty, name, watchedTerms, body, p -> false);
 	}
 
@@ -36,8 +36,8 @@ public final class TestPropagators {
 			F empty,
 			String name,
 			Iterable<? extends Term<?>> watchedTerms,
-			BiFunction<Array<? extends Term<?>>, Package, Verdict> body,
-			Predicate<Package> doom) {
+			BiFunction<Array<? extends Term<?>>, Knowledge, Verdict> body,
+			Predicate<Knowledge> doom) {
 		return new Leaf<>(Array.ofAll(watchedTerms), empty, name, body, doom);
 	}
 
@@ -46,17 +46,17 @@ public final class TestPropagators {
 			F empty,
 			String name,
 			Iterable<? extends Term<?>> watchedTerms,
-			BiFunction<Array<? extends Term<?>>, Package, Fiber<Verdict>> body) {
+			BiFunction<Array<? extends Term<?>>, Knowledge, Fiber<Verdict>> body) {
 		return new ParkingLeaf<>(Array.ofAll(watchedTerms), empty, name, body);
 	}
 
 	private static final class ParkingLeaf<F extends Factor<F>> extends ParkingPropagator<F> {
 		private final F empty;
 		private final String name;
-		private final BiFunction<Array<? extends Term<?>>, Package, Fiber<Verdict>> body;
+		private final BiFunction<Array<? extends Term<?>>, Knowledge, Fiber<Verdict>> body;
 
 		private ParkingLeaf(Array<? extends Term<?>> watchedTerms, F empty, String name,
-				BiFunction<Array<? extends Term<?>>, Package, Fiber<Verdict>> body) {
+				BiFunction<Array<? extends Term<?>>, Knowledge, Fiber<Verdict>> body) {
 			super(watchedTerms);
 			this.empty = empty;
 			this.name = name;
@@ -64,7 +64,7 @@ public final class TestPropagators {
 		}
 
 		@Override
-		public Fiber<Verdict> propagate(Package state) {
+		public Fiber<Verdict> propagate(Knowledge state) {
 			return body.apply(watchedTerms(), state);
 		}
 
@@ -93,12 +93,12 @@ public final class TestPropagators {
 	private static final class Leaf<F extends Factor<F>> extends Propagator<F> {
 		private final F empty;
 		private final String name;
-		private final BiFunction<Array<? extends Term<?>>, Package, Verdict> body;
-		private final Predicate<Package> doom;
+		private final BiFunction<Array<? extends Term<?>>, Knowledge, Verdict> body;
+		private final Predicate<Knowledge> doom;
 
 		private Leaf(Array<? extends Term<?>> watchedTerms, F empty, String name,
-				BiFunction<Array<? extends Term<?>>, Package, Verdict> body,
-				Predicate<Package> doom) {
+				BiFunction<Array<? extends Term<?>>, Knowledge, Verdict> body,
+				Predicate<Knowledge> doom) {
 			super(watchedTerms);
 			this.empty = empty;
 			this.name = name;
@@ -107,7 +107,7 @@ public final class TestPropagators {
 		}
 
 		@Override
-		public Verdict propagate(Package state) {
+		public Verdict propagate(Knowledge state) {
 			return body.apply(watchedTerms(), state);
 		}
 
@@ -122,7 +122,7 @@ public final class TestPropagators {
 		}
 
 		@Override
-		public boolean doomed(Package state) {
+		public boolean doomed(Knowledge state) {
 			return doom.test(state);
 		}
 

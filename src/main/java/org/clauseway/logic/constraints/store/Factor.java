@@ -3,7 +3,7 @@ package org.clauseway.logic.constraints.store;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.vavr.collection.LinkedHashSet;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.logic.unification.Prefix;
 import org.clauseway.logic.unification.terms.Term;
@@ -28,7 +28,7 @@ public interface Factor<S extends Factor<S>> extends Packaged {
 	 * completed by this trigger, and a met theory answers no queries before
 	 * it ran.
 	 */
-	Fiber<Revision> normalize(Theory<S> theory, LinkedHashSet<Atom<S>> focus, Package state);
+	Fiber<Revision> normalize(Theory<S> theory, LinkedHashSet<Atom<S>> focus, Knowledge state);
 
 	/**
 	 * Revise this store against newly applied bindings — AC-3's REVISE, cKanren's
@@ -50,7 +50,7 @@ public interface Factor<S extends Factor<S>> extends Packaged {
 	 * @param prefix - exactly the newly applied bindings
 	 * @param state - the extended live package to verify and read domains against
 	 */
-	Fiber<Revision> normalize(Theory<S> theory, Prefix prefix, Package state);
+	Fiber<Revision> normalize(Theory<S> theory, Prefix prefix, Knowledge state);
 
 	/**
 	 * Commit this store's constraints before {@code x} is reified: finite domains
@@ -72,6 +72,6 @@ public interface Factor<S extends Factor<S>> extends Packaged {
 	 * @param unifiable - the reified answer built so far
 	 * @param renaming - the crossing into the answer namespace
 	 */
-	<A> Term<A> reify(Theory<S> theory, Term<A> unifiable, Renaming renaming, Package p);
+	<A> Term<A> reify(Theory<S> theory, Term<A> unifiable, Renaming renaming, Knowledge p);
 
 }

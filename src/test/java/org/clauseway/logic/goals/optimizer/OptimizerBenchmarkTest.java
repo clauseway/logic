@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.logic.unification.terms.Unifiable;
 import java.util.concurrent.atomic.AtomicLong;
@@ -30,7 +30,7 @@ public class OptimizerBenchmarkTest {
 		AtomicLong spawns;
 
 		@Override
-		public Cont<Package, Nothing> apply(Package s) {
+		public Cont<Knowledge, Nothing> apply(Knowledge s) {
 			spawns.incrementAndGet();
 			return Cont.just(s);
 		}

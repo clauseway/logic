@@ -11,7 +11,7 @@ import org.clauseway.logic.constraints.Unification;
 import org.clauseway.logic.constraints.store.Atom;
 import org.clauseway.logic.constraints.store.Doomed;
 import org.clauseway.logic.constraints.store.Renaming;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.vavr.collection.HashSet;
 import org.clauseway.vavr.collection.LinkedHashSet;
@@ -174,7 +174,7 @@ public class Nogood implements Atom<NogoodConstraints>, Doomed, Semilattice<Nogo
 	 * nothing.
 	 */
 	@Override
-	public boolean doomed(Package p) {
+	public boolean doomed(Knowledge p) {
 		return forbidden.exists(conjunct -> Trial.now(conjunct, p)
 				.map(Trial.Outcome::isEntailed)
 				.getOrElse(false));

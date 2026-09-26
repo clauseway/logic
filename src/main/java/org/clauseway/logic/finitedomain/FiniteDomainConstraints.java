@@ -9,7 +9,7 @@ import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.finitedomain.domains.Singleton;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.LatticeFactor;
 import org.clauseway.logic.lattice.Propagator;
 import org.clauseway.logic.unification.terms.Term;
@@ -33,7 +33,7 @@ public class FiniteDomainConstraints extends LatticeFactor<Domain<Object>, Finit
 	private FiniteDomainConstraints() {
 	}
 
-	public static Package register(Package p) {
+	public static Knowledge register(Knowledge p) {
 		return Constraint.register(p, EMPTY);
 	}
 
@@ -51,7 +51,7 @@ public class FiniteDomainConstraints extends LatticeFactor<Domain<Object>, Finit
 	}
 
 	// cKanren domains — keyed by NAME: a live LVar or a canonical Any
-	public static LinkedHashMap<Term<?>, Domain<?>> getDomains(Package p) {
+	public static LinkedHashMap<Term<?>, Domain<?>> getDomains(Knowledge p) {
 		return Constraint.in(p, FiniteDomainConstraints.class)
 				.map(pair -> LinkedHashMap.<Term<?>, Domain<?>> ofEntries(
 						EMPTY.impositions(pair.getTheory())
@@ -61,7 +61,7 @@ public class FiniteDomainConstraints extends LatticeFactor<Domain<Object>, Finit
 	}
 
 	// cKanren constraints
-	public static HashSet<Propagator<FiniteDomainConstraints>> getConstraints(Package p) {
+	public static HashSet<Propagator<FiniteDomainConstraints>> getConstraints(Knowledge p) {
 		return Constraint.in(p, FiniteDomainConstraints.class)
 				.map(pair -> HashSet.ofAll(EMPTY.props(pair.getTheory())
 						.collect(Collectors.toList())))
@@ -76,7 +76,7 @@ public class FiniteDomainConstraints extends LatticeFactor<Domain<Object>, Finit
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> Option<Domain<T>> getDom(Package p, Term<T> x) {
+	public static <T> Option<Domain<T>> getDom(Knowledge p, Term<T> x) {
 		return Constraint.in(p, FiniteDomainConstraints.class)
 				.flatMap(pair -> EMPTY.getValue(pair.getTheory(), x))
 				.map(d -> (Domain<T>) d);

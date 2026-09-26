@@ -9,7 +9,7 @@ import org.clauseway.logic.constraints.store.Doomed;
 import org.clauseway.logic.constraints.store.Factor;
 import org.clauseway.logic.constraints.store.Renaming;
 import org.clauseway.logic.constraints.store.Watches;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.vavr.collection.Array;
 import org.clauseway.vavr.collection.List;
@@ -40,7 +40,7 @@ public abstract class ParkingPropagator<F extends Factor<F>> implements Atom<F>,
 	}
 
 	/** Re-examine against the current state, as a fiber. Reads anything, mutates nothing. */
-	public abstract Fiber<Verdict> propagate(Package state);
+	public abstract Fiber<Verdict> propagate(Knowledge state);
 
 	/**
 	 * This schema re-instantiated over other terms — how a carried coupling
@@ -60,7 +60,7 @@ public abstract class ParkingPropagator<F extends Factor<F>> implements Atom<F>,
 	 * Default: the author claims nothing.
 	 */
 	@Override
-	public boolean doomed(Package state) {
+	public boolean doomed(Knowledge state) {
 		return false;
 	}
 
@@ -80,7 +80,7 @@ public abstract class ParkingPropagator<F extends Factor<F>> implements Atom<F>,
 	 * watched term does not trigger on its members' bindings (suspensions use
 	 * the structural variant; no FD constraint watches composites).
 	 */
-	public final boolean watches(Package state, Term<?> changed) {
+	public final boolean watches(Knowledge state, Term<?> changed) {
 		for (Term<?> watchedTerm : watchedTerms) {
 			if (Watches.matches(state.substitution(), watchedTerm, changed)) {
 				return true;

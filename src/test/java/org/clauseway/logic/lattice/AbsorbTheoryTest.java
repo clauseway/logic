@@ -12,7 +12,7 @@ import org.clauseway.logic.constraints.Trial;
 import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.constraints.store.Atom;
 import org.clauseway.logic.constraints.store.Theory;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.LatticeFactorTest.FlatConstraints;
 import org.clauseway.logic.lattice.LatticeFactorTest.FlatSet;
 import org.clauseway.logic.unification.terms.Term;
@@ -30,15 +30,15 @@ public class AbsorbTheoryTest {
 		return new Imposition<>(FlatConstraints.class, target, FlatSet.of(values), FlatConstraints.empty());
 	}
 
-	private static Package absorbed(Theory<FlatConstraints> theory, Package into) {
+	private static Knowledge absorbed(Theory<FlatConstraints> theory, Knowledge into) {
 		return new BreadthFirstScheduler<>(Trial.imposed(Propagation.absorb(theory), into)).get().head();
 	}
 
-	private static Theory<FlatConstraints> theory(Package state) {
+	private static Theory<FlatConstraints> theory(Knowledge state) {
 		return Constraint.in(state, FlatConstraints.class).get().getTheory();
 	}
 
-	private static FlatSet value(Package state, Unifiable<Integer> target) {
+	private static FlatSet value(Knowledge state, Unifiable<Integer> target) {
 		return FlatConstraints.empty().getValue(theory(state), (Term<?>) target).get();
 	}
 
@@ -46,7 +46,7 @@ public class AbsorbTheoryTest {
 	public void absorbSeedsTheAbsentFamilyFromTheAtomsEmpty() {
 		Theory<FlatConstraints> theory = Theory.of(Arrays.asList(on(X, 1, 2), on(Y, 5, 6)));
 
-		Package state = absorbed(theory, Package.empty());
+		Knowledge state = absorbed(theory, Knowledge.empty());
 
 		assertThat(value(state, X)).isEqualTo(FlatSet.of(1, 2));
 		assertThat(value(state, Y)).isEqualTo(FlatSet.of(5, 6));
@@ -54,9 +54,9 @@ public class AbsorbTheoryTest {
 
 	@Test
 	public void absorbMeetsResidentKnowledge() {
-		Package seeded = absorbed(Theory.of(Collections.singletonList(on(X, 1, 2, 3))), Package.empty());
+		Knowledge seeded = absorbed(Theory.of(Collections.singletonList(on(X, 1, 2, 3))), Knowledge.empty());
 
-		Package state = absorbed(Theory.of(Collections.singletonList(on(X, 2, 3, 4))), seeded);
+		Knowledge state = absorbed(Theory.of(Collections.singletonList(on(X, 2, 3, 4))), seeded);
 
 		assertThat(value(state, X)).isEqualTo(FlatSet.of(2, 3));
 	}
@@ -67,9 +67,9 @@ public class AbsorbTheoryTest {
 		// there is ONE statement semantics — update's routing collapses a
 		// point to its binding on every door, and the spent entry drops
 		// (the stated/absorb asymmetry was ruled out with the merge)
-		Package seeded = absorbed(Theory.of(Collections.singletonList(on(X, 1, 2))), Package.empty());
+		Knowledge seeded = absorbed(Theory.of(Collections.singletonList(on(X, 1, 2))), Knowledge.empty());
 
-		Package state = absorbed(Theory.of(Collections.singletonList(on(X, 2, 3))), seeded);
+		Knowledge state = absorbed(Theory.of(Collections.singletonList(on(X, 2, 3))), seeded);
 
 		assertThat(state.substitution().walk((Term<?>) X).get()).isEqualTo(2);
 		assertThat(FlatConstraints.empty().getValue(theory(state), (Term<?>) X).isDefined())
@@ -81,15 +81,15 @@ public class AbsorbTheoryTest {
 		Propagator<FlatConstraints> even = TestPropagators.of(FlatConstraints.empty(), "even",
 				Collections.singletonList(X), (watched, state) -> Verdict.keep());
 
-		Package state = absorbed(Theory.of(
-				Collections.singletonList((Atom<FlatConstraints>) even)), Package.empty());
+		Knowledge state = absorbed(Theory.of(
+				Collections.singletonList((Atom<FlatConstraints>) even)), Knowledge.empty());
 
 		assertThat(theory(state).atoms()).contains(even);
 	}
 
 	@Test
 	public void theEmptyTheoryAbsorbsAsSuccess() {
-		Package state = absorbed(Theory.empty(), Package.empty());
+		Knowledge state = absorbed(Theory.empty(), Knowledge.empty());
 		assertThat(state.getStores().containsKey(FlatConstraints.class)).isFalse();
 	}
 
@@ -98,9 +98,9 @@ public class AbsorbTheoryTest {
 		// the covering door guard: the resident already entails the incoming
 		// knowledge — no meet, no re-normalization, the package rides through
 		// untouched
-		Package seeded = absorbed(Theory.of(Collections.singletonList(on(X, 1, 2))), Package.empty());
+		Knowledge seeded = absorbed(Theory.of(Collections.singletonList(on(X, 1, 2))), Knowledge.empty());
 
-		Package state = absorbed(Theory.of(Collections.singletonList(on(X, 0, 1, 2, 3))), seeded);
+		Knowledge state = absorbed(Theory.of(Collections.singletonList(on(X, 0, 1, 2, 3))), seeded);
 
 		assertThat(state).isSameAs(seeded);
 	}

@@ -6,7 +6,7 @@ package org.clauseway.logic.constraints;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.goals.Exhaustion;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.vavr.collection.LinkedHashMap;
 import org.clauseway.logic.unification.MiniKanren;
@@ -30,7 +30,7 @@ import java.util.Optional;
  * everything the substitutions cannot see errs toward OWED, the delay-safe
  * direction: a store veto the imposition would discharge on keeps the nogood
  * wider until the ground floor, and eager discharge, if earliness is ever
- * worth buying, belongs on the doomed(Package) seam — store lookups, never
+ * worth buying, belongs on the doomed(Knowledge) seam — store lookups, never
  * store trials. These rows ARE the synchronous face ({@link #now}); the
  * fiber lane wraps them in {@code Fiber.done}, so no consumer's
  * synchronicity depends on how flatMap composes.
@@ -42,13 +42,13 @@ import java.util.Optional;
  */
 public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 
-	private final Package scratch;
+	private final Knowledge scratch;
 
-	Trial(Package scratch) {
+	Trial(Knowledge scratch) {
 		this.scratch = scratch;
 	}
 
-	public static Fiber<Outcome> trial(Posting literal, Package scratch) {
+	public static Fiber<Outcome> trial(Posting literal, Knowledge scratch) {
 		return literal.accept(new Trial(scratch));
 	}
 
@@ -93,7 +93,7 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 	 * exclusion door's born-violated check, the same guard on the opposite
 	 * verdict.
 	 */
-	public static boolean doomed(Posting literal, Package p) {
+	public static boolean doomed(Posting literal, Knowledge p) {
 		return now(literal, p)
 				.map(Outcome::isRefuted)
 				.getOrElse(false);
@@ -106,7 +106,7 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 	 * of the binding rows lives here; the fiber lane wraps these outcomes in
 	 * {@code Fiber.done}, never recomputes them.
 	 */
-	public static Option<Outcome> now(Posting literal, Package scratch) {
+	public static Option<Outcome> now(Posting literal, Knowledge scratch) {
 		return bindingShaped(literal) ?
 				Option.of(literal.accept(new Now(scratch))) :
 				Option.none();
@@ -116,18 +116,18 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 	@Value
 	public static class Outcome {
 		Posting remainder;
-		Package grown;
+		Knowledge grown;
 		boolean entailed;
 
 		static Outcome refuted() {
 			return new Outcome(null, null, false);
 		}
 
-		static Outcome entailed(Package grown) {
+		static Outcome entailed(Knowledge grown) {
 			return new Outcome(null, grown, true);
 		}
 
-		static Outcome owed(Posting remainder, Package grown) {
+		static Outcome owed(Posting remainder, Knowledge grown) {
 			return new Outcome(remainder, grown, false);
 		}
 
@@ -158,9 +158,9 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 	 */
 	private static final class Now implements Posting.Visitor<Outcome> {
 
-		private final Package scratch;
+		private final Knowledge scratch;
 
-		Now(Package scratch) {
+		Now(Knowledge scratch) {
 			this.scratch = scratch;
 		}
 
@@ -219,7 +219,7 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 		@Override
 		public Outcome visit(Posting.AllOf all) {
 			List<Posting> remainders = List.empty();
-			Package current = scratch;
+			Knowledge current = scratch;
 			for (Posting part : all.getParts()) {
 				Outcome outcome = part.accept(new Now(current));
 				if (outcome.isRefuted()) {
@@ -252,12 +252,12 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 	 * Packaged factors deliberately do NOT hear these bindings: staleness only
 	 * shifts verdicts toward "owed", the delay-safe direction.
 	 */
-	private static Package withSubstitutions(Package scratch, Substitutions grown) {
-		return Package.of(grown, scratch.getStores());
+	private static Knowledge withSubstitutions(Knowledge scratch, Substitutions grown) {
+		return Knowledge.of(grown, scratch.getStores());
 	}
 
 	/** The conjunct folds' shared terminal: survivors re-conjoined or entailed. */
-	private static Outcome assembled(List<Posting> remainders, Package current) {
+	private static Outcome assembled(List<Posting> remainders, Knowledge current) {
 		return remainders.isEmpty() ?
 				Outcome.entailed(current) :
 				Outcome.owed(remainders.size() == 1 ?
@@ -290,7 +290,7 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 			if (worlds.size() > 1) {
 				return Outcome.owed(literal, scratch);
 			}
-			Package grown = worlds.head();
+			Knowledge grown = worlds.head();
 			return unchanged(scratch, grown) ?
 					Outcome.entailed(grown) :
 					Outcome.owed(literal, grown);
@@ -305,7 +305,7 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 				parts(all.getParts(), List.empty(), scratch);
 	}
 
-	private static Fiber<Outcome> parts(List<Posting> pending, List<Posting> remainders, Package current) {
+	private static Fiber<Outcome> parts(List<Posting> pending, List<Posting> remainders, Knowledge current) {
 		if (pending.isEmpty()) {
 			return Fiber.done(assembled(remainders, current));
 		}
@@ -326,7 +326,7 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 	 * (arbitrary goals, may spawn). Empty = the run stayed silent: the
 	 * imposition failed.
 	 */
-	public static Fiber<List<Package>> imposed(Posting literal, Package scratch) {
+	public static Fiber<List<Knowledge>> imposed(Posting literal, Knowledge scratch) {
 		return Exhaustion.collected(literal.apply(scratch))
 				.map(List::ofAll);
 	}
@@ -339,7 +339,7 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 	 * growth, representation drift), the conservative direction — a missed
 	 * entailment only delays: stores re-verify on every revise and the
 	 * ground floor decides by answer time. If solver knowledge ever lives
-	 * outside the Package, this classifier is where that breaks silently.
+	 * outside the Knowledge, this classifier is where that breaks silently.
 	 *
 	 * <p>Exactness at the points this runs rests on the imposition law
 	 * (idempotent normalization, the ground floor, no silent swallowing —
@@ -349,7 +349,7 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 	 * order) remains available as a drift-immune refinement — pure
 	 * optimization, buying earliness on the delay side.
 	 */
-	static boolean unchanged(Package before, Package after) {
+	static boolean unchanged(Knowledge before, Knowledge after) {
 		return before == after
 				|| before.equals(after)
 				|| before.substitution().equals(after.substitution())
@@ -366,8 +366,8 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 	 */
 	// TODO(the human, August 2026): further investigation owed — whether other
 	//   bookkeeping shapes should be invisible to this comparison, and whether
-	//   knowledge comparison belongs on Package once more clients appear.
-	private static LinkedHashMap<Class<? extends Packaged>, Packaged> knowledge(Package p) {
+	//   knowledge comparison belongs on Knowledge once more clients appear.
+	private static LinkedHashMap<Class<? extends Packaged>, Packaged> knowledge(Knowledge p) {
 		return p.getStores().filter(entry -> !(entry._2 instanceof Constraint
 				&& ((Constraint<?>) entry._2).getTheory().isEmpty()));
 	}

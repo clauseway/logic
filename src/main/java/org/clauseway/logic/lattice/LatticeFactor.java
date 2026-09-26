@@ -19,7 +19,7 @@ import org.clauseway.logic.constraints.store.Revision;
 import org.clauseway.logic.constraints.store.Suspension;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.LVar;
 import org.clauseway.logic.unification.Prefix;
 import org.clauseway.logic.unification.terms.Term;
@@ -89,7 +89,7 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 	}
 
 	/** The live package with {@code theory} in residence — what examinations read. */
-	private Package resident(Package state, Theory<S> theory) {
+	private Knowledge resident(Knowledge state, Theory<S> theory) {
 		return state.putStore(getClass(), Constraint.of(theory, self()));
 	}
 
@@ -112,7 +112,7 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 	 * consulted only for unbound variables), and anything else narrows the
 	 * theory with a re-examination note.
 	 */
-	public Update update(Theory<S> theory, Package state, Term<?> target, L value) {
+	public Update update(Theory<S> theory, Knowledge state, Term<?> target, L value) {
 		if (target.isVal()) {
 			return value.admits(target.get()) ? Update.unchanged() : Update.fail();
 		}
@@ -165,11 +165,11 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 			Constraint<S> live = Constraint.in(s, (Class<S>) getClass()).get();
 			return cascade(s, live.getTheory(), live.getTheory(), new ArrayList<>(), new ArrayList<>(),
 							new ArrayDeque<>(Collections.<Term<?>> singletonList(x)))
-					.map(revision -> revision.<Cont<Package, Nothing>> match(
+					.map(revision -> revision.<Cont<Knowledge, Nothing>> match(
 							() -> Cont.complete(Nothing.nothing()),
 							() -> Cont.just(s),
 							upd -> {
-								Package updated = s.putStore(getClass(), upd.constraint());
+								Knowledge updated = s.putStore(getClass(), upd.constraint());
 								return upd.inferred().stream()
 										.<Goal> map(Propagation::resolve)
 										.reduce(Goal.success(), Goal::and)
@@ -179,7 +179,7 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 	}
 
 	@Override
-	public Fiber<Revision> normalize(Theory<S> incoming, Prefix prefix, Package state) {
+	public Fiber<Revision> normalize(Theory<S> incoming, Prefix prefix, Knowledge state) {
 		// each newly bound value must lie in its variable's lattice value; a
 		// var-var binding aliases the two, so the value follows the representative;
 		// every bound variable's watchers re-examine, then the cascade drains
@@ -218,7 +218,7 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 	 * ruled out with the rows' merge).
 	 */
 	@Override
-	public Fiber<Revision> normalize(Theory<S> incoming, LinkedHashSet<Atom<S>> focus, Package state) {
+	public Fiber<Revision> normalize(Theory<S> incoming, LinkedHashSet<Atom<S>> focus, Knowledge state) {
 		if (incoming.isAbsorbing()) {
 			return Fiber.done(Revision.fail());
 		}
@@ -246,7 +246,7 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 					continue;    // discharged earlier in this trigger, or never landed
 				}
 				Propagator<S> p = (Propagator<S>) atom;
-				Package live = resident(state, current);
+				Knowledge live = resident(state, current);
 				Theory<S> at = current;
 				current = consume(p.propagate(live).match(
 								Update::fail,
@@ -292,7 +292,7 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 	 * spent entries before cascading has already moved, and the driver must
 	 * land the replacement.
 	 */
-	protected Fiber<Revision> cascade(Package state, Theory<S> resident, Theory<S> theory,
+	protected Fiber<Revision> cascade(Knowledge state, Theory<S> resident, Theory<S> theory,
 			List<Prefix> inferred, List<Goal> runs, ArrayDeque<Term<?>> queue) {
 		Theory<S> current = theory;
 		while (true) {
@@ -322,12 +322,12 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 	}
 
 	/** The parking watchers of one changed term, present and concerned. */
-	private List<ParkingPropagator<S>> wokenParking(Package state, Theory<S> theory, Term<?> changed) {
+	private List<ParkingPropagator<S>> wokenParking(Knowledge state, Theory<S> theory, Term<?> changed) {
 		List<ParkingPropagator<S>> parking = parkingProps(theory).collect(Collectors.toList());
 		if (parking.isEmpty()) {
 			return parking;
 		}
-		Package live = resident(state, theory);
+		Knowledge live = resident(state, theory);
 		List<ParkingPropagator<S>> woken = new ArrayList<>();
 		for (ParkingPropagator<S> p : parking) {
 			if (p.watches(live, changed)) {
@@ -338,7 +338,7 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 	}
 
 	/** The sync watchers of one changed term, a plain loop; null = the branch died. */
-	private Theory<S> examineWatchersSync(Package state, Theory<S> theory, Term<?> changed,
+	private Theory<S> examineWatchersSync(Knowledge state, Theory<S> theory, Term<?> changed,
 			List<Prefix> inferred, List<Goal> runs, ArrayDeque<Term<?>> queue,
 			Iterator<Propagator<S>> pending) {
 		Theory<S> current = theory;
@@ -348,7 +348,7 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 				// discharged by an earlier verdict of this trigger
 				continue;
 			}
-			Package live = resident(state, current);
+			Knowledge live = resident(state, current);
 			if (!p.watches(live, changed)) {
 				continue;
 			}
@@ -367,14 +367,14 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 	}
 
 	/** The parking watchers of one changed term, each awaited; none = the branch died. */
-	private Fiber<Option<Theory<S>>> examineWatchers(Package state, Theory<S> theory, Term<?> changed,
+	private Fiber<Option<Theory<S>>> examineWatchers(Knowledge state, Theory<S> theory, Term<?> changed,
 			List<Prefix> inferred, List<Goal> runs, ArrayDeque<Term<?>> queue,
 			Iterator<ParkingPropagator<S>> pending) {
 		if (!pending.hasNext()) {
 			return Fiber.done(Option.of(theory));
 		}
 		ParkingPropagator<S> p = pending.next();
-		Package live = resident(state, theory);
+		Knowledge live = resident(state, theory);
 		if (!theory.atoms().contains(p) || !p.watches(live, changed)) {
 			// discharged by an earlier verdict of this trigger, or unconcerned
 			return examineWatchers(state, theory, changed, inferred, runs, queue, pending);
@@ -402,7 +402,7 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 	 * branch at all. Pricing is an order, not a gate: survivors priced at
 	 * the barrier still ground when they are all that is left.
 	 */
-	public static Goal groundNarrowestFirst(Function<Package, List<Tuple2<Long, Goal>>> survivors) {
+	public static Goal groundNarrowestFirst(Function<Knowledge, List<Tuple2<Long, Goal>>> survivors) {
 		return s -> {
 			Tuple2<Long, Goal> narrowest = null;
 			for (Tuple2<Long, Goal> candidate : survivors.apply(s)) {
@@ -456,7 +456,7 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 	}
 
 	@Override
-	public <A> Term<A> reify(Theory<S> incoming, Term<A> unifiable, Renaming renaming, Package p) {
+	public <A> Term<A> reify(Theory<S> incoming, Term<A> unifiable, Renaming renaming, Knowledge p) {
 		Set<LVar<?>> varsWithValues = impositions(incoming)
 				.map(Imposition::getTarget)
 				.map(p::walk)

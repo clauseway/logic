@@ -14,7 +14,7 @@ import org.clauseway.logic.finitedomain.FiniteDomain;
 import org.clauseway.logic.finitedomain.FiniteDomainTestSupport;
 import org.clauseway.logic.finitedomain.Longs;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.tabling.Tabled;
 import org.clauseway.logic.tabling.Tabling;
@@ -34,9 +34,9 @@ public class PricerMonotonicityTest {
 	public void domPostPriceNeverRises() {
 		Unifiable<Long> x = lvar();
 		Goal post = FiniteDomain.dom(x, Longs.interval(8, 12));
-		Package blind = Package.empty();
-		Package overlapping = FiniteDomainTestSupport.withDomain(x, Longs.interval(0, 10));
-		Package disjoint = FiniteDomainTestSupport.withDomain(x, Longs.interval(0, 4));
+		Knowledge blind = Knowledge.empty();
+		Knowledge overlapping = FiniteDomainTestSupport.withDomain(x, Longs.interval(0, 10));
+		Knowledge disjoint = FiniteDomainTestSupport.withDomain(x, Longs.interval(0, 4));
 		MonotoneLaws.check(
 				Arrays.asList(blind, overlapping, disjoint),
 				p -> ((Bounded) post).answers(p),
@@ -50,9 +50,9 @@ public class PricerMonotonicityTest {
 		Unifiable<Integer> out = lvar();
 		Goal call = rel.apply(Tuple.of(out));
 
-		Package noTable = Package.empty();
-		Package incomplete = Package.empty().withStore(Table.empty());
-		Package complete = Package.empty().withStore(Table.empty());
+		Knowledge noTable = Knowledge.empty();
+		Knowledge incomplete = Knowledge.empty().withStore(Table.empty());
+		Knowledge complete = Knowledge.empty().withStore(Table.empty());
 		assertThat(call.solveFrom(complete, out, BreadthFirstScheduler::new).count()).isEqualTo(2);
 
 		MonotoneLaws.check(

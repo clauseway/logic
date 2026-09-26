@@ -17,7 +17,7 @@ import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.finitedomain.FiniteDomain;
 import org.clauseway.logic.finitedomain.Domain;
 import org.clauseway.logic.finitedomain.Longs;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.vavr.collection.List;
 import java.util.ArrayList;
@@ -73,10 +73,10 @@ public class ImpositionLawsTest {
 		}
 
 		/** A random consistent state grown by store-shaped impositions. */
-		Package state(int impositions) {
-			Package p = Package.empty();
+		Knowledge state(int impositions) {
+			Knowledge p = Knowledge.empty();
 			for (int i = 0; i < impositions; i++) {
-				List<Package> worlds = new BreadthFirstScheduler<>(Trial.imposed(literal(), p)).get();
+				List<Knowledge> worlds = new BreadthFirstScheduler<>(Trial.imposed(literal(), p)).get();
 				if (worlds.size() == 1) {
 					p = worlds.head();
 				}
@@ -92,14 +92,14 @@ public class ImpositionLawsTest {
 		int exercised = 0;
 		for (long seed = 0; seed < SEEDS; seed++) {
 			World w = new World(seed);
-			Package p = w.state(2);
+			Knowledge p = w.state(2);
 			Posting literal = w.literal();
-			List<Package> once = new BreadthFirstScheduler<>(Trial.imposed(literal, p)).get();
+			List<Knowledge> once = new BreadthFirstScheduler<>(Trial.imposed(literal, p)).get();
 			if (once.size() != 1) {
 				continue;
 			}
 			exercised++;
-			List<Package> twice = new BreadthFirstScheduler<>(Trial.imposed(literal, once.head())).get();
+			List<Knowledge> twice = new BreadthFirstScheduler<>(Trial.imposed(literal, once.head())).get();
 			assertThat(twice).describedAs("seed %d: re-imposition failed", seed).hasSize(1);
 			assertThat(Trial.unchanged(once.head(), twice.head()))
 					.describedAs("seed %d: re-imposition changed the package", seed)
@@ -117,7 +117,7 @@ public class ImpositionLawsTest {
 		int exercised = 0;
 		for (long seed = 0; seed < SEEDS; seed++) {
 			World w = new World(seed);
-			Package p = w.state(3);
+			Knowledge p = w.state(3);
 			for (Object store : p.getStores().values()) {
 				if (!(store instanceof Constraint)) {
 					continue;
@@ -152,15 +152,15 @@ public class ImpositionLawsTest {
 		for (long seed = 0; seed < SEEDS; seed++) {
 			World w = new World(seed);
 			Unifiable<Long> x = lvar();
-			Package p = new BreadthFirstScheduler<>(Trial.imposed(
-					FiniteDomain.dom(x, Longs.range(0, 2)), Package.empty())
+			Knowledge p = new BreadthFirstScheduler<>(Trial.imposed(
+					FiniteDomain.dom(x, Longs.range(0, 2)), Knowledge.empty())
 					).get().head();
 
-			List<Package> clash = new BreadthFirstScheduler<>(Trial.imposed(
+			List<Knowledge> clash = new BreadthFirstScheduler<>(Trial.imposed(
 					FiniteDomain.dom(x, Longs.range(5, 7)), p)).get();
 			assertThat(clash).describedAs("seed %d: disjoint dom swallowed", seed).isEmpty();
 
-			List<Package> bound = new BreadthFirstScheduler<>(Trial.imposed(Posting.bind(x, lval(9L)), p)).get();
+			List<Knowledge> bound = new BreadthFirstScheduler<>(Trial.imposed(Posting.bind(x, lval(9L)), p)).get();
 			assertThat(bound).describedAs("seed %d: out-of-domain bind swallowed", seed)
 					.isEmpty();
 		}
@@ -179,14 +179,14 @@ public class ImpositionLawsTest {
 					Longs.leq(lval(a), lval(b)) :
 					Longs.addo(lval(a), lval(1L), lval(a + (w.r.nextBoolean() ? 1 : 2)));
 			exercised++;
-			List<Package> worlds = new BreadthFirstScheduler<>(Trial.imposed(ground, Package.empty())).get();
+			List<Knowledge> worlds = new BreadthFirstScheduler<>(Trial.imposed(ground, Knowledge.empty())).get();
 			if (worlds.isEmpty()) {
 				continue;
 			}
 			assertThat(worlds).describedAs("seed %d: ground imposition forked", seed).hasSize(1);
 			assertThat(worlds.head().substitution())
 					.describedAs("seed %d: ground imposition bound something", seed)
-					.isEqualTo(Package.empty().substitution());
+					.isEqualTo(Knowledge.empty().substitution());
 		}
 		assertThat(exercised).describedAs("the law must not pass vacuously")
 				.isGreaterThan(10);

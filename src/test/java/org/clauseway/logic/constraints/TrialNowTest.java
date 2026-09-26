@@ -11,7 +11,7 @@ import org.clauseway.functional.fibers.interpreter.EngineGuard;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.finitedomain.FiniteDomain;
 import org.clauseway.logic.finitedomain.Longs;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.vavr.collection.List;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class TrialNowTest {
 	@Test
 	public void bindingLiteralsAnswerNow() {
 		Unifiable<Integer> x = lvar();
-		Package bound = state(Posting.bind(x, lval(3)), Package.empty());
+		Knowledge bound = state(Posting.bind(x, lval(3)), Knowledge.empty());
 
 		assertThat(Trial.now(Posting.bind(x, lval(3)), bound).get().isEntailed()).isTrue();
 		assertThat(Trial.now(Posting.bind(x, lval(4)), bound).get().isRefuted()).isTrue();
@@ -38,7 +38,7 @@ public class TrialNowTest {
 	@Test
 	public void aStoreShapedPostingClaimsNothing() {
 		Unifiable<Long> x = lvar();
-		assertThat(Trial.now(FiniteDomain.dom(x, Longs.range(1, 3)), Package.empty())
+		assertThat(Trial.now(FiniteDomain.dom(x, Longs.range(1, 3)), Knowledge.empty())
 				.isDefined())
 				.isFalse();
 	}
@@ -49,7 +49,7 @@ public class TrialNowTest {
 		Posting mixed = Posting.all(
 				Posting.bind(x, lval(1L)),
 				FiniteDomain.dom(x, Longs.range(1, 3)));
-		assertThat(Trial.now(mixed, Package.empty()).isDefined()).isFalse();
+		assertThat(Trial.now(mixed, Knowledge.empty()).isDefined()).isFalse();
 	}
 
 	@Test
@@ -60,10 +60,10 @@ public class TrialNowTest {
 			for (int i = 0; i < 4; i++) {
 				vars.add(lvar());
 			}
-			Package p = Package.empty();
+			Knowledge p = Knowledge.empty();
 			for (int i = 0; i < 2; i++) {
 				// conflicting random bindings legitimately fail: skip, like the laws kit
-				List<Package> worlds = new BreadthFirstScheduler<>(
+				List<Knowledge> worlds = new BreadthFirstScheduler<>(
 						Trial.imposed(Posting.bind(vars.get(r.nextInt(4)), lval(r.nextInt(4))), p)).get();
 				if (!worlds.isEmpty()) {
 					p = worlds.head();
@@ -83,7 +83,7 @@ public class TrialNowTest {
 	@Test
 	public void nowAndDoomAreBudgetInvariant() {
 		Unifiable<Integer> x = lvar();
-		Package bound = state(Posting.bind(x, lval(3)), Package.empty());
+		Knowledge bound = state(Posting.bind(x, lval(3)), Knowledge.empty());
 		Posting refuted = Posting.bind(x, lval(4));
 
 		int pinned = EngineGuard.eagerBudget();
@@ -97,8 +97,8 @@ public class TrialNowTest {
 		assertThat(Trial.doomed(refuted, bound)).isTrue();
 	}
 
-	private static Package state(Posting literal, Package from) {
-		List<Package> worlds = new BreadthFirstScheduler<>(Trial.imposed(literal, from)).get();
+	private static Knowledge state(Posting literal, Knowledge from) {
+		List<Knowledge> worlds = new BreadthFirstScheduler<>(Trial.imposed(literal, from)).get();
 		assertThat(worlds).isNotEmpty();
 		return worlds.head();
 	}

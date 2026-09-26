@@ -8,7 +8,7 @@ import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.Utils;
 import org.clauseway.logic.constraints.Propagation;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.Propagator;
 import org.clauseway.logic.lattice.Verdict;
 import org.clauseway.logic.lattice.TestPropagators;
@@ -44,8 +44,8 @@ public class ParametersTest {
 				Arrays.asList(prefix.get()._1),
 				(watched, st) -> Verdict.keep());
 
-		Package[] box = new Package[1];
-		Package pkg = Package.of(HashMap.empty(),
+		Knowledge[] box = new Knowledge[1];
+		Knowledge pkg = Knowledge.of(HashMap.empty(),
 				LinkedHashMap.of(FiniteDomainConstraints.class,
 						Constraint.of(Theory.<FiniteDomainConstraints> empty().with(constraint),
 								FiniteDomainConstraints.empty())));
@@ -65,8 +65,8 @@ public class ParametersTest {
 	public void shouldForceAnswer() {
 		Unifiable<Long> i = LVar.lvar();
 
-		List<Package> collect = Utils.collect(EnforceConstraintsFD.forceAns(i)
-				.apply(Package.empty().putStore(FiniteDomainConstraints.class,
+		List<Knowledge> collect = Utils.collect(EnforceConstraintsFD.forceAns(i)
+				.apply(Knowledge.empty().putStore(FiniteDomainConstraints.class,
 						Constraint.of(FiniteDomainConstraints.withDomain(Theory.empty(),
 										i.asVar().get(), Longs.range(0, 10)),
 								FiniteDomainConstraints.empty()))));
@@ -83,9 +83,9 @@ public class ParametersTest {
 		Unifiable<Long> i = LVar.lvar();
 		Unifiable<Long> j = LVar.lvar();
 
-		List<Package> collect = Utils.collect(
+		List<Knowledge> collect = Utils.collect(
 				EnforceConstraintsFD.forceAns(lval(Tuple.of(i, j)))
-						.apply(Package.empty().putStore(FiniteDomainConstraints.class,
+						.apply(Knowledge.empty().putStore(FiniteDomainConstraints.class,
 								Constraint.of(FiniteDomainConstraints.withDomain(
 												FiniteDomainConstraints.withDomain(Theory.empty(),
 														i.asVar().get(), Longs.range(0, 3)),

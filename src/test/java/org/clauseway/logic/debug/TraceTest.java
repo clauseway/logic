@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.logic.debug.Trace.Tracer;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Unifiable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,22 +20,22 @@ public class TraceTest {
 		final List<String> ports = new ArrayList<>();
 
 		@Override
-		public void onCall(String label, Package state) {
+		public void onCall(String label, Knowledge state) {
 			ports.add("Call " + label);
 		}
 
 		@Override
-		public void onExit(String label, Package state) {
+		public void onExit(String label, Knowledge state) {
 			ports.add("Exit " + label);
 		}
 
 		@Override
-		public void onRedo(String label, Package state) {
+		public void onRedo(String label, Knowledge state) {
 			ports.add("Redo " + label);
 		}
 
 		@Override
-		public void onFail(String label, Package state) {
+		public void onFail(String label, Knowledge state) {
 			ports.add("Fail " + label);
 		}
 	}
@@ -146,21 +146,21 @@ public class TraceTest {
 		Map<String, Integer> depthAtCall = new HashMap<>();
 		Tracer tracer = new Tracer() {
 			@Override
-			public void onCall(String label, Package state) {
+			public void onCall(String label, Knowledge state) {
 				depthAtCall.putIfAbsent(label,
 						DebugStore.from(state).map(DebugStore::depth).getOrElse(0));
 			}
 
 			@Override
-			public void onExit(String label, Package state) {
+			public void onExit(String label, Knowledge state) {
 			}
 
 			@Override
-			public void onRedo(String label, Package state) {
+			public void onRedo(String label, Knowledge state) {
 			}
 
 			@Override
-			public void onFail(String label, Package state) {
+			public void onFail(String label, Knowledge state) {
 			}
 		};
 		Unifiable<Integer> x = lvar();

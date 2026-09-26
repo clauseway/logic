@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.clauseway.logic.finitedomain.FiniteDomain;
 import org.clauseway.logic.finitedomain.Ints;
 import java.util.stream.IntStream;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.vavr.collection.List;
 import java.util.ArrayList;
@@ -62,10 +62,10 @@ public class DoomLawsTest {
 			}
 		}
 
-		Package state(Package from, int bindings) {
-			Package p = from;
+		Knowledge state(Knowledge from, int bindings) {
+			Knowledge p = from;
 			for (int i = 0; i < bindings; i++) {
-				List<Package> worlds =
+				List<Knowledge> worlds =
 						new BreadthFirstScheduler<>(Trial.imposed(Posting.bind(var(), lval(r.nextInt(3))), p)).get();
 				if (!worlds.isEmpty()) {
 					p = worlds.head();
@@ -80,7 +80,7 @@ public class DoomLawsTest {
 		int exercised = 0;
 		for (long seed = 0; seed < SEEDS; seed++) {
 			World w = new World(seed);
-			Package p = w.state(Package.empty(), 3);
+			Knowledge p = w.state(Knowledge.empty(), 3);
 			Posting literal = w.literal();
 			if (!literal.doomed(p)) {
 				continue;
@@ -89,7 +89,7 @@ public class DoomLawsTest {
 			assertThat(new BreadthFirstScheduler<>(Trial.imposed(literal, p)).get())
 					.describedAs("seed %d: doomed posting imposed successfully", seed)
 					.isEmpty();
-			Package grown = w.state(p, 2);
+			Knowledge grown = w.state(p, 2);
 			assertThat(literal.doomed(grown))
 					.describedAs("seed %d: doom lifted by growth", seed)
 					.isTrue();
@@ -110,7 +110,7 @@ public class DoomLawsTest {
 		int exercised = 0;
 		for (long seed = 0; seed < SEEDS; seed++) {
 			World w = new World(seed);
-			Package p = w.state(Package.empty(), 2);
+			Knowledge p = w.state(Knowledge.empty(), 2);
 			Posting literal = w.literal();
 			if (literal.doomed(p)) {
 				exercised++;

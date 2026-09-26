@@ -27,7 +27,7 @@ import org.clauseway.logic.constraints.Constraints;
 import org.clauseway.logic.constraints.Posting;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Matche;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.structures.LList;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -195,7 +195,7 @@ public class OrderConstraintsTest {
 		// on two vars and sheds nothing until grounding
 		Unifiable<Long> x = lvar();
 		Unifiable<Long> y = lvar();
-		Package[] captured = new Package[1];
+		Knowledge[] captured = new Knowledge[1];
 		Goal probe = s -> {
 			captured[0] = s;
 			return Cont.just(s);

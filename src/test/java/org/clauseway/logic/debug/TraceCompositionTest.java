@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.clauseway.logic.aggregate.Aggregate;
 import org.clauseway.logic.constraints.Constraints;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.Tabled;
 import org.clauseway.logic.tabling.Tabling;
 import org.clauseway.logic.unification.structures.LList;
@@ -34,22 +34,22 @@ public class TraceCompositionTest {
 		final List<String> ports = new ArrayList<>();
 
 		@Override
-		public void onCall(String label, Package state) {
+		public void onCall(String label, Knowledge state) {
 			ports.add("Call " + label);
 		}
 
 		@Override
-		public void onExit(String label, Package state) {
+		public void onExit(String label, Knowledge state) {
 			ports.add("Exit " + label);
 		}
 
 		@Override
-		public void onRedo(String label, Package state) {
+		public void onRedo(String label, Knowledge state) {
 			ports.add("Redo " + label);
 		}
 
 		@Override
-		public void onFail(String label, Package state) {
+		public void onFail(String label, Knowledge state) {
 			ports.add("Fail " + label);
 		}
 	}

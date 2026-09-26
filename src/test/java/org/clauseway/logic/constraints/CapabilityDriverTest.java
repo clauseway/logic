@@ -16,7 +16,7 @@ import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.constraints.store.Revision;
 import org.clauseway.logic.constraints.store.Suspension;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.unification.terms.LVar;
@@ -39,14 +39,14 @@ public class CapabilityDriverTest {
 
 	/** A test-only constraint domain that emits configured inferences on every prefix. */
 	private static abstract class EmittingFactor implements Factor<EmittingFactor> {
-		final BiFunction<Prefix, Package, Revision> reaction;
+		final BiFunction<Prefix, Knowledge, Revision> reaction;
 
-		EmittingFactor(BiFunction<Prefix, Package, Revision> reaction) {
+		EmittingFactor(BiFunction<Prefix, Knowledge, Revision> reaction) {
 			this.reaction = reaction;
 		}
 
 		@Override
-		public Fiber<Revision> normalize(Theory<EmittingFactor> incoming, Prefix prefix, Package state) {
+		public Fiber<Revision> normalize(Theory<EmittingFactor> incoming, Prefix prefix, Knowledge state) {
 			return Fiber.done(reaction.apply(prefix, state));
 		}
 
@@ -56,33 +56,33 @@ public class CapabilityDriverTest {
 		}
 
 		@Override
-		public <A> Term<A> reify(Theory<EmittingFactor> incoming, Term<A> unifiable, Renaming renaming, Package p) {
+		public <A> Term<A> reify(Theory<EmittingFactor> incoming, Term<A> unifiable, Renaming renaming, Knowledge p) {
 			return unifiable;
 		}
 
 		@Override
 		public Fiber<Revision> normalize(Theory<EmittingFactor> incoming,
-				LinkedHashSet<Atom<EmittingFactor>> focus, Package state) {
+				LinkedHashSet<Atom<EmittingFactor>> focus, Knowledge state) {
 			return null;
 		}
 	}
 
 	// two distinct classes: the store map is keyed by class
 	private static final class FactorA extends EmittingFactor {
-		FactorA(BiFunction<Prefix, Package, Revision> r) {
+		FactorA(BiFunction<Prefix, Knowledge, Revision> r) {
 			super(r);
 		}
 	}
 
 	private static class FactorB extends EmittingFactor {
-		FactorB(BiFunction<Prefix, Package, Revision> r) {
+		FactorB(BiFunction<Prefix, Knowledge, Revision> r) {
 			super(r);
 		}
 	}
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
-	private static Package root(Packaged... stores) {
-		Package p = Package.empty().withStore(Table.empty());
+	private static Knowledge root(Packaged... stores) {
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 		for (Packaged s : stores) {
 			p = s instanceof Factor
 					? p.putStore(s.getClass(), Constraint.of((Theory) Theory.empty(), (Factor) s))
@@ -96,7 +96,7 @@ public class CapabilityDriverTest {
 		return Revision.updated(Constraint.of((Theory) Theory.empty(), (Factor) replacement));
 	}
 
-	private static long solutions(Package root) {
+	private static long solutions(Knowledge root) {
 		Unifiable<Long> x = lvar();
 		return x.unifies(0L)
 				.solveFrom(root, x, BreadthFirstScheduler::new)
@@ -108,7 +108,7 @@ public class CapabilityDriverTest {
 		// FactorA answers revise with a FactorB replacement: a
 		// cross-family swap the driver must refuse by name - putStore would
 		// otherwise silently overwrite ANOTHER family's factor
-		Package root = root(
+		Knowledge root = root(
 				new FactorA((prefix, state) -> updated(
 						new FactorB((pf, st) -> Revision.unchanged()))));
 
@@ -122,7 +122,7 @@ public class CapabilityDriverTest {
 	public void contradictoryInferredBindingsFailTheBranch() {
 		LVar<Long> q = LVar.<Long> lvar().asVar().get();
 
-		Package root = root(
+		Knowledge root = root(
 				new FactorA((prefix, state) -> updated(new FactorA((pf, st) -> Revision.unchanged()))
 						.withInferred(Prefix.binding(state.substitution(), q, lval(1L)).get())),
 				new FactorB((prefix, state) -> updated(new FactorB((pf, st) -> Revision.unchanged()))
@@ -137,7 +137,7 @@ public class CapabilityDriverTest {
 	public void agreeingInferredBindingsApplyOnce() {
 		LVar<Long> q = LVar.<Long> lvar().asVar().get();
 
-		Package root = root(
+		Knowledge root = root(
 				new FactorA((prefix, state) -> updated(new FactorA((pf, st) -> Revision.unchanged()))
 						.withInferred(Prefix.binding(state.substitution(), q, lval(1L)).get())),
 				new FactorB((prefix, state) -> updated(new FactorB((pf, st) -> Revision.unchanged()))
@@ -149,13 +149,13 @@ public class CapabilityDriverTest {
 	@Test(timeout = 5000)
 	public void agendaNeverLeaksIntoAnswers() {
 		LVar<Long> q = LVar.<Long> lvar().asVar().get();
-		Package[] answer = new Package[1];
+		Knowledge[] answer = new Knowledge[1];
 		Goal probe = s -> {
 			answer[0] = s;
 			return Cont.just(s);
 		};
 
-		Package root = root(
+		Knowledge root = root(
 				new FactorA((prefix, state) -> updated(new FactorA((pf, st) -> Revision.unchanged()))
 						.withInferred(Prefix.binding(state.substitution(), q, lval(1L)).get())));
 
@@ -176,13 +176,13 @@ public class CapabilityDriverTest {
 
 	@Test(timeout = 5000)
 	public void runPayloadSplicesAfterQuiescence() {
-		Package[] seen = new Package[1];
+		Knowledge[] seen = new Knowledge[1];
 		Goal probe = s -> {
 			seen[0] = s;
 			return Cont.just(s);
 		};
 
-		Package root = root(
+		Knowledge root = root(
 				new FactorA((prefix, state) ->
 						updated(new FactorA((pf, st) -> Revision.unchanged()))
 								.withSuspend(Suspension.of(

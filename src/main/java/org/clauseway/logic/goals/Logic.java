@@ -55,7 +55,7 @@ public class Logic {
 				.orElseGet(() -> first.get().toString());
 	}
 
-	public static <T> String formatLList(Package s, Unifiable<LList<T>> first) {
+	public static <T> String formatLList(Knowledge s, Unifiable<LList<T>> first) {
 		Term<LList<T>> walked = s.substitution().walkAll(first);
 		return walked.asVar()
 				.map(v -> "[" + v + "]")
@@ -236,11 +236,11 @@ public class Logic {
 	}
 
 	public static Goal ground(Unifiable<?> v) {
-		return (Package s) -> Cont.defer(() ->
+		return (Knowledge s) -> Cont.defer(() ->
 				MiniKanren.walkAll(s.substitution(), v)
 						// isVal, not asVal presence: a NULL-bound term is ground
 						.map(u -> u.isVal() ?
-								Cont.<Package, Nothing> just(s) :
+								Cont.<Knowledge, Nothing> just(s) :
 								k -> Fiber.done(Nothing.nothing())));
 	}
 

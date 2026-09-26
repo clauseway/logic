@@ -11,7 +11,7 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -55,7 +55,7 @@ public class TabledUnderNeqTest {
 		// the constrained call's master runs FROM THE KEY (≠2 restated), so
 		// its cache holds only 1; the unconstrained call is its own entry
 		Tabled<Tuple1<Unifiable<Integer>>> gen = oneOrTwo();
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		Unifiable<Integer> x = lvar();
 		List<Integer> constrained = exclude(x.unifies(lval(2)))
@@ -80,7 +80,7 @@ public class TabledUnderNeqTest {
 		// transcribed records are canonical: two INDEPENDENT callers under a
 		// same-shaped disequality produce the same key and share the entry
 		Tabled<Tuple1<Unifiable<Integer>>> gen = oneOrTwo();
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		Unifiable<Integer> u = lvar();
 		assertThat(exclude(u.unifies(lval(5)))

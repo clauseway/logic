@@ -13,7 +13,7 @@ import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.logic.goals.optimizer.Barrier;
 import org.clauseway.logic.tabling.conditions.Condition;
@@ -191,7 +191,7 @@ public class Tabling {
 											"a tabled call cannot become master under parked suspensions: "
 													+ "the call key cannot see them and the body must not inherit them");
 								}
-								Package bodyPkg = stripConstraints(table.bodyState(callerPkg));
+								Knowledge bodyPkg = stripConstraints(table.bodyState(callerPkg));
 								// the master's goal: the key re-imposed at the live
 								// anchor, then the body — the same restate delivery
 								// uses; its image half re-unifies already-bound args
@@ -216,7 +216,7 @@ public class Tabling {
 	 * execution is always at-or-more-bound than pricing, and a more-bound
 	 * variant emits a subset of the priced variant's answers.
 	 */
-	private static long tabledOrder(Package p, Object relation, Unifiable<?> argsTerm) {
+	private static long tabledOrder(Knowledge p, Object relation, Unifiable<?> argsTerm) {
 		return p.getStores().get(Table.class)
 				.map(Table.class::cast)
 				.map(table -> {
@@ -233,7 +233,7 @@ public class Tabling {
 	}
 
 	/** Remove every constraint-store factor: absence is ⊤, posting re-registers. */
-	private static Package stripConstraints(Package pkg) {
+	private static Knowledge stripConstraints(Knowledge pkg) {
 		return pkg.getStores().toJavaStream()
 				.filter(entry -> entry._2 instanceof Constraint)
 				.reduce(pkg, (p, entry) -> p.withoutStore(entry._1),
@@ -250,7 +250,7 @@ public class Tabling {
 	private static Fiber<Nothing> produce(
 			TableEntry<Object> entry,
 			Goal goal,
-			Package bodyPkg,
+			Knowledge bodyPkg,
 			Unifiable<?> argsTerm,
 			Table table,
 			Emitter<JoinMap<Reified<?>, Object>> emit) {
@@ -367,7 +367,7 @@ public class Tabling {
 
 	private static Fiber<Nothing> deliverAtom(TableEntry<Object> entry, Reader reader,
 			Reified<?> term, Residues residues, Object cellValue) {
-		Fiber.Fn<Package, Nothing> k = reader.getContinuation();
+		Fiber.Fn<Knowledge, Nothing> k = reader.getContinuation();
 		return Residues.restate(term, residues, reader.getArgsTerm())
 				.apply(reader.getPkg())
 				// streaming ⊗s the cell value in; closed records the loop

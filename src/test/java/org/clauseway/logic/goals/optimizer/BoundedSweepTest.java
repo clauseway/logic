@@ -15,7 +15,7 @@ import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.finitedomain.FiniteDomain;
 import org.clauseway.logic.finitedomain.Longs;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.functional.tuples.Tuple;
@@ -33,7 +33,7 @@ public class BoundedSweepTest {
 		AtomicLong spawns;
 
 		@Override
-		public Cont<Package, Nothing> apply(Package s) {
+		public Cont<Knowledge, Nothing> apply(Knowledge s) {
 			spawns.incrementAndGet();
 			return Cont.just(s);
 		}

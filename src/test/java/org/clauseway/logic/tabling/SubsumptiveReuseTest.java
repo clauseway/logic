@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.optimizer.Bounded;
 import org.clauseway.logic.tabling.table.Call;
 import org.clauseway.logic.tabling.table.Table;
@@ -93,7 +93,7 @@ public class SubsumptiveReuseTest {
 	@Test
 	public void sealedGeneralServesBoundCallsWithoutANewMaster() {
 		Tabled<Tuple2<Unifiable<Integer>, Unifiable<Integer>>> rel = pairs();
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		// run the general call to exhaustion: Tier 1 seals it
 		Unifiable<Integer> x = lvar();
@@ -115,7 +115,7 @@ public class SubsumptiveReuseTest {
 	@Test
 	public void boundCallsPriceTheSealedGeneralsCountAsAnUpperBound() {
 		Tabled<Tuple2<Unifiable<Integer>, Unifiable<Integer>>> rel = pairs();
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		rel.apply(Tuple.of(x, y)).solveFrom(p, y, BreadthFirstScheduler::new).count();
@@ -135,7 +135,7 @@ public class SubsumptiveReuseTest {
 		// live master (its creator CASes immediately), which is what makes
 		// mid-stream joining live as well as sound.
 		Tabled<Tuple2<Unifiable<Integer>, Unifiable<Integer>>> rel = pairs();
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
@@ -152,7 +152,7 @@ public class SubsumptiveReuseTest {
 	@Test
 	public void sealedSpecificDoesNotServeAGeneralCall() {
 		Tabled<Tuple2<Unifiable<Integer>, Unifiable<Integer>>> rel = pairs();
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		// seal the bound variant first
 		Unifiable<Integer> out1 = lvar();

@@ -9,7 +9,7 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.functional.fibers.Fiber;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.nogoods.Nogood;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.vavr.collection.List;
@@ -62,12 +62,12 @@ public class TrialLawsTest {
 		}
 
 		/** A random consistent state: impose a few bindings, skipping failures. */
-		Package state(Package from, int bindings) {
-			Package p = from;
+		Knowledge state(Knowledge from, int bindings) {
+			Knowledge p = from;
 			for (int i = 0; i < bindings; i++) {
-				Fiber<org.clauseway.vavr.collection.List<Package>> imposed =
+				Fiber<org.clauseway.vavr.collection.List<Knowledge>> imposed =
 						Trial.imposed(Posting.bind(var(), lval(r.nextInt(4))), p);
-				List<Package> worlds = new BreadthFirstScheduler<>(imposed).get();
+				List<Knowledge> worlds = new BreadthFirstScheduler<>(imposed).get();
 				if (!worlds.isEmpty()) {
 					p = worlds.head();
 				}
@@ -76,7 +76,7 @@ public class TrialLawsTest {
 		}
 	}
 
-	private static Trial.Outcome outcomeOf(Posting literal, Package p) {
+	private static Trial.Outcome outcomeOf(Posting literal, Knowledge p) {
 		org.clauseway.vavr.control.Option<Trial.Outcome> now = Trial.now(literal, p);
 		assertThat(now.isDefined())
 				.describedAs("binding-shaped literals answer now")
@@ -91,13 +91,13 @@ public class TrialLawsTest {
 		int exercised = 0;
 		for (long seed = 0; seed < SEEDS; seed++) {
 			World w = new World(seed);
-			Package p = w.state(Package.empty(), 2);
+			Knowledge p = w.state(Knowledge.empty(), 2);
 			Posting literal = w.literal();
 			if (!outcomeOf(literal, p).isRefuted()) {
 				continue;
 			}
 			exercised++;
-			Package grown = w.state(p, 2);
+			Knowledge grown = w.state(p, 2);
 			assertThat(outcomeOf(literal, grown).isRefuted())
 					.describedAs("seed %d: refuted lifted by growth", seed)
 					.isTrue();
@@ -112,20 +112,20 @@ public class TrialLawsTest {
 		int exercised = 0;
 		for (long seed = 0; seed < SEEDS; seed++) {
 			World w = new World(seed);
-			Package p = w.state(Package.empty(), 3);
+			Knowledge p = w.state(Knowledge.empty(), 3);
 			Posting literal = w.literal();
 			Trial.Outcome outcome = outcomeOf(literal, p);
 			if (!outcome.isEntailed()) {
 				continue;
 			}
 			exercised++;
-			List<Package> worlds = new BreadthFirstScheduler<>(Trial.imposed(literal, p)).get();
+			List<Knowledge> worlds = new BreadthFirstScheduler<>(Trial.imposed(literal, p)).get();
 			assertThat(worlds).describedAs("seed %d: entailed imposition delivers", seed)
 					.hasSize(1);
 			assertThat(worlds.head().substitution())
 					.describedAs("seed %d: entailed imposition is a no-op", seed)
 					.isEqualTo(p.substitution());
-			Package grown = w.state(p, 2);
+			Knowledge grown = w.state(p, 2);
 			assertThat(outcomeOf(literal, grown).isEntailed())
 					.describedAs("seed %d: entailed lifted by growth", seed)
 					.isTrue();
@@ -141,18 +141,18 @@ public class TrialLawsTest {
 		int exercised = 0;
 		for (long seed = 0; seed < SEEDS; seed++) {
 			World w = new World(seed);
-			Package p = w.state(Package.empty(), 2);
+			Knowledge p = w.state(Knowledge.empty(), 2);
 			Posting literal = w.literal();
 			Trial.Outcome outcome = outcomeOf(literal, p);
 			if (outcome.isRefuted() || outcome.isEntailed()) {
 				continue;
 			}
 			exercised++;
-			List<Package> viaLiteral = new BreadthFirstScheduler<>(Trial.imposed(literal, p)).get();
-			List<Package> viaRemainder = new BreadthFirstScheduler<>(Trial.imposed(outcome.getRemainder(), p)).get();
-			assertThat(viaRemainder.map(Package::substitution))
+			List<Knowledge> viaLiteral = new BreadthFirstScheduler<>(Trial.imposed(literal, p)).get();
+			List<Knowledge> viaRemainder = new BreadthFirstScheduler<>(Trial.imposed(outcome.getRemainder(), p)).get();
+			assertThat(viaRemainder.map(Knowledge::substitution))
 					.describedAs("seed %d: remainder diverged from literal", seed)
-					.isEqualTo(viaLiteral.map(Package::substitution));
+					.isEqualTo(viaLiteral.map(Knowledge::substitution));
 		}
 		assertThat(exercised).describedAs("the law must not pass vacuously")
 				.isGreaterThan(10);

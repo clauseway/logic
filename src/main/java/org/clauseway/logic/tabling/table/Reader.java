@@ -5,7 +5,7 @@ package org.clauseway.logic.tabling.table;
 
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Unifiable;
 import lombok.Value;
 
@@ -22,8 +22,8 @@ import lombok.Value;
  */
 @Value
 public class Reader {
-	Fiber.Fn<Package, Nothing> continuation;
-	Package pkg;
+	Fiber.Fn<Knowledge, Nothing> continuation;
+	Knowledge pkg;
 	Unifiable<?> argsTerm;
 	int cursor;
 
@@ -46,7 +46,7 @@ public class Reader {
 	}
 
 	/** The reader at the call site: cursor at the start of the log. */
-	public static Reader of(Fiber.Fn<Package, Nothing> continuation, Package pkg, Unifiable<?> argsTerm) {
+	public static Reader of(Fiber.Fn<Knowledge, Nothing> continuation, Knowledge pkg, Unifiable<?> argsTerm) {
 		return new Reader(continuation, pkg, argsTerm, 0);
 	}
 

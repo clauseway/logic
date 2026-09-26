@@ -9,7 +9,7 @@ import org.clauseway.logic.constraints.store.Factor;
 import org.clauseway.logic.constraints.store.Renaming;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.LVal;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.terms.Reified;
@@ -43,7 +43,7 @@ public class Constraints {
 		return unifyNc(u, LVal.lval(v));
 	}
 
-	public static <T> Cont<Reified<T>, Nothing> reify(Package s, Term<T> x) {
+	public static <T> Cont<Reified<T>, Nothing> reify(Knowledge s, Term<T> x) {
 		// after renaming every node is an LVal, a Any, or a Constrained wrapper
 		return enforce(s, x).apply(s)
 				.flatMap(Constraints::verifyNoPendingSuspensions)
@@ -62,21 +62,21 @@ public class Constraints {
 	}
 
 	/** Answers may not leave while suspensions pend. */
-	private static Cont<Package, Nothing> verifyNoPendingSuspensions(Package s) {
+	private static Cont<Knowledge, Nothing> verifyNoPendingSuspensions(Knowledge s) {
 		if (Propagation.suspensionsPending(s)) {
 			throw new RuntimeException("Unbound variables during projection");
 		}
 		return Cont.just(s);
 	}
 
-	public static <T> Fiber<Tuple2<Term<T>, Substitutions>> walkAndRename(Term<T> x, Package s1) {
+	public static <T> Fiber<Tuple2<Term<T>, Substitutions>> walkAndRename(Term<T> x, Knowledge s1) {
 		return MiniKanren.walkAll(s1.substitution(), x)
 				.flatMap(v -> MiniKanren.reifyS(Substitutions.empty(), v)
 						.map(r -> Tuple.of(v, r)));
 	}
 
 	/** Every store commits its constraints before {@code x} is reified. */
-	private static <T> Goal enforce(Package p, Term<T> x) {
+	private static <T> Goal enforce(Knowledge p, Term<T> x) {
 		return p.getStores().values().toJavaStream()
 				.filter(Constraint.class::isInstance)
 				.map(entry -> (Factor<?>) ((Constraint<?>) entry).getFactor())
@@ -87,7 +87,7 @@ public class Constraints {
 
 	/** Every store renders its residual constraints into the reified answer. */
 	@SuppressWarnings({"unchecked", "rawtypes"})
-	private static <A> Term<A> reifyConstraints(Package p, Term<A> unifiable, Renaming renaming) {
+	private static <A> Term<A> reifyConstraints(Knowledge p, Term<A> unifiable, Renaming renaming) {
 		return p.getStores().values()
 				.toJavaStream()
 				.filter(Constraint.class::isInstance)

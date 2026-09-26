@@ -18,7 +18,7 @@ import java.util.stream.StreamSupport;
 import lombok.Value;
 
 /**
- * A mode marker riding the {@link Package} of a closed sub-solve. A closed
+ * A mode marker riding the {@link Knowledge} of a closed sub-solve. A closed
  * aggregate's sub-goal is a self-contained program: it may consume ground
  * values from the surrounding search (the walk dissolves a bound variable
  * into its value before any check sees it), but a variable born BEFORE the
@@ -43,7 +43,7 @@ public class Watermark implements Packaged {
 	 * Refuses {@code prefix} when it binds or mentions a variable older than
 	 * the mark carried by {@code pkg}; a no-op for unmarked packages.
 	 */
-	public static void check(Package pkg, Prefix prefix) {
+	public static void check(Knowledge pkg, Prefix prefix) {
 		markOn(pkg).forEach(watermark -> {
 			Set<Name<?>> old = new LinkedHashSet<>();
 			for (Tuple2<LVar<?>, Term<?>> binding : prefix.bindings()) {
@@ -70,12 +70,12 @@ public class Watermark implements Packaged {
 	 * read of outer state can refuse, whether the body would run inline or
 	 * park.
 	 */
-	public static void check(Package pkg, Iterable<? extends Term<?>> watched) {
+	public static void check(Knowledge pkg, Iterable<? extends Term<?>> watched) {
 		markOn(pkg).forEach(watermark -> refuseOldFreeNames(pkg, watermark,
 				StreamSupport.stream(watched.spliterator(), false).map(t -> (Term<?>) t)));
 	}
 
-	private static void refuseOldFreeNames(Package pkg, Watermark watermark, Stream<Term<?>> terms) {
+	private static void refuseOldFreeNames(Knowledge pkg, Watermark watermark, Stream<Term<?>> terms) {
 		refuseIfAny(terms.flatMap(term -> pkg.substitution().namesIn(term))
 				.filter(watermark::refuses)
 				.collect(Collectors.toCollection(LinkedHashSet::new)));
@@ -90,7 +90,7 @@ public class Watermark implements Packaged {
 		}
 	}
 
-	private static Option<Watermark> markOn(Package pkg) {
+	private static Option<Watermark> markOn(Knowledge pkg) {
 		return pkg.getStores().get(Watermark.class).map(Watermark.class::cast);
 	}
 

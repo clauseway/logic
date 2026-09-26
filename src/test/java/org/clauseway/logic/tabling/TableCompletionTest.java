@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.functional.fibers.schedulers.ForkJoinScheduler;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.optimizer.Bounded;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.tabling.table.TableEntry;
@@ -39,7 +39,7 @@ public class TableCompletionTest {
 		Tabled<Tuple1<Unifiable<Integer>>> rel = Tabling.define(t -> t.apply(x ->
 				unify(x, lval(1)).or(unify(x, lval(2)))));
 		Unifiable<Integer> out = lvar();
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		assertThat(rel.apply(Tuple.of(out)).solveFrom(p, out, BreadthFirstScheduler::new).count())
 				.isEqualTo(2);
@@ -56,7 +56,7 @@ public class TableCompletionTest {
 							return self.apply(Tuple.of(x, z)).and(edge(z, y));
 						}))));
 		Unifiable<Integer> y = lvar();
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		// path(1, Y) over 1→2→3: answers 2 and 3
 		assertThat(path.apply(Tuple.of(lval(1), y)).solveFrom(p, y, BreadthFirstScheduler::new).count())
@@ -77,7 +77,7 @@ public class TableCompletionTest {
 				Tabling.defineRecursive(self -> t -> t.apply(x ->
 						Goal.defer(() -> self.apply(Tuple.of(x)))));
 		Unifiable<Integer> out = lvar();
-		Package pkg = Package.empty().withStore(Table.empty());
+		Knowledge pkg = Knowledge.empty().withStore(Table.empty());
 
 		assertThat(p.apply(Tuple.of(out)).solveFrom(pkg, out, BreadthFirstScheduler::new).count())
 				.isEqualTo(0);
@@ -95,7 +95,7 @@ public class TableCompletionTest {
 		q[0] = Tabling.define(t -> t.apply(x ->
 				Goal.defer(() -> pRel.apply(Tuple.of(x)))));
 		Unifiable<Integer> out = lvar();
-		Package pkg = Package.empty().withStore(Table.empty());
+		Knowledge pkg = Knowledge.empty().withStore(Table.empty());
 
 		assertThat(pRel.apply(Tuple.of(out)).solveFrom(pkg, out, BreadthFirstScheduler::new).count())
 				.isEqualTo(1);
@@ -114,7 +114,7 @@ public class TableCompletionTest {
 		rels[1] = Tabling.define(t -> t.apply(x ->
 				unify(x, lval(2)).or(Goal.defer(() -> rels[0].apply(t)))));
 		Unifiable<Integer> a = lvar();
-		Package pkg = Package.empty().withStore(Table.empty());
+		Knowledge pkg = Knowledge.empty().withStore(Table.empty());
 
 		Goal query = rels[0].apply(Tuple.of(a)).or(rels[1].apply(Tuple.of(a)));
 		assertThat(query.solveFrom(pkg, a, BreadthFirstScheduler::new).distinct().count())
@@ -136,7 +136,7 @@ public class TableCompletionTest {
 							return edge(x, z).and(self.apply(Tuple.of(z, y)));
 						}))));
 		Unifiable<Integer> y = lvar();
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		assertThat(path.apply(Tuple.of(lval(1), y)).solveFrom(p, y, BreadthFirstScheduler::new).count())
 				.isEqualTo(2);
@@ -158,7 +158,7 @@ public class TableCompletionTest {
 		q[0] = Tabling.define(t -> t.apply(x ->
 				Goal.defer(() -> pRel.apply(Tuple.of(x)))));
 		Unifiable<Integer> out = lvar();
-		Package pkg = Package.empty().withStore(Table.empty());
+		Knowledge pkg = Knowledge.empty().withStore(Table.empty());
 
 		assertThat(pRel.apply(Tuple.of(out)).solveFrom(pkg, out, BreadthFirstScheduler::new).count())
 				.isEqualTo(1);
@@ -173,7 +173,7 @@ public class TableCompletionTest {
 		Tabled<Tuple1<Unifiable<Integer>>> rel = Tabling.define(t -> t.apply(x ->
 				unify(x, lval(5)).or(unify(x, lval(5)))));
 		Unifiable<Integer> out = lvar();
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		assertThat(rel.apply(Tuple.of(out)).solveFrom(p, out, BreadthFirstScheduler::new).count())
 				.isEqualTo(1);
@@ -189,7 +189,7 @@ public class TableCompletionTest {
 				unify(x, lval(1)).or(unify(x, lval(2)))));
 		Unifiable<Integer> out = lvar();
 		Goal call = rel.apply(Tuple.of(out));
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		assertThat(call.solveFrom(p, out, BreadthFirstScheduler::new).count()).isEqualTo(2);
 		assertThat(((Bounded) call).answers(p)).isEqualTo(2);
@@ -204,7 +204,7 @@ public class TableCompletionTest {
 							return self.apply(Tuple.of(x, z)).and(edge(z, y));
 						}))));
 		Unifiable<Integer> y = lvar();
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		assertThat(path.apply(Tuple.of(lval(1), y)).solveFrom(p, y, ForkJoinScheduler::new).count())
 				.isEqualTo(2);
@@ -221,7 +221,7 @@ public class TableCompletionTest {
 							return self.apply(Tuple.of(x, z)).and(edge(z, y));
 						}))));
 		Unifiable<Integer> y = lvar();
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 		path.apply(Tuple.of(lval(1), y)).solveFrom(p, y, BreadthFirstScheduler::new).count();
 
 		assertThat(p.getStore(Table.class).entries())

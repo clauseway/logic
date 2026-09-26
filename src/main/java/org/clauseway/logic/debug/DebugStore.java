@@ -4,7 +4,7 @@ package org.clauseway.logic.debug;
 // ABOUTME: derived state can report box-model ports. A payload, inert to constraint solving.
 
 import org.clauseway.logic.debug.Trace.Tracer;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.vavr.collection.List;
@@ -30,7 +30,7 @@ public class DebugStore implements Packaged {
 		return new DebugStore(tracer, List.empty());
 	}
 
-	public static Option<DebugStore> from(Package pkg) {
+	public static Option<DebugStore> from(Knowledge pkg) {
 		return pkg.getStores().get(DebugStore.class).map(DebugStore.class::cast);
 	}
 

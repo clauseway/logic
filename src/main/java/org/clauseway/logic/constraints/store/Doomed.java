@@ -3,7 +3,7 @@ package org.clauseway.logic.constraints.store;
 // ABOUTME: The refutation capability: an atom that can recognize itself as
 // ABOUTME: born-violated under partial knowledge. Declared, never assumed.
 
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 
 /**
  * Provably failing under the current partial knowledge? A TRUST SURFACE:
@@ -14,5 +14,5 @@ import org.clauseway.logic.goals.Package;
  */
 public interface Doomed {
 
-	boolean doomed(Package state);
+	boolean doomed(Knowledge state);
 }

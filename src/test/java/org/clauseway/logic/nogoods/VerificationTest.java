@@ -20,7 +20,7 @@ import org.clauseway.logic.constraints.store.Renaming;
 import org.clauseway.logic.finitedomain.FiniteDomain;
 import org.clauseway.logic.finitedomain.Longs;
 import java.util.stream.Stream;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.TestPropagators;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -31,15 +31,15 @@ import org.junit.Test;
 
 public class VerificationTest {
 
-	private static Package given(Posting... literals) {
-		Package state = Package.empty();
+	private static Knowledge given(Posting... literals) {
+		Knowledge state = Knowledge.empty();
 		for (Posting literal : literals) {
 			state = new BreadthFirstScheduler<>(Trial.imposed(literal, state)).get().head();
 		}
 		return state;
 	}
 
-	private static Option<List<Nogood>> verified(Package state, Posting... literals) {
+	private static Option<List<Nogood>> verified(Knowledge state, Posting... literals) {
 		return new BreadthFirstScheduler<>(Verification.verify(Stream.of(Nogood.of(literals.length == 1 ?
 				literals[0] : Posting.all(literals))), state)).get();
 	}
@@ -53,7 +53,7 @@ public class VerificationTest {
 		Nogood first = Nogood.of(FiniteDomain.dom(x, Longs.range(0, 6)));
 		Nogood second = Nogood.of(FiniteDomain.dom(x, Longs.range(0, 6)));
 
-		List<Nogood> kept = Verification.pruneSubsumed(List.of(first, second), Package.empty());
+		List<Nogood> kept = Verification.pruneSubsumed(List.of(first, second), Knowledge.empty());
 		assertThat(kept).containsExactly(first, second);
 	}
 
@@ -62,7 +62,7 @@ public class VerificationTest {
 		// x is 5, so x = 3 can never hold: the forbidden conjunction is
 		// refuted, the nogood discards
 		Unifiable<Integer> x = lvar();
-		Package state = given(Posting.bind(x, lval(5)));
+		Knowledge state = given(Posting.bind(x, lval(5)));
 
 		Option<List<Nogood>> verdict = verified(state, Posting.bind(x, lval(3)));
 
@@ -73,7 +73,7 @@ public class VerificationTest {
 	public void anEntailedConjunctionFailsTheBranch() {
 		// x is already 3: the forbidden thing holds — the veto
 		Unifiable<Integer> x = lvar();
-		Package state = given(Posting.bind(x, lval(3)));
+		Knowledge state = given(Posting.bind(x, lval(3)));
 
 		Option<List<Nogood>> verdict = verified(state, Posting.bind(x, lval(3)));
 
@@ -87,7 +87,7 @@ public class VerificationTest {
 		// the human's inheritance ruling, Aug 2026)
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		Package state = given(Posting.bind(y, lval(2)));
+		Knowledge state = given(Posting.bind(y, lval(2)));
 
 		Option<List<Nogood>> verdict = verified(state,
 				Posting.bind(x, lval(1)), Posting.bind(y, lval(2)));
@@ -103,7 +103,7 @@ public class VerificationTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 
-		Option<List<Nogood>> verdict = verified(Package.empty(),
+		Option<List<Nogood>> verdict = verified(Knowledge.empty(),
 				Posting.bind(x, lval(1)), Posting.bind(y, lval(2)));
 
 		Posting forbidden = verdict.get().head().conjunct();
@@ -146,7 +146,7 @@ public class VerificationTest {
 		};
 
 		assertThatThrownBy(() -> new BreadthFirstScheduler<>(Trial.imposed(
-				Propagation.activate(orphan), Package.empty())).get())
+				Propagation.activate(orphan), Knowledge.empty())).get())
 				.isInstanceOf(UnsupportedOperationException.class);
 	}
 
@@ -171,7 +171,7 @@ public class VerificationTest {
 		// trial, not the whole conjunct kept as a blob
 		Unifiable<Integer> x = lvar();
 		Unifiable<Long> y = lvar();
-		Package state = given(Posting.bind(x, lval(3)));
+		Knowledge state = given(Posting.bind(x, lval(3)));
 
 		Option<List<Nogood>> verdict = verified(state,
 				Posting.bind(x, lval(3)),
@@ -189,7 +189,7 @@ public class VerificationTest {
 		// crosses off — the jointness of Neq's whole-record trial
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		Package state = given(Posting.bind(x, lval(2)));
+		Knowledge state = given(Posting.bind(x, lval(2)));
 		Posting alias = Posting.bind(x, y);
 
 		Option<List<Nogood>> verdict = verified(state, alias, Posting.bind(y, lval(2)));

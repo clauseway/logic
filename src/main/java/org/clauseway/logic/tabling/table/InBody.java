@@ -3,7 +3,7 @@ package org.clauseway.logic.tabling.table;
 // ABOUTME: One bit on a body package: this code runs inside some tabled call's body.
 // ABOUTME: The delivery boundary - constrained answers stream inside it, seal-gate outside.
 
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 
 /**
@@ -24,7 +24,7 @@ final class InBody implements Packaged {
 	private InBody() {
 	}
 
-	static boolean on(Package pkg) {
+	static boolean on(Knowledge pkg) {
 		return pkg.getStores().get(InBody.class).isDefined();
 	}
 

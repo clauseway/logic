@@ -13,23 +13,23 @@ import lombok.Value;
 
 @Value
 @RequiredArgsConstructor(access = AccessLevel.PUBLIC, staticName = "of")
-public class Package {
+public class Knowledge {
 
 	Substitutions substitutions;
 
 	LinkedHashMap<Class<? extends Packaged>, Packaged> stores;
 
-	public static Package empty() {
-		return Package.of(Substitutions.empty(), LinkedHashMap.empty());
+	public static Knowledge empty() {
+		return Knowledge.of(Substitutions.empty(), LinkedHashMap.empty());
 	}
 
-	public static Package of(HashMap<Name<?>, Term<?>> substitutions,
+	public static Knowledge of(HashMap<Name<?>, Term<?>> substitutions,
 			LinkedHashMap<Class<? extends Packaged>, Packaged> stores) {
-		return Package.of(Substitutions.of(substitutions.toJavaMap()), stores);
+		return Knowledge.of(Substitutions.of(substitutions.toJavaMap()), stores);
 	}
 
-	public Package withSubstitutions(Substitutions s) {
-		return Package.of(s, stores);
+	public Knowledge withSubstitutions(Substitutions s) {
+		return Knowledge.of(s, stores);
 	}
 
 	/** Renders a value for a trace label — a {@link Term} is deep-walked to its current bindings. */
@@ -50,25 +50,25 @@ public class Package {
 		return substitutions.size();
 	}
 
-	public Package withStore(Packaged empty) {
+	public Knowledge withStore(Packaged empty) {
 		if (stores.get(empty.getClass()).isDefined()) {
 			return this;
 		} else {
-			return Package.of(substitutions, stores.put(empty.getClass(), empty));
+			return Knowledge.of(substitutions, stores.put(empty.getClass(), empty));
 		}
 	}
 
-	public Package putStore(Packaged store) {
-		return Package.of(substitutions, stores.put(store.getClass(), store));
+	public Knowledge putStore(Packaged store) {
+		return Knowledge.of(substitutions, stores.put(store.getClass(), store));
 	}
 
 	/** The keyed put — for entries whose key is not their own class. */
-	public Package putStore(Class<? extends Packaged> key, Packaged store) {
-		return Package.of(substitutions, stores.put(key, store));
+	public Knowledge putStore(Class<? extends Packaged> key, Packaged store) {
+		return Knowledge.of(substitutions, stores.put(key, store));
 	}
 
-	public Package withoutStore(Class<? extends Packaged> cls) {
-		return Package.of(substitutions, stores.remove(cls));
+	public Knowledge withoutStore(Class<? extends Packaged> cls) {
+		return Knowledge.of(substitutions, stores.remove(cls));
 	}
 
 	/** The payload registered under {@code cls}; throws when absent. */
@@ -81,10 +81,10 @@ public class Package {
 
 	/** Applies {@code f} to the payload registered under {@code cls}; unchanged when absent. */
 	@SuppressWarnings("unchecked")
-	public <T extends Packaged> Package updateStore(Class<T> cls, UnaryOperator<T> f) {
+	public <T extends Packaged> Knowledge updateStore(Class<T> cls, UnaryOperator<T> f) {
 		return stores.get(cls)
 				.map(s -> (Packaged) f.apply((T) s))
-				.map(s -> Package.of(substitutions, stores.put(cls, s)))
+				.map(s -> Knowledge.of(substitutions, stores.put(cls, s)))
 				.getOrElse(this);
 	}
 }

@@ -17,7 +17,7 @@ import org.clauseway.logic.aggregate.Aggregate;
 import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.Tabling;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -40,7 +40,7 @@ public class OrderingOptimizerTest {
 		}
 
 		@Override
-		public Cont<Package, Nothing> apply(Package s) {
+		public Cont<Knowledge, Nothing> apply(Knowledge s) {
 			return Cont.just(s);
 		}
 	}
@@ -58,12 +58,12 @@ public class OrderingOptimizerTest {
 		}
 
 		@Override
-		public long answers(Package p) {
+		public long answers(Knowledge p) {
 			return 1;
 		}
 
 		@Override
-		public Cont<Package, Nothing> apply(Package s) {
+		public Cont<Knowledge, Nothing> apply(Knowledge s) {
 			return Cont.just(s);
 		}
 	}

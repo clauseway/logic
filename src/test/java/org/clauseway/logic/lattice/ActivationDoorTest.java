@@ -15,7 +15,7 @@ import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.constraints.store.Atom;
 import org.clauseway.logic.constraints.store.Renaming;
 import org.clauseway.logic.constraints.store.Theory;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.LatticeFactorTest.FlatConstraints;
 import org.clauseway.logic.lattice.LatticeFactorTest.FlatSet;
 import org.clauseway.logic.unification.terms.Term;
@@ -34,8 +34,8 @@ public class ActivationDoorTest {
 
 	@Test
 	public void activationSeedsTheAbsentFamilyFromTheAtomsEmpty() {
-		Package state = new BreadthFirstScheduler<>(Trial.imposed(
-				Propagation.activate(on(X, 1, 2)), Package.empty())).get().head();
+		Knowledge state = new BreadthFirstScheduler<>(Trial.imposed(
+				Propagation.activate(on(X, 1, 2)), Knowledge.empty())).get().head();
 
 		Theory<FlatConstraints> theory = Constraint.in(state, FlatConstraints.class).get().getTheory();
 		assertThat(FlatConstraints.empty().getValue(theory, (Term<?>) X).get()).isEqualTo(FlatSet.of(1, 2));
@@ -46,10 +46,10 @@ public class ActivationDoorTest {
 		// the statement covering guard: the resident already carries the
 		// atom's knowledge — the door's meet returns the receiver itself,
 		// nothing enqueues, the package is the SAME object
-		Package seeded = new BreadthFirstScheduler<>(Trial.imposed(
-				Propagation.activate(on(X, 1, 2)), Package.empty())).get().head();
+		Knowledge seeded = new BreadthFirstScheduler<>(Trial.imposed(
+				Propagation.activate(on(X, 1, 2)), Knowledge.empty())).get().head();
 
-		Package again = new BreadthFirstScheduler<>(Trial.imposed(
+		Knowledge again = new BreadthFirstScheduler<>(Trial.imposed(
 				Propagation.activate(on(X, 1, 2, 3)), seeded)).get().head();
 
 		assertThat(again).isSameAs(seeded);
@@ -59,9 +59,9 @@ public class ActivationDoorTest {
 	public void doomIsReadThroughTheDeclaredCapability() {
 		// Imposition declares Doomed: the door wires the atom's own check
 		// into the statement — a ground target the value refuses is doomed
-		assertThat(Propagation.activate(on(lval(5), 1, 2)).doomed(Package.empty()))
+		assertThat(Propagation.activate(on(lval(5), 1, 2)).doomed(Knowledge.empty()))
 				.isTrue();
-		assertThat(Propagation.activate(on(lval(1), 1, 2)).doomed(Package.empty()))
+		assertThat(Propagation.activate(on(lval(1), 1, 2)).doomed(Knowledge.empty()))
 				.isFalse();
 	}
 
@@ -94,6 +94,6 @@ public class ActivationDoorTest {
 			}
 		};
 
-		assertThat(Propagation.activate(plain).doomed(Package.empty())).isFalse();
+		assertThat(Propagation.activate(plain).doomed(Knowledge.empty())).isFalse();
 	}
 }

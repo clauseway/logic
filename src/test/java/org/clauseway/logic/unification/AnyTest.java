@@ -5,7 +5,7 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.vavr.collection.HashMap;
 import org.clauseway.logic.unification.terms.Any;
@@ -50,7 +50,7 @@ public class AnyTest {
 	@Test
 	public void shouldWalkToItself() {
 		Any<Integer> any = Any.of(0);
-		assertThat(Package.empty().walk(any)).isSameAs(any);
+		assertThat(Knowledge.empty().walk(any)).isSameAs(any);
 	}
 
 	@Test
@@ -58,7 +58,7 @@ public class AnyTest {
 		// a var bound to a reified var resolves to it and stops
 		Unifiable<Integer> x = lvar();
 		Any<Integer> any = Any.of(0);
-		Package s = Package.empty()
+		Knowledge s = Knowledge.empty()
 				.withSubstitutions(Substitutions.of(Collections.singletonMap(x.getVar(), any)));
 
 		assertThat(s.walk(x)).isSameAs(any);

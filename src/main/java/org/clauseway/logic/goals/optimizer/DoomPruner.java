@@ -9,7 +9,7 @@ import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.NamedGoal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Value;
@@ -27,18 +27,18 @@ import lombok.Value;
  */
 public class DoomPruner implements Optimizer {
 
-	private final Package bound;
+	private final Knowledge bound;
 
 	public DoomPruner() {
-		this(Package.empty());
+		this(Knowledge.empty());
 	}
 
-	private DoomPruner(Package bound) {
+	private DoomPruner(Knowledge bound) {
 		this.bound = bound;
 	}
 
 	@Override
-	public Optimizer with(Package p) {
+	public Optimizer with(Knowledge p) {
 		return new DoomPruner(p);
 	}
 

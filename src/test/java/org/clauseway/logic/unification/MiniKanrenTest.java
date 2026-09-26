@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.Utils;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.functional.tuples.Tuple2;
 import org.clauseway.functional.tuples.Tuple3;
@@ -369,7 +369,7 @@ public class MiniKanrenTest {
 						.or(unify(x, y), unify(x, 3), unify(y, 4))
 						.or(unify(x, y), unify(x, 3))
 						.or(unify(x, y), unify(x, 3), unify(y, 3))
-						.apply(Package.empty())
+						.apply(Knowledge.empty())
 						.map(s -> MiniKanren.reify(s.substitution(), lval(Tuple.of(x, y))).ground()));
 		Assertions.assertThat(result.get(0).get())
 				.isEqualTo(Tuple.of(lval(2), lval(2)));

@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.optimizer.Bounded;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -28,7 +28,7 @@ public class TabledCallPricingTest {
 	@Test
 	public void incompleteEntryPricesUnbounded() {
 		Goal call = smallRelation().apply(Tuple.of(lvar()));
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 		assertThat(((Bounded) call).answers(p)).isEqualTo(Long.MAX_VALUE);
 	}
 
@@ -37,7 +37,7 @@ public class TabledCallPricingTest {
 		Tabled<Tuple1<Unifiable<Integer>>> rel = smallRelation();
 		Unifiable<Integer> out = lvar();
 		Goal call = rel.apply(Tuple.of(out));
-		Package p = Package.empty().withStore(Table.empty());
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		// run the relation to exhaustion in this package's table: the full
 		// drain seals the entries through completion detection
@@ -49,6 +49,6 @@ public class TabledCallPricingTest {
 	@Test
 	public void withoutATableThePriceStaysUnbounded() {
 		Goal call = smallRelation().apply(Tuple.of(lvar()));
-		assertThat(((Bounded) call).answers(Package.empty())).isEqualTo(Long.MAX_VALUE);
+		assertThat(((Bounded) call).answers(Knowledge.empty())).isEqualTo(Long.MAX_VALUE);
 	}
 }

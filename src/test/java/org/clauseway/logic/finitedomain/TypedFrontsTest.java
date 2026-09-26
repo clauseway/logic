@@ -13,7 +13,7 @@ import org.clauseway.logic.Utils;
 import org.clauseway.logic.constraints.Posting;
 import org.clauseway.logic.constraints.Trial;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.functional.tuples.Tuple;
@@ -143,8 +143,8 @@ public class TypedFrontsTest {
 		// positions typed differently — a date, a day count, a date
 		Unifiable<LocalDate> due = lvar();
 
-		Package solved = imposed(Dates.addo(
-				lval(LocalDate.of(2026, 1, 1)), lval(14L), due), Package.empty());
+		Knowledge solved = imposed(Dates.addo(
+				lval(LocalDate.of(2026, 1, 1)), lval(14L), due), Knowledge.empty());
 
 		Assertions.assertThat(solved.walk(due).get()).isEqualTo(LocalDate.of(2026, 1, 15));
 	}
@@ -154,8 +154,8 @@ public class TypedFrontsTest {
 		// the between reading: two dates determine the day count
 		Unifiable<Long> days = lvar();
 
-		Package solved = imposed(Dates.addo(
-				lval(LocalDate.of(2026, 1, 1)), days, lval(LocalDate.of(2026, 1, 15))), Package.empty());
+		Knowledge solved = imposed(Dates.addo(
+				lval(LocalDate.of(2026, 1, 1)), days, lval(LocalDate.of(2026, 1, 15))), Knowledge.empty());
 
 		Assertions.assertThat(solved.walk(days).get()).isEqualTo(14L);
 	}
@@ -164,8 +164,8 @@ public class TypedFrontsTest {
 	public void dateAddoComputesTheStart() {
 		Unifiable<LocalDate> day = lvar();
 
-		Package solved = imposed(Dates.addo(
-				day, lval(14L), lval(LocalDate.of(2026, 1, 15))), Package.empty());
+		Knowledge solved = imposed(Dates.addo(
+				day, lval(14L), lval(LocalDate.of(2026, 1, 15))), Knowledge.empty());
 
 		Assertions.assertThat(solved.walk(day).get()).isEqualTo(LocalDate.of(2026, 1, 1));
 	}
@@ -176,11 +176,11 @@ public class TypedFrontsTest {
 		Unifiable<LocalDate> day = lvar();
 		Unifiable<Long> len = lvar();
 		Unifiable<LocalDate> due = lvar();
-		Package p = imposed(dom(day, Dates.interval(
-				LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 5))), Package.empty());
+		Knowledge p = imposed(dom(day, Dates.interval(
+				LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 5))), Knowledge.empty());
 		p = imposed(dom(len, Longs.interval(10, 14)), p);
 
-		Package minted = imposed(Dates.addo(day, len, due), p);
+		Knowledge minted = imposed(Dates.addo(day, len, due), p);
 
 		Assertions.assertThat(FiniteDomainConstraints.getDom(minted, due.getVar()).get())
 				.isEqualTo(Dates.interval(LocalDate.of(2026, 1, 11), LocalDate.of(2026, 1, 19)));
@@ -190,18 +190,18 @@ public class TypedFrontsTest {
 	public void dateAddoVerifiesAGroundTriple() {
 		Assertions.assertThat(worlds(Dates.addo(
 				lval(LocalDate.of(2026, 1, 1)), lval(14L), lval(LocalDate.of(2026, 1, 15))),
-				Package.empty())).hasSize(1);
+				Knowledge.empty())).hasSize(1);
 		Assertions.assertThat(worlds(Dates.addo(
 				lval(LocalDate.of(2026, 1, 1)), lval(14L), lval(LocalDate.of(2026, 1, 16))),
-				Package.empty())).isEmpty();
+				Knowledge.empty())).isEmpty();
 	}
 
 	@Test
 	public void instantAddoShiftsByDuration() {
 		Unifiable<Instant> later = lvar();
 
-		Package solved = imposed(Instants.addo(
-				lval(Instant.EPOCH), lval(Duration.ofHours(2)), later), Package.empty());
+		Knowledge solved = imposed(Instants.addo(
+				lval(Instant.EPOCH), lval(Duration.ofHours(2)), later), Knowledge.empty());
 
 		Assertions.assertThat(solved.walk(later).get())
 				.isEqualTo(Instant.parse("1970-01-01T02:00:00Z"));
@@ -226,9 +226,9 @@ public class TypedFrontsTest {
 		// tight bounds make [2+3, 2+3] a point, and the store's collapse
 		// infers the binding — no labelling, no surviving constraint
 		Unifiable<Integer> c = lvar();
-		Package p = imposed(dom(c, Ints.interval(0, 100)), Package.empty());
+		Knowledge p = imposed(dom(c, Ints.interval(0, 100)), Knowledge.empty());
 
-		Package summed = imposed(Ints.addo(lval(2), lval(3), c), p);
+		Knowledge summed = imposed(Ints.addo(lval(2), lval(3), c), p);
 
 		Assertions.assertThat(summed.walk(c).get()).isEqualTo(5);
 		Assertions.assertThat(FiniteDomainConstraints.getConstraints(summed)).isEmpty();
@@ -238,9 +238,9 @@ public class TypedFrontsTest {
 	public void addoComputesBackwardsFromSumAndAddend() {
 		// the same functional dependency read backwards: 2 + b = 7
 		Unifiable<Integer> b = lvar();
-		Package p = imposed(dom(b, Ints.interval(0, 100)), Package.empty());
+		Knowledge p = imposed(dom(b, Ints.interval(0, 100)), Knowledge.empty());
 
-		Package solved = imposed(Ints.addo(lval(2), b, lval(7)), p);
+		Knowledge solved = imposed(Ints.addo(lval(2), b, lval(7)), p);
 
 		Assertions.assertThat(solved.walk(b).get()).isEqualTo(5);
 	}
@@ -252,10 +252,10 @@ public class TypedFrontsTest {
 		Unifiable<Integer> a = lvar();
 		Unifiable<Integer> b = lvar();
 		Unifiable<Integer> c = lvar();
-		Package p = imposed(dom(a, Ints.interval(0, 5)), Package.empty());
+		Knowledge p = imposed(dom(a, Ints.interval(0, 5)), Knowledge.empty());
 		p = imposed(dom(b, Ints.interval(0, 5)), p);
 
-		Package minted = imposed(Ints.addo(a, b, c), p);
+		Knowledge minted = imposed(Ints.addo(a, b, c), p);
 
 		Assertions.assertThat(FiniteDomainConstraints.getDom(minted, c.getVar()).get())
 				.isEqualTo(Ints.interval(0, 10));
@@ -267,7 +267,7 @@ public class TypedFrontsTest {
 		// their hulls minted, none was ever declared
 		Unifiable<Integer> a = lvar(), b = lvar(), c = lvar(), d = lvar();
 		Unifiable<Integer> t1 = lvar(), t2 = lvar(), e = lvar();
-		Package p = domained(Package.empty(), a, b, c, d);
+		Knowledge p = domained(Knowledge.empty(), a, b, c, d);
 
 		p = imposed(Ints.addo(a, b, t1), p);
 		p = imposed(Ints.addo(t1, c, t2), p);
@@ -288,7 +288,7 @@ public class TypedFrontsTest {
 		// minting rides the cascade, not the statement order
 		Unifiable<Integer> a = lvar(), b = lvar(), c = lvar(), d = lvar();
 		Unifiable<Integer> t1 = lvar(), t2 = lvar(), e = lvar();
-		Package p = domained(Package.empty(), a, b, c, d);
+		Knowledge p = domained(Knowledge.empty(), a, b, c, d);
 
 		p = imposed(Ints.addo(t2, d, e), p);
 		p = imposed(Ints.addo(t1, c, t2), p);
@@ -330,7 +330,7 @@ public class TypedFrontsTest {
 	}
 
 	@SafeVarargs
-	private static Package domained(Package p, Unifiable<Integer>... vars) {
+	private static Knowledge domained(Knowledge p, Unifiable<Integer>... vars) {
 		for (Unifiable<Integer> v : vars) {
 			p = imposed(dom(v, Ints.interval(0, 5)), p);
 		}
@@ -342,10 +342,10 @@ public class TypedFrontsTest {
 		Unifiable<Integer> u = lvar();
 		Unifiable<Integer> v = lvar();
 		Unifiable<Integer> w = lvar();
-		Package p = imposed(dom(u, Ints.interval(2, 3)), Package.empty());
+		Knowledge p = imposed(dom(u, Ints.interval(2, 3)), Knowledge.empty());
 		p = imposed(dom(v, Ints.interval(2, 3)), p);
 
-		Package minted = imposed(Ints.multo(u, v, w), p);
+		Knowledge minted = imposed(Ints.multo(u, v, w), p);
 
 		Assertions.assertThat(FiniteDomainConstraints.getDom(minted, w.getVar()).get())
 				.isEqualTo(Ints.interval(4, 9));
@@ -358,10 +358,10 @@ public class TypedFrontsTest {
 		Unifiable<Integer> u = lvar();
 		Unifiable<Integer> v = lvar();
 		Unifiable<Integer> w = lvar();
-		Package p = imposed(dom(v, Ints.interval(2, 4)), Package.empty());
+		Knowledge p = imposed(dom(v, Ints.interval(2, 4)), Knowledge.empty());
 		p = imposed(dom(w, Ints.interval(4, 8)), p);
 
-		Package minted = imposed(Ints.multo(u, v, w), p);
+		Knowledge minted = imposed(Ints.multo(u, v, w), p);
 
 		Assertions.assertThat(FiniteDomainConstraints.getDom(minted, u.getVar()).get())
 				.isEqualTo(Ints.interval(1, 4));
@@ -374,10 +374,10 @@ public class TypedFrontsTest {
 		Unifiable<Integer> u = lvar();
 		Unifiable<Integer> v = lvar();
 		Unifiable<Integer> w = lvar();
-		Package p = imposed(dom(v, Ints.interval(-1, 1)), Package.empty());
+		Knowledge p = imposed(dom(v, Ints.interval(-1, 1)), Knowledge.empty());
 		p = imposed(dom(w, Ints.interval(4, 8)), p);
 
-		Package kept = imposed(Ints.multo(u, v, w), p);
+		Knowledge kept = imposed(Ints.multo(u, v, w), p);
 
 		Assertions.assertThat(FiniteDomainConstraints.getDom(kept, u.getVar())).isEmpty();
 		Assertions.assertThat(FiniteDomainConstraints.getConstraints(kept)).hasSize(1);
@@ -386,9 +386,9 @@ public class TypedFrontsTest {
 	@Test
 	public void multoComputesTheProduct() {
 		Unifiable<Integer> w = lvar();
-		Package p = imposed(dom(w, Ints.interval(0, 100)), Package.empty());
+		Knowledge p = imposed(dom(w, Ints.interval(0, 100)), Knowledge.empty());
 
-		Package solved = imposed(Ints.multo(lval(6), lval(7), w), p);
+		Knowledge solved = imposed(Ints.multo(lval(6), lval(7), w), p);
 
 		Assertions.assertThat(solved.walk(w).get()).isEqualTo(42);
 		Assertions.assertThat(FiniteDomainConstraints.getConstraints(solved)).isEmpty();
@@ -397,9 +397,9 @@ public class TypedFrontsTest {
 	@Test
 	public void divoBindsTheExactQuotient() {
 		Unifiable<Integer> x = lvar();
-		Package p = imposed(dom(x, Ints.interval(0, 100)), Package.empty());
+		Knowledge p = imposed(dom(x, Ints.interval(0, 100)), Knowledge.empty());
 
-		Package solved = imposed(Ints.divo(lval(6), lval(3), x), p);
+		Knowledge solved = imposed(Ints.divo(lval(6), lval(3), x), p);
 
 		Assertions.assertThat(solved.walk(x).get()).isEqualTo(2);
 	}
@@ -409,7 +409,7 @@ public class TypedFrontsTest {
 		// no integer x has 2x = 7: dividedExactly's none is a refutation,
 		// discovered at propagation — not after enumerating the domain
 		Unifiable<Integer> x = lvar();
-		Package p = imposed(dom(x, Ints.interval(0, 100)), Package.empty());
+		Knowledge p = imposed(dom(x, Ints.interval(0, 100)), Knowledge.empty());
 
 		Assertions.assertThat(worlds(Ints.divo(lval(7), lval(2), x), p)).isEmpty();
 	}
@@ -419,9 +419,9 @@ public class TypedFrontsTest {
 		// 0·v = 0 holds for every v: subsumed, the domain untouched;
 		// 0·v = 5 holds for none: refuted
 		Unifiable<Integer> v = lvar();
-		Package p = imposed(dom(v, Ints.interval(0, 100)), Package.empty());
+		Knowledge p = imposed(dom(v, Ints.interval(0, 100)), Knowledge.empty());
 
-		Package discharged = imposed(Ints.multo(lval(0), v, lval(0)), p);
+		Knowledge discharged = imposed(Ints.multo(lval(0), v, lval(0)), p);
 		Assertions.assertThat(FiniteDomainConstraints.getConstraints(discharged)).isEmpty();
 		Assertions.assertThat(FiniteDomainConstraints.getDom(discharged, v.getVar()).get())
 				.isEqualTo(Ints.interval(0, 100));
@@ -435,7 +435,7 @@ public class TypedFrontsTest {
 		// binding through the ordinary chokepoint
 		Unifiable<Integer> c = lvar();
 
-		Package summed = imposed(Ints.addo(lval(2), lval(3), c), Package.empty());
+		Knowledge summed = imposed(Ints.addo(lval(2), lval(3), c), Knowledge.empty());
 
 		Assertions.assertThat(summed.walk(c).get()).isEqualTo(5);
 		Assertions.assertThat(FiniteDomainConstraints.getConstraints(summed)).isEmpty();
@@ -446,7 +446,7 @@ public class TypedFrontsTest {
 		// 5 − b = 3 read backwards through the same functional dependency
 		Unifiable<Integer> b = lvar();
 
-		Package solved = imposed(Ints.subtracto(lval(5), b, lval(3)), Package.empty());
+		Knowledge solved = imposed(Ints.subtracto(lval(5), b, lval(3)), Knowledge.empty());
 
 		Assertions.assertThat(solved.walk(b).get()).isEqualTo(2);
 	}
@@ -455,7 +455,7 @@ public class TypedFrontsTest {
 	public void divoBindsABareResult() {
 		Unifiable<Integer> x = lvar();
 
-		Package solved = imposed(Ints.divo(lval(6), lval(3), x), Package.empty());
+		Knowledge solved = imposed(Ints.divo(lval(6), lval(3), x), Knowledge.empty());
 
 		Assertions.assertThat(solved.walk(x).get()).isEqualTo(2);
 	}
@@ -464,7 +464,7 @@ public class TypedFrontsTest {
 	public void divoRefusesABareInexactResult() {
 		Unifiable<Integer> x = lvar();
 
-		Assertions.assertThat(worlds(Ints.divo(lval(7), lval(2), x), Package.empty())).isEmpty();
+		Assertions.assertThat(worlds(Ints.divo(lval(7), lval(2), x), Knowledge.empty())).isEmpty();
 	}
 
 	@Test
@@ -473,7 +473,7 @@ public class TypedFrontsTest {
 		// binding, no surviving constraint
 		Unifiable<Integer> v = lvar();
 
-		Package discharged = imposed(Ints.multo(lval(0), v, lval(0)), Package.empty());
+		Knowledge discharged = imposed(Ints.multo(lval(0), v, lval(0)), Knowledge.empty());
 
 		Assertions.assertThat(discharged.walk(v).asVar().isPresent()).isTrue();
 		Assertions.assertThat(FiniteDomainConstraints.getConstraints(discharged)).isEmpty();
@@ -484,10 +484,10 @@ public class TypedFrontsTest {
 		// [0,1] − {1} = [0,1): the disequality becomes domain knowledge and
 		// the constraint leaves the store instead of watching forever
 		Unifiable<BigDecimal> x = lvar();
-		Package p = imposed(dom(x, BigDecimals.interval(BigDecimal.ZERO, BigDecimal.ONE)),
-				Package.empty());
+		Knowledge p = imposed(dom(x, BigDecimals.interval(BigDecimal.ZERO, BigDecimal.ONE)),
+				Knowledge.empty());
 
-		Package cut = imposed(BigDecimals.separate(x, lval(BigDecimal.ONE)), p);
+		Knowledge cut = imposed(BigDecimals.separate(x, lval(BigDecimal.ONE)), p);
 
 		Domain<BigDecimal> domain = FiniteDomainConstraints.getDom(cut, x.getVar()).get();
 		Assertions.assertThat(domain.contains(BigDecimal.ONE)).isFalse();
@@ -501,24 +501,24 @@ public class TypedFrontsTest {
 		// leaves the domain while x is still wide, not only at ground
 		Unifiable<BigDecimal> x = lvar();
 		BigDecimal cut = new BigDecimal("2.5");
-		Package p = imposed(dom(x, BigDecimals.interval(BigDecimal.ZERO, cut)),
-				Package.empty());
+		Knowledge p = imposed(dom(x, BigDecimals.interval(BigDecimal.ZERO, cut)),
+				Knowledge.empty());
 
-		Package narrowed = imposed(BigDecimals.lss(x, lval(cut)), p);
+		Knowledge narrowed = imposed(BigDecimals.lss(x, lval(cut)), p);
 
 		Domain<BigDecimal> domain = FiniteDomainConstraints.getDom(narrowed, x.getVar()).get();
 		Assertions.assertThat(domain.contains(cut)).isFalse();
 		Assertions.assertThat(domain.contains(new BigDecimal("2.4"))).isTrue();
 	}
 
-	private static Package imposed(Posting posting, Package p) {
-		org.clauseway.vavr.collection.List<Package> worlds = worlds(posting, p);
+	private static Knowledge imposed(Posting posting, Knowledge p) {
+		org.clauseway.vavr.collection.List<Knowledge> worlds = worlds(posting, p);
 		Assertions.assertThat(worlds).hasSize(1);
 		return worlds.head();
 	}
 
 	// org.clauseway.vavr.collection.List: genuine simple-name clash with java.util.List
-	private static org.clauseway.vavr.collection.List<Package> worlds(Posting posting, Package p) {
+	private static org.clauseway.vavr.collection.List<Knowledge> worlds(Posting posting, Knowledge p) {
 		return new BreadthFirstScheduler<>(Trial.imposed(posting, p)).get();
 	}
 

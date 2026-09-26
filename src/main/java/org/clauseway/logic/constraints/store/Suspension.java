@@ -4,7 +4,7 @@ package org.clauseway.logic.constraints.store;
 // ABOUTME: substitution holds. The condition must be monotone: once true, stays true.
 
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.logic.unification.terms.Term;
 import java.util.function.Predicate;
@@ -48,11 +48,11 @@ public final class Suspension {
 		return new Suspension(watched, ripe, body);
 	}
 
-	public boolean isRipe(Package state) {
+	public boolean isRipe(Knowledge state) {
 		return ripe.test(state.substitution());
 	}
 
-	public boolean watchesAny(Package state, Term<?> changed) {
+	public boolean watchesAny(Knowledge state, Term<?> changed) {
 		for (Term<?> w : watched) {
 			if (Watches.matchesStructurally(state.substitution(), w, changed)) {
 				return true;

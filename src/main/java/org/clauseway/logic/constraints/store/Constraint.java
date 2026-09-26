@@ -3,7 +3,7 @@ package org.clauseway.logic.constraints.store;
 // ABOUTME: The package's constraint entry: a theory paired with its interpreter —
 // ABOUTME: knowledge outside the factor, behavior and memo beside it.
 
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.vavr.control.Option;
 import lombok.AccessLevel;
@@ -34,13 +34,13 @@ public class Constraint<S extends Factor<S>> implements Packaged {
 
 	/** The family's entry in {@code pkg} — the residence read. */
 	@SuppressWarnings("unchecked")
-	public static <S extends Factor<S>> Option<Constraint<S>> in(Package pkg, Class<S> family) {
+	public static <S extends Factor<S>> Option<Constraint<S>> in(Knowledge pkg, Class<S> family) {
 		return pkg.getStores().get(family).map(entry -> (Constraint<S>) entry);
 	}
 
 	/** The registration seed: an absent family takes residence with empty knowledge. */
 	@SuppressWarnings({"unchecked", "rawtypes"})
-	public static Package register(Package pkg, Factor<?> factor) {
+	public static Knowledge register(Knowledge pkg, Factor<?> factor) {
 		return pkg.getStores().containsKey(factor.getClass()) ? pkg
 				: pkg.putStore(factor.getClass(),
 				Constraint.of((Theory) Theory.empty(), (Factor) factor));

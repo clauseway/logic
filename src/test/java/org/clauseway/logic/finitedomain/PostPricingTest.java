@@ -7,7 +7,7 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.optimizer.Bounded;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.junit.Test;
@@ -36,6 +36,6 @@ public class PostPricingTest {
 	public void withoutAStoreThePostStaysBlind() {
 		Unifiable<Long> x = lvar();
 		Goal post = FiniteDomain.dom(x, Longs.interval(8, 12));
-		assertThat(((Bounded) post).answers(Package.empty())).isEqualTo(1);
+		assertThat(((Bounded) post).answers(Knowledge.empty())).isEqualTo(1);
 	}
 }

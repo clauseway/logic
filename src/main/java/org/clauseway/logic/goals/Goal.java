@@ -34,7 +34,7 @@ import java.util.stream.StreamSupport;
 /**
  * Represents a goal in a logic programming system.
  * <pre>
- * A goal is essentially a function that takes a state ({@link Package}, representing
+ * A goal is essentially a function that takes a state ({@link Knowledge}, representing
  * substitutions and variable bindings) and returns a continuation ({@link Cont}).
  * This continuation, when run, will produce zero or more resulting states if the goal
  * is satisfied, or indicate failure.
@@ -50,7 +50,7 @@ import java.util.stream.StreamSupport;
  *
  * @author TGa
  */
-public interface Goal extends Function<Package, Cont<Package, Nothing>> {
+public interface Goal extends Function<Knowledge, Cont<Knowledge, Nothing>> {
 
 	/**
 	 * A static factory method that simply returns the provided goal.
@@ -222,7 +222,7 @@ public interface Goal extends Function<Package, Cont<Package, Nothing>> {
 	 * @param label Renders the goal's label from the package it is applied to.
 	 * @return A {@link NamedGoal} whose label is computed per port.
 	 */
-	default Goal named(Function<Package, String> label) {
+	default Goal named(Function<Knowledge, String> label) {
 		return NamedGoal.of(label, this, null);
 	}
 
@@ -248,7 +248,7 @@ public interface Goal extends Function<Package, Cont<Package, Nothing>> {
 	 */
 	static Goal defer(Supplier<Goal> g) {
 		return goal(s -> OptimizerStore.from(s)
-				.map(store -> Cont.<Package, Nothing> defer(() ->
+				.map(store -> Cont.<Knowledge, Nothing> defer(() ->
 						store.rewrite(g.get(), s)
 								.map(body -> body.apply(s))))
 				.getOrElse(() -> g.get().apply(s)))
@@ -302,7 +302,7 @@ public interface Goal extends Function<Package, Cont<Package, Nothing>> {
 	 * This method drives the logic programming computation and produces a stream of results.
 	 *
 	 * The process involves:
-	 * - Applying the current goal to an empty initial state ({@link Package#empty()}).
+	 * - Applying the current goal to an empty initial state ({@link Knowledge#empty()}).
 	 * - For each successful resulting state, reifying (extracting the value of) the {@code out} variable.
 	 * - Using an {@link Scheduler} (provided by the {@code factory}) to manage the execution of the continuations.
 	 * - Streaming the reified values of {@code out} as they are found.
@@ -324,7 +324,7 @@ public interface Goal extends Function<Package, Cont<Package, Nothing>> {
 	default <T> Stream<Reified<T>> solve(
 			Unifiable<T> out,
 			Function<Fiber<Nothing>, Scheduler<Nothing>> factory) {
-		return solveFrom(Package.empty().withStore(Table.empty()), out, factory);
+		return solveFrom(Knowledge.empty().withStore(Table.empty()), out, factory);
 	}
 
 	/**
@@ -336,7 +336,7 @@ public interface Goal extends Function<Package, Cont<Package, Nothing>> {
 		// depth-first so the trace reads in Prolog order: a branch runs to completion
 		// before its siblings, rather than interleaving the ports of concurrent branches.
 		return solveFrom(
-				Package.empty().withStore(Table.empty()).withStore(DebugStore.of(tracer)),
+				Knowledge.empty().withStore(Table.empty()).withStore(DebugStore.of(tracer)),
 				out, DepthFirstScheduler::of);
 	}
 
@@ -347,7 +347,7 @@ public interface Goal extends Function<Package, Cont<Package, Nothing>> {
 	 */
 	default <T> Stream<Reified<T>> solve(Unifiable<T> out, ScopeProfiler profiler) {
 		return solveFrom(
-				Package.empty().withStore(Table.empty()).withStore(ProfilerStore.of()),
+				Knowledge.empty().withStore(Table.empty()).withStore(ProfilerStore.of()),
 				out, fiber -> new BreadthFirstScheduler<>(fiber).withListener(profiler));
 	}
 
@@ -362,7 +362,7 @@ public interface Goal extends Function<Package, Cont<Package, Nothing>> {
 	}
 
 	default <T> Stream<Reified<T>> solveFrom(
-			Package root,
+			Knowledge root,
 			Unifiable<T> out,
 			Function<Fiber<Nothing>, Scheduler<Nothing>> factory) {
 		Deque<Reified<T>> results = new LinkedBlockingDeque<>();
@@ -478,7 +478,7 @@ public interface Goal extends Function<Package, Cont<Package, Nothing>> {
 	 */
 	default <T> Stream<Reified<T>> solve(Unifiable<T> out, Optimizer optimizer) {
 		return new BreadthFirstScheduler<>(accept(optimizer)).get()
-				.solveFrom(Package.empty().putStore(OptimizerStore.of(optimizer)),
+				.solveFrom(Knowledge.empty().putStore(OptimizerStore.of(optimizer)),
 						out, BreadthFirstScheduler::new);
 	}
 

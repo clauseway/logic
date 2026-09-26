@@ -12,7 +12,7 @@ import org.clauseway.logic.finitedomain.capabilities.Discrete;
 import org.clauseway.logic.finitedomain.capabilities.Multiplicative;
 import org.clauseway.logic.finitedomain.domains.Interval;
 import org.clauseway.logic.finitedomain.domains.Singleton;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.Verdict;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.logic.unification.terms.Term;
@@ -55,7 +55,7 @@ public class Operators {
 		return 1;
 	}
 
-	static <T> BiFunction<Array<? extends Term<?>>, Package, Verdict> gated(
+	static <T> BiFunction<Array<? extends Term<?>>, Knowledge, Verdict> gated(
 			Comparator<T> order,
 			Function<Array<VarWithDomain<T>>, Verdict> verdict) {
 		return gated(order, verdict, soleFree -> Verdict.keep());
@@ -69,7 +69,7 @@ public class Operators {
 	 * operands. Any other refusal (two free positions, a dying branch)
 	 * still keeps.
 	 */
-	static <T> BiFunction<Array<? extends Term<?>>, Package, Verdict> gated(
+	static <T> BiFunction<Array<? extends Term<?>>, Knowledge, Verdict> gated(
 			Comparator<T> order,
 			Function<Array<VarWithDomain<T>>, Verdict> verdict,
 			Function<SoleFree<T>, Verdict> computed) {
@@ -77,7 +77,7 @@ public class Operators {
 	}
 
 	/** The gate over per-position orders — an affine schema's positions type differently. */
-	static <T> BiFunction<Array<? extends Term<?>>, Package, Verdict> gated(
+	static <T> BiFunction<Array<? extends Term<?>>, Knowledge, Verdict> gated(
 			IntFunction<Comparator<T>> orderAt,
 			Function<Array<VarWithDomain<T>>, Verdict> verdict,
 			Function<SoleFree<T>, Verdict> computed) {
@@ -112,7 +112,7 @@ public class Operators {
 		}
 	}
 
-	static <T> Option<SoleFree<T>> soleFree(Package p, Array<? extends Term<T>> us,
+	static <T> Option<SoleFree<T>> soleFree(Knowledge p, Array<? extends Term<T>> us,
 			IntFunction<Comparator<T>> orderAt) {
 		List<Option<VarWithDomain<T>>> resolved = new ArrayList<>(us.size());
 		int freeAt = -1;
@@ -170,11 +170,11 @@ public class Operators {
 				Collections.singletonList(VarWithDomain.of(variable, domain))));
 	}
 
-	static <T> Option<Array<VarWithDomain<T>>> letDomain(Package p, Array<? extends Term<T>> us, Comparator<T> order) {
+	static <T> Option<Array<VarWithDomain<T>>> letDomain(Knowledge p, Array<? extends Term<T>> us, Comparator<T> order) {
 		return letDomain(p, us, i -> order);
 	}
 
-	static <T> Option<Array<VarWithDomain<T>>> letDomain(Package p, Array<? extends Term<T>> us,
+	static <T> Option<Array<VarWithDomain<T>>> letDomain(Knowledge p, Array<? extends Term<T>> us,
 			IntFunction<Comparator<T>> orderAt) {
 		// the first domainless position refuses — no walking the rest
 		List<VarWithDomain<T>> resolved = new ArrayList<>(us.size());

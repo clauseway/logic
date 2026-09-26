@@ -11,7 +11,7 @@ import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.constraints.store.Doomed;
 import org.clauseway.logic.constraints.store.Factor;
 import org.clauseway.logic.constraints.store.Renaming;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.vavr.collection.HashSet;
 import org.clauseway.vavr.collection.Traversable;
@@ -60,7 +60,7 @@ public class Imposition<L extends Domain<L>, F extends Factor<F>> implements Ato
 	 */
 	@Override
 	@SuppressWarnings({"unchecked", "rawtypes"})
-	public boolean doomed(Package p) {
+	public boolean doomed(Knowledge p) {
 		Term<?> walked = p.substitution().walk(target);
 		if (walked.isVal()) {
 			return !value.admits(walked.get());
