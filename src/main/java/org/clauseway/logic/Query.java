@@ -12,6 +12,7 @@ import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
+import org.clauseway.logic.unification.terms.Unifiable;
 import java.util.Deque;
 import java.util.Spliterator;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -87,20 +88,39 @@ public final class Query {
 		return goal.apply(root());
 	}
 
+	/** ask about {@code out}, answers tagged with the anchor itself. */
+	public <T> Answers<Unifiable<T>, T> ask(Unifiable<T> out) {
+		return ask(out, out);
+	}
+
+	/** ask about {@code out}, answers tagged {@code token} for routing. */
+	public <R, T> Answers<R, T> ask(R token, Unifiable<T> out) {
+		return new Answers<>(this, token, out);
+	}
+
 	/** The pull harvest of {@link #run}: lazy, closing closes the driver. */
 	public Stream<Knowledge> stream() {
-		Deque<Knowledge> results = new LinkedBlockingDeque<>();
-		Fiber<Nothing> recur = run().run(v -> {
+		return harvest(run(), factory());
+	}
+
+	/** The driver slot's occupant, defaulted. */
+	Function<Fiber<Nothing>, Scheduler<Nothing>> factory() {
+		return driver != null ? driver : BreadthFirstScheduler::new;
+	}
+
+	/** A Cont pulled as a lazy Stream: one element per advance, close closes the driver. */
+	static <A> Stream<A> harvest(Cont<A, Nothing> source,
+			Function<Fiber<Nothing>, Scheduler<Nothing>> factory) {
+		Deque<A> results = new LinkedBlockingDeque<>();
+		Fiber<Nothing> recur = source.run(v -> {
 			results.add(v);
 			return Nothing.nothing();
 		});
-		Function<Fiber<Nothing>, Scheduler<Nothing>> factory =
-				driver != null ? driver : BreadthFirstScheduler::new;
 		Scheduler<Nothing> scheduler = factory.apply(recur);
 
-		Spliterator<Knowledge> spliterator = new Spliterator<Knowledge>() {
+		Spliterator<A> spliterator = new Spliterator<A>() {
 			@Override
-			public boolean tryAdvance(Consumer<? super Knowledge> action) {
+			public boolean tryAdvance(Consumer<? super A> action) {
 				while (results.isEmpty()) {
 					if (scheduler.advance(v -> { })) {
 						// driver done: whatever is buffered is all there will
@@ -116,7 +136,7 @@ public final class Query {
 			}
 
 			@Override
-			public void forEachRemaining(Consumer<? super Knowledge> action) {
+			public void forEachRemaining(Consumer<? super A> action) {
 				// bulk delivery is legal HERE (unlike tryAdvance): drain the
 				// buffer between driver batches without per-element dispatch
 				while (true) {
@@ -133,7 +153,7 @@ public final class Query {
 			}
 
 			@Override
-			public Spliterator<Knowledge> trySplit() {
+			public Spliterator<A> trySplit() {
 				return null;
 			}
 
