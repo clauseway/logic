@@ -1,4 +1,4 @@
-package org.clauseway.logic.tabling;
+package org.clauseway.logic.solving;
 
 // ABOUTME: Laws for the constraint semiring: Condition is a semilattice under ⊕,
 // ABOUTME: and its ring is bounded — 1 ⊕ a = 1 is absorption, so a* = 1.
@@ -13,7 +13,7 @@ import org.clauseway.functional.algebra.laws.SemiringLaws;
 import org.clauseway.functional.algebra.laws.StarLaws;
 import java.util.Arrays;
 import java.util.List;
-import org.clauseway.logic.tabling.conditions.Condition;
+import org.clauseway.logic.solving.Condition;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.clauseway.functional.algebra.CheckedBy;

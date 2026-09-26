@@ -3,10 +3,11 @@ package org.clauseway.logic.tabling.table;
 // ABOUTME: One tabled call's entry: its answer cell (what it has found) and its
 // ABOUTME: production ledger (what is still working for it), behind one facade.
 
+import org.clauseway.logic.solving.Call;
 import org.clauseway.functional.algebra.IdempotentSemiring;
 import org.clauseway.functional.fibers.interpreter.Channel;
-import org.clauseway.logic.tabling.JoinMap;
-import org.clauseway.logic.tabling.conditions.Condition;
+import org.clauseway.logic.solving.JoinMap;
+import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.vavr.collection.Vector;
 import lombok.Getter;

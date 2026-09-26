@@ -1,4 +1,4 @@
-package org.clauseway.logic.tabling;
+package org.clauseway.logic.solving;
 
 // ABOUTME: Join-semilattice laws for JoinMap - the one answer carrier; the min-plus
 // ABOUTME: value fold and the Condition fold are both exercised alongside key dedup.
@@ -12,7 +12,7 @@ import org.clauseway.functional.algebra.laws.SemilatticeLaws;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.functional.tuples.Tuple2;
 import java.util.Arrays;
-import org.clauseway.logic.tabling.conditions.Condition;
+import org.clauseway.logic.solving.Condition;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.clauseway.functional.algebra.CheckedBy;

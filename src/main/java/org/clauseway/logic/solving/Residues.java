@@ -1,4 +1,4 @@
-package org.clauseway.logic.tabling.conditions;
+package org.clauseway.logic.solving;
 
 // ABOUTME: One conjunct of constraint knowledge: per-store factors keyed by store
 // ABOUTME: class - the ⊗-monoid of the constraint ring, with its namespace crossings.

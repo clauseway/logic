@@ -3,6 +3,7 @@ package org.clauseway.logic.tabling.table;
 // ABOUTME: Maps tabled goal calls to their table entries for the duration of one solve.
 // ABOUTME: Rides the package's store map and delegates per-step decisions to its mode.
 
+import org.clauseway.logic.solving.Call;
 import org.clauseway.functional.algebra.BoundedSemiring;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
@@ -11,8 +12,8 @@ import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.logic.tabling.Tabling;
 import org.clauseway.logic.tabling.TablingMode;
-import org.clauseway.logic.tabling.conditions.Condition;
-import org.clauseway.logic.tabling.conditions.Residues;
+import org.clauseway.logic.solving.Condition;
+import org.clauseway.logic.solving.Residues;
 import org.clauseway.logic.tabling.subsumption.SubsumptionMap;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.functional.tuples.Tuple2;

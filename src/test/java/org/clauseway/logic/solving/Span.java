@@ -1,4 +1,4 @@
-package org.clauseway.logic.tabling;
+package org.clauseway.logic.solving;
 
 // ABOUTME: A minimal atom for carrier tests: one closed interval of longs,
 // ABOUTME: meet = intersection - the value algebra without a live solver store.
@@ -9,8 +9,8 @@ import org.clauseway.logic.constraints.store.Atom;
 import org.clauseway.logic.constraints.store.Factor;
 import org.clauseway.logic.constraints.store.Renaming;
 import org.clauseway.logic.constraints.store.Theory;
-import org.clauseway.logic.tabling.conditions.Condition;
-import org.clauseway.logic.tabling.conditions.Residues;
+import org.clauseway.logic.solving.Condition;
+import org.clauseway.logic.solving.Residues;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.vavr.collection.HashMap;
 import org.clauseway.vavr.collection.HashSet;

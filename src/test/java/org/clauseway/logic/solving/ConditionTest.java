@@ -1,12 +1,12 @@
-package org.clauseway.logic.tabling;
+package org.clauseway.logic.solving;
 
 // ABOUTME: Condition's contract: ⊕ is region union in absorption normal form
 // ABOUTME: (dominated drops, dominating evicts, 1 absorbs all), ⊗ is factor meet.
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.clauseway.logic.tabling.conditions.Condition;
-import org.clauseway.logic.tabling.conditions.Residues;
+import org.clauseway.logic.solving.Condition;
+import org.clauseway.logic.solving.Residues;
 import org.junit.Test;
 
 public class ConditionTest {

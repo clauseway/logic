@@ -1,4 +1,4 @@
-package org.clauseway.logic.tabling;
+package org.clauseway.logic.solving;
 
 // ABOUTME: The answer cell's carrier: keys in arrival order, a semiring-folded value
 // ABOUTME: per key, and the append-only log of ascents both reader kinds cursor.

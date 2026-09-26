@@ -1,11 +1,11 @@
-package org.clauseway.logic.tabling;
+package org.clauseway.logic.solving;
 
 // ABOUTME: Residues' contract: ⊗ is pointwise factor meet with TRUE as identity,
 // ABOUTME: leq is containment (narrower entails wider), absorption flips with meet.
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.clauseway.logic.tabling.conditions.Residues;
+import org.clauseway.logic.solving.Residues;
 import org.junit.Test;
 
 public class ResiduesTest {

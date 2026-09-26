@@ -1,11 +1,8 @@
-package org.clauseway.logic.tabling.table;
+package org.clauseway.logic.solving;
 
 // ABOUTME: The cache key of a tabled call: relation identity, reified arguments,
 // ABOUTME: and per-store residues — the call's REGION, not just its pattern.
 
-import org.clauseway.logic.tabling.Tabled;
-import org.clauseway.logic.tabling.conditions.Residues;
-import org.clauseway.logic.tabling.subsumption.Subsumption;
 import org.clauseway.logic.unification.terms.Reified;
 import lombok.Value;
 
@@ -14,7 +11,7 @@ import lombok.Value;
  * knowledge.
  *
  * The relation slot is generic: {@code R} is any identity token naming the
- * relation — a goal's {@link Tabled}, or any other canonical identity a
+ * relation — a goal's {@code Tabled} handle, or any other canonical identity a
  * caller keys its tables by. Two calls are equal when they apply the same
  * relation (equal tokens name one relation) to alpha-equivalent arguments — reification makes
  * plain equality decide variance — under EQUAL residues: each projecting

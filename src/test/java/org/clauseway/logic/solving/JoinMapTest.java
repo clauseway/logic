@@ -1,4 +1,4 @@
-package org.clauseway.logic.tabling;
+package org.clauseway.logic.solving;
 
 // ABOUTME: JoinMap's contract: fresh keys append in arrival order, known keys fold
 // ABOUTME: by the semiring, and the log records exactly the arrivals that ascended.
@@ -9,7 +9,7 @@ import org.clauseway.functional.algebra.Semirings;
 import org.clauseway.functional.tuples.Tuple;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.clauseway.logic.tabling.conditions.Condition;
+import org.clauseway.logic.solving.Condition;
 import org.junit.Test;
 
 public class JoinMapTest {

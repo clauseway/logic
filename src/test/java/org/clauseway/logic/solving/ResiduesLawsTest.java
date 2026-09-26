@@ -1,4 +1,4 @@
-package org.clauseway.logic.tabling;
+package org.clauseway.logic.solving;
 
 // ABOUTME: Lattice laws for Residues - the ⊗-monoid of the constraint ring: meet
 // ABOUTME: is ACI with leq reversing accumulation, the store convention lifted.
@@ -8,7 +8,7 @@ import org.clauseway.functional.laws.LawsFor;
 import org.clauseway.functional.algebra.laws.SemilatticeLaws;
 import java.util.Arrays;
 import java.util.List;
-import org.clauseway.logic.tabling.conditions.Residues;
+import org.clauseway.logic.solving.Residues;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.clauseway.functional.algebra.CheckedBy;

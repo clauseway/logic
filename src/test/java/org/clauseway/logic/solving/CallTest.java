@@ -1,10 +1,12 @@
-package org.clauseway.logic.tabling;
+package org.clauseway.logic.solving;
 
+import org.clauseway.logic.tabling.Tabling;
+import org.clauseway.logic.tabling.Tabled;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.tabling.table.TableEntry;
 import org.clauseway.logic.unification.terms.Any;

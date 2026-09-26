@@ -1,4 +1,4 @@
-package org.clauseway.logic.tabling.subsumption;
+package org.clauseway.logic.solving;
 
 // ABOUTME: Herbrand pattern subsumption over reified terms: one-way instance
 // ABOUTME: matching, anys binding consistently — the retrieval's precision layer.

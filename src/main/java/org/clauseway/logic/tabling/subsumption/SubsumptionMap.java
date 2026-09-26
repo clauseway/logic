@@ -3,6 +3,7 @@ package org.clauseway.logic.tabling.subsumption;
 // ABOUTME: Term-indexed retrieval of stored patterns that GENERALIZE a query:
 // ABOUTME: a discrimination trie prunes candidates, Subsumption.subsumes decides.
 
+import org.clauseway.logic.solving.Subsumption;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.terms.Term;

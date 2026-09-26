@@ -3,6 +3,7 @@ package org.clauseway.logic.tabling;
 // ABOUTME: Tabled evaluation of logic goals: answers are cached per call and shared,
 // ABOUTME: which makes left-recursive and mutually recursive predicates terminate.
 
+import org.clauseway.logic.solving.JoinMap;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 
 import org.clauseway.functional.Exceptions;
@@ -16,9 +17,9 @@ import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.logic.goals.optimizer.Barrier;
-import org.clauseway.logic.tabling.conditions.Condition;
-import org.clauseway.logic.tabling.conditions.Residues;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Condition;
+import org.clauseway.logic.solving.Residues;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.tabling.table.Reader;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.tabling.table.TableEntry;
