@@ -4,6 +4,10 @@ package org.clauseway.logic;
 // ABOUTME: fill-absent defaults, runs a goal against it, and hands back the
 // ABOUTME: knowledge it implies -- the Cont face primitive, Stream the harvest.
 
+import java.util.stream.Collectors;
+import org.clauseway.functional.algebra.BoundedSemiring;
+import org.clauseway.functional.algebra.ClosedSemiring;
+import org.clauseway.functional.algebra.Semiring;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.functional.fibers.Fiber;
@@ -12,6 +16,7 @@ import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
+import org.clauseway.logic.weight.SemiringStore;
 import java.util.Arrays;
 import org.clauseway.logic.unification.terms.Unifiable;
 import java.util.Deque;
@@ -49,39 +54,83 @@ public final class Query {
 	private final Knowledge from;
 	private final Table table;
 	private final Function<Fiber<Nothing>, Scheduler<Nothing>> driver;
+	private final Table ringTable;
+	private final SemiringStore one;
 
 	public static Query of(Goal goal) {
-		return new Query(goal, null, null, null);
+		return new Query(goal, null, null, null, null, null);
 	}
 
 	/** Root injection: start from existing knowledge instead of empty. */
 	public Query from(Knowledge root) {
-		return new Query(goal, root, table, driver);
+		return new Query(goal, root, table, driver, ringTable, one);
 	}
 
 	/** The table slot — pass a shared table to join another solve's residence. */
 	public Query tabled(Table table) {
-		return new Query(goal, from, table, driver);
+		return new Query(goal, from, table, driver, ringTable, one);
 	}
 
 	/** The driver slot; the default is a {@link BreadthFirstScheduler}. */
 	public Query on(Function<Fiber<Nothing>, Scheduler<Nothing>> driver) {
-		return new Query(goal, from, table, driver);
+		return new Query(goal, from, table, driver, ringTable, one);
+	}
+
+	/**
+	 * The ring slot: weighs the solve under {@code ring} — plants the ring's
+	 * {@code one()} as the running {@link SemiringStore} and COMPUTES the
+	 * table slot from the ring. A plain semiring cannot thread weights
+	 * through tabled calls, so its table refuses tabling; see the bounded
+	 * and closed overloads for the tabling-capable rings.
+	 */
+	public Query weighted(Semiring<SemiringStore> ring) {
+		return weighted(SemiringStore.table(ring), ring.one());
+	}
+
+	/** {@link #weighted(Semiring)} with streaming tabling: cells fold by the bounded ring. */
+	public Query weighted(BoundedSemiring<SemiringStore> ring) {
+		return weighted(SemiringStore.table(ring), ring.one());
+	}
+
+	/** {@link #weighted(Semiring)} with star tabling: values summed per sealed closure. */
+	public Query weighted(ClosedSemiring<SemiringStore> ring) {
+		return weighted(SemiringStore.table(ring), ring.one());
+	}
+
+	private Query weighted(Table ringTable, SemiringStore one) {
+		return new Query(goal, from, table, driver, ringTable, one);
 	}
 
 	/** The seeded root, inspectable: slots checked and defaults filled here. */
 	public Knowledge root() {
+		if (table != null && ringTable != null) {
+			throw new IllegalStateException(
+					"weighted() computes the table slot from its ring — it cannot"
+							+ " combine with an explicit tabled()");
+		}
 		Knowledge root = from != null ? from : Knowledge.empty();
+		Table wanted = table != null ? table : ringTable;
 		boolean occupied = root.getStores().containsKey(Table.class);
-		if (table != null) {
+		if (wanted != null) {
 			if (occupied) {
 				throw new IllegalStateException(
-						"the root already carries a table — an explicit tabled() may only"
-								+ " fill an empty slot, never silently replace a residence");
+						"the root already carries a table — an explicit table slot may only"
+								+ " fill an empty one, never silently replace a residence"
+								+ (ringTable != null ? " (weighted() claims the slot for its ring)" : ""));
 			}
-			return root.withStore(table);
+			root = root.withStore(wanted);
+		} else if (!occupied) {
+			root = root.withStore(Table.empty());
 		}
-		return occupied ? root : root.withStore(Table.empty());
+		if (one != null) {
+			if (root.getStores().containsKey(SemiringStore.class)) {
+				throw new IllegalStateException(
+						"the root already carries a semiring store — weighted() may only"
+								+ " fill an empty slot");
+			}
+			root = root.withStore(one);
+		}
+		return root;
 	}
 
 	/** The primitive: one emission per derivation, driven by the caller. */
@@ -94,11 +143,11 @@ public final class Query {
 	 * {@link Selection} with the reading still open — extraction and
 	 * multiplicity are chosen there before {@link Selection#rows()} streams.
 	 */
-	public Selection select(Unifiable<?>... keys) {
-		if (keys.length == 0) {
-			throw new IllegalArgumentException("select names at least one variable");
-		}
-		return new Selection(this, Arrays.asList(keys), false, false);
+	public Selection select(Unifiable<?> key, Unifiable<?>... keys) {
+		return new Selection(this,
+				Stream.concat(Stream.of(key), Arrays.stream(keys))
+						.collect(Collectors.toList()),
+				false, false);
 	}
 
 	/** The pull harvest of {@link #run}: lazy, closing closes the driver. */
@@ -107,12 +156,12 @@ public final class Query {
 	}
 
 	/** The driver slot's occupant, defaulted. */
-	Function<Fiber<Nothing>, Scheduler<Nothing>> factory() {
+	public Function<Fiber<Nothing>, Scheduler<Nothing>> factory() {
 		return driver != null ? driver : BreadthFirstScheduler::new;
 	}
 
 	/** A Cont pulled as a lazy Stream: one element per advance, close closes the driver. */
-	static <A> Stream<A> harvest(Cont<A, Nothing> source,
+	public static <A> Stream<A> harvest(Cont<A, Nothing> source,
 			Function<Fiber<Nothing>, Scheduler<Nothing>> factory) {
 		Deque<A> results = new LinkedBlockingDeque<>();
 		Fiber<Nothing> recur = source.run(v -> {

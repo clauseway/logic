@@ -13,9 +13,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
+import org.clauseway.functional.algebra.BoundedSemiring;
+import org.clauseway.functional.algebra.Semiring;
+import org.clauseway.functional.algebra.Semirings;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
+import org.clauseway.logic.weight.SemiringStore;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.junit.Test;
 
@@ -76,6 +80,44 @@ public class QueryTest {
 					.collect(Collectors.toList()))
 					.containsExactlyInAnyOrder(1, 2);
 		}
+	}
+
+	@Test
+	public void weightedSeedsTheRingAndItsTable() {
+		Semiring<SemiringStore> counting = SemiringStore.product(Semirings.COUNTING);
+		Knowledge root = Query.of(Goal.success()).weighted(counting).root();
+		assertThat(root.getStores().get(SemiringStore.class).isDefined()).isTrue();
+		// a plain ring cannot thread weights through tabled calls — its table refuses
+		Table table = (Table) root.getStores().get(Table.class).get();
+		assertThatThrownBy(table::assertTablingAllowed)
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("solveBounded");
+	}
+
+	@Test
+	public void aBoundedRingTablesStreaming() {
+		BoundedSemiring<SemiringStore> product = SemiringStore.boundedProduct(Semirings.MIN_PLUS);
+		Knowledge root = Query.of(Goal.success()).weighted(product).root();
+		((Table) root.getStores().get(Table.class).get()).assertTablingAllowed();
+		assertThat(root.getStores().get(SemiringStore.class).isDefined()).isTrue();
+	}
+
+	@Test
+	public void weightedRefusesAnOccupiedTableSlot() {
+		Semiring<SemiringStore> counting = SemiringStore.product(Semirings.COUNTING);
+		assertThatThrownBy(() -> Query.of(Goal.success())
+				.tabled(Table.empty()).weighted(counting).root())
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("weighted");
+	}
+
+	@Test
+	public void weightedRefusesARootAlreadyCarryingTheRing() {
+		Semiring<SemiringStore> counting = SemiringStore.product(Semirings.COUNTING);
+		Knowledge seeded = Knowledge.empty().withStore(counting.one());
+		assertThatThrownBy(() -> Query.of(Goal.success()).from(seeded).weighted(counting).root())
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("semiring");
 	}
 
 	@Test

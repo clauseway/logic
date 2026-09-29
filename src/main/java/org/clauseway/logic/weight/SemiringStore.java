@@ -8,6 +8,7 @@ import org.clauseway.functional.algebra.ClosedSemiring;
 import org.clauseway.functional.algebra.IdempotentSemiring;
 import org.clauseway.functional.algebra.Semiring;
 import org.clauseway.logic.goals.Packaged;
+import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.vavr.collection.Array;
 import org.clauseway.vavr.collection.LinkedHashMap;
 import lombok.EqualsAndHashCode;
@@ -59,6 +60,31 @@ public final class SemiringStore implements Packaged {
 	 */
 	public static Semiring<SemiringStore> product(Semiring<?>... rings) {
 		return new Product(Array.of(rings));
+	}
+
+	/**
+	 * The table a weighted solve seeds — how tabled calls treat weights under
+	 * this ring. A plain semiring cannot thread weights through tabled calls,
+	 * so its table refuses tabling outright.
+	 */
+	public static Table table(Semiring<SemiringStore> ring) {
+		return Table.refusingTabling(
+				"weighted tabling needs solveBounded (or solveClosed); "
+						+ "solve/solveEach do not thread weights through tabled calls");
+	}
+
+	/** A table whose cell folds by {@code product} and whose running value is the store. */
+	@SuppressWarnings("unchecked")
+	public static Table table(BoundedSemiring<SemiringStore> product) {
+		return Table.weighted(
+				(BoundedSemiring<Object>) (BoundedSemiring<?>) product,
+				p -> p.getStores().get(SemiringStore.class).getOrElse(product.one()),
+				(p, v) -> p.putStore((SemiringStore) v));
+	}
+
+	/** A closed table: presence cell for explore, the star solved and emitted per SCC seal. */
+	public static Table table(ClosedSemiring<SemiringStore> ring) {
+		return Table.of(new Closed(ring));
 	}
 
 	/**
