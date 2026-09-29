@@ -3,6 +3,7 @@ package org.clauseway.logic.nogoods;
 // ABOUTME: The store faces over the verification core: the four moves through the
 // ABOUTME: real propagation pipeline — statement, revise on bindings, the wall.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -48,7 +49,7 @@ public class NogoodConstraintsTest {
 
 		Goal g = held(Posting.bind(x, lval(3))).and(x.unifies(3));
 
-		assertThat(g.solve(x, TestSchedulers.factory()).count()).isZero();
+		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(x).count()).isZero();
 	}
 
 	@Test
@@ -57,7 +58,7 @@ public class NogoodConstraintsTest {
 
 		Goal g = held(Posting.bind(x, lval(3))).and(x.unifies(5));
 
-		assertThat(g.solve(x, TestSchedulers.factory()).findFirst().get().get())
+		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(x).findFirst().get().get())
 				.isEqualTo(5);
 	}
 
@@ -71,11 +72,10 @@ public class NogoodConstraintsTest {
 
 		Goal afterCrossOff = held(Posting.bind(x, lval(1)), Posting.bind(y, lval(2)))
 				.and(y.unifies(2));
-		assertThat(afterCrossOff.solve(y, TestSchedulers.factory()).findFirst().get().get())
+		assertThat(Query.of(afterCrossOff).on(TestSchedulers.factory()).solve(y).findFirst().get().get())
 				.isEqualTo(2);
 
-		assertThat(afterCrossOff.and(x.unifies(1))
-				.solve(x, TestSchedulers.factory()).count()).isZero();
+		assertThat(Query.of(afterCrossOff.and(x.unifies(1))).on(TestSchedulers.factory()).solve(x).count()).isZero();
 	}
 
 	@Test
@@ -88,7 +88,7 @@ public class NogoodConstraintsTest {
 				.and(y.unifies(2))
 				.and(x.unifies(5));
 
-		assertThat(g.solve(x, TestSchedulers.factory()).findFirst().get().get())
+		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(x).findFirst().get().get())
 				.isEqualTo(5);
 	}
 
@@ -102,11 +102,11 @@ public class NogoodConstraintsTest {
 		Unifiable<Integer> x = lvar();
 
 		Goal violated = x.unifies(3).and(held(Posting.bind(x, lval(3))));
-		assertThat(violated.solve(x, TestSchedulers.factory()).count()).isZero();
+		assertThat(Query.of(violated).on(TestSchedulers.factory()).solve(x).count()).isZero();
 
 		Unifiable<Integer> z = lvar();
 		Goal discarded = z.unifies(3).and(held(Posting.bind(z, lval(4))));
-		assertThat(discarded.solve(z, TestSchedulers.factory()).findFirst().get().get())
+		assertThat(Query.of(discarded).on(TestSchedulers.factory()).solve(z).findFirst().get().get())
 				.isEqualTo(3);
 	}
 
@@ -121,7 +121,7 @@ public class NogoodConstraintsTest {
 
 		Goal g = held(Posting.bind(x, lval(1)), Posting.bind(y, lval(2)));
 
-		java.util.List<String> answers = g.solve(x, TestSchedulers.factory())
+		java.util.List<String> answers = Query.of(g).on(TestSchedulers.factory()).solve(x)
 				.map(Object::toString)
 				.collect(java.util.stream.Collectors.toList());
 		assertThat(answers).containsExactly("_.0 : ¬(_.0 ≡ {1})");
@@ -137,7 +137,7 @@ public class NogoodConstraintsTest {
 		Goal g = dom(x, Longs.range(0, 5))
 				.and(held(Posting.bind(x, lval(3L))));
 
-		java.util.List<Long> answers = g.solve(x, TestSchedulers.factory())
+		java.util.List<Long> answers = Query.of(g).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get).collect(Collectors.toList());
 		assertThat(answers).containsExactlyInAnyOrder(0L, 1L, 2L, 4L);
 	}
@@ -151,7 +151,7 @@ public class NogoodConstraintsTest {
 		Goal g = dom(x, Longs.range(0, 4))
 				.and(held(dom(x, Longs.range(5, 8))));
 
-		java.util.List<Long> answers = g.solve(x, TestSchedulers.factory())
+		java.util.List<Long> answers = Query.of(g).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get).collect(Collectors.toList());
 		assertThat(answers).containsExactlyInAnyOrder(0L, 1L, 2L, 3L);
 	}
@@ -166,7 +166,7 @@ public class NogoodConstraintsTest {
 		Goal g = dom(x, Longs.range(0, 10))
 				.and(held(dom(x, Longs.range(3, 6))));
 
-		java.util.List<Long> answers = g.solve(x, TestSchedulers.factory())
+		java.util.List<Long> answers = Query.of(g).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get).collect(Collectors.toList());
 		assertThat(answers).containsExactlyInAnyOrder(0L, 1L, 2L, 6L, 7L, 8L, 9L);
 	}
@@ -181,6 +181,6 @@ public class NogoodConstraintsTest {
 		Goal g = dom(x, Longs.range(3, 6))
 				.and(held(dom(x, Longs.range(0, 10))));
 
-		assertThat(g.solve(x, TestSchedulers.factory()).count()).isZero();
+		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(x).count()).isZero();
 	}
 }

@@ -3,6 +3,7 @@ package org.clauseway.logic.nogoods;
 // ABOUTME: Step-count pins for the exclusion door: four disequality shapes
 // ABOUTME: under the deterministic BFS driver, regression pins per shape.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -54,13 +55,13 @@ public class ExclusionStepPinsTest {
 				count.incrementAndGet();
 			}
 		};
-		goal.solve(out, fiber -> new BreadthFirstScheduler<>(fiber).withListener(counting))
+		Query.of(goal).on(fiber -> new BreadthFirstScheduler<>(fiber).withListener(counting)).solve(out)
 				.collect(Collectors.toList());
 		return count.get();
 	}
 
 	private static <T> List<T> answers(Goal g, Unifiable<T> out) {
-		return g.solve(out, TestSchedulers.factory())
+		return Query.of(g).on(TestSchedulers.factory()).solve(out)
 				.map(Term::get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -105,7 +106,7 @@ public class ExclusionStepPinsTest {
 		}
 
 		// 4 vars over 1..4 all-different: 4! = 24 assignments
-		assertThat(g.solve(vars.get(0), TestSchedulers.factory()).count()).isEqualTo(24L);
+		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(vars.get(0)).count()).isEqualTo(24L);
 		assertThat(steps(g, vars.get(0))).isEqualTo(1_617L);
 	}
 
@@ -129,7 +130,7 @@ public class ExclusionStepPinsTest {
 			g = g.and(FiniteDomain.dom(v, dom(1, 2, 3, 4, 5, 6)));
 		}
 
-		assertThat(g.solve(vars.get(0), TestSchedulers.factory()).count()).isEqualTo(720L);
+		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(vars.get(0)).count()).isEqualTo(720L);
 		assertThat(steps(g, vars.get(0))).isEqualTo(62_513L);
 	}
 
@@ -157,7 +158,7 @@ public class ExclusionStepPinsTest {
 		g = g.and(FiniteDomain.dom(x, dom(1, 2, 3, 4, 5, 6)))
 				.and(FiniteDomain.dom(y, dom(1, 2, 3, 4, 5, 6)));
 
-		assertThat(g.solve(x, TestSchedulers.factory()).count()).isEqualTo(18L);
+		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(x).count()).isEqualTo(18L);
 		assertThat(steps(g, x)).isEqualTo(415L);
 	}
 
@@ -170,7 +171,7 @@ public class ExclusionStepPinsTest {
 		Goal g = unify(in, LList.ofAll(1, 2, 3, 2, 4))
 				.and(Logic.rembero(in, lval(2), out));
 
-		List<String> results = g.solve(out, TestSchedulers.factory())
+		List<String> results = Query.of(g).on(TestSchedulers.factory()).solve(out)
 				.map(Object::toString).sorted().collect(Collectors.toList());
 		assertThat(results).containsExactly("{({1}, {3}, {2}, {4})}");
 		assertThat(steps(g, out)).isEqualTo(240L);

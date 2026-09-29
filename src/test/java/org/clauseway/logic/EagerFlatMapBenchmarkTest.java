@@ -3,6 +3,7 @@ package org.clauseway.logic;
 // ABOUTME: Time-based measurement of the eager Done.flatMap optimization: the
 // ABOUTME: vision-lane workloads run with the budget on (512) and off (0).
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -106,9 +107,8 @@ public class EagerFlatMapBenchmarkTest {
 		Unifiable<LList<Integer>> front = lvar();
 		Unifiable<LList<Integer>> back = lvar();
 		Unifiable<LList<Integer>> both = lvar();
-		return unify(both, LList.ofAll(1, 2, 3, 4, 5, 6))
-				.and(Logic.appendo(front, back, both))
-				.solve(both)
+		return Query.of(unify(both, LList.ofAll(1, 2, 3, 4, 5, 6))
+				.and(Logic.appendo(front, back, both))).solve(both)
 				.count();
 	}
 
@@ -117,11 +117,10 @@ public class EagerFlatMapBenchmarkTest {
 		Unifiable<LList<Integer>> menu = lvar();
 		Unifiable<Integer> a = lvar();
 		Unifiable<Integer> b = lvar();
-		return unify(menu, LList.ofAll(1, 2, 3, 4, 5))
+		return Query.of(unify(menu, LList.ofAll(1, 2, 3, 4, 5))
 				.and(exclude(a.unifies(b)))
 				.and(Logic.membero(a, menu))
-				.and(Logic.membero(b, menu))
-				.solve(a)
+				.and(Logic.membero(b, menu))).solve(a)
 				.count();
 	}
 
@@ -130,11 +129,10 @@ public class EagerFlatMapBenchmarkTest {
 		Domain<Integer> rooms = dom(1, 2, 3, 4, 5);
 		Unifiable<Integer> from = lvar();
 		Unifiable<Integer> to = lvar();
-		return FiniteDomain.dom(from, rooms)
+		return Query.of(FiniteDomain.dom(from, rooms)
 				.and(FiniteDomain.dom(to, rooms))
 				.and(Ints.addo(from, lval(1), to)
-						.or(unify(from, lval(5)).and(unify(to, lval(1)))))
-				.solve(from)
+						.or(unify(from, lval(5)).and(unify(to, lval(1)))))).solve(from)
 				.count();
 	}
 
@@ -151,8 +149,7 @@ public class EagerFlatMapBenchmarkTest {
 												.and(Ints.addo(prev, lval(1), room)
 														.or(unify(prev, lval(5)).and(unify(room, lval(1)))))))));
 		Unifiable<Integer> room = lvar();
-		return reachable.apply(Tuple.of(room))
-				.solve(room)
+		return Query.of(reachable.apply(Tuple.of(room))).solve(room)
 				.count();
 	}
 

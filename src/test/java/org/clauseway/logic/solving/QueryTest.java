@@ -29,6 +29,7 @@ import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.weight.SemiringStore;
 import org.clauseway.logic.unification.terms.Reified;
+import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.junit.Test;
 
@@ -145,40 +146,37 @@ public class QueryTest {
 	}
 
 	@Test
-	public void solveStreamsReifiedLikeTheGoalDoor() {
+	public void solveStreamsOneReifiedPerDerivation() {
 		Unifiable<Integer> x = lvar();
 		Goal goal = x.unifies(1).or(x.unifies(1)).or(x.unifies(2));
-		List<String> door = goal.solve(x).map(Object::toString).collect(Collectors.toList());
 		try (Stream<Reified<Integer>> mine = Query.of(goal).solve(x)) {
-			assertThat(mine.map(Object::toString).sorted().collect(Collectors.toList()))
-					.isEqualTo(door.stream().sorted().collect(Collectors.toList()));
+			assertThat(mine.map(Term::get).collect(Collectors.toList()))
+					.containsExactlyInAnyOrder(1, 1, 2);
 		}
 	}
 
 	@Test
-	public void solveRendersResidualsLikeTheGoalDoor() {
+	public void solveRendersResidualsIntoTheTerm() {
+		// the classic reading: a live nogood renders through Constrained
 		Unifiable<Integer> x = lvar();
-		List<String> door = exclude(x.unifies(3)).solve(x)
-				.map(Object::toString).collect(Collectors.toList());
 		try (Stream<Reified<Integer>> mine = Query.of(exclude(x.unifies(3))).solve(x)) {
-			assertThat(mine.map(Object::toString).collect(Collectors.toList()))
-					.containsExactlyElementsOf(door);
+			List<String> rendered = mine.map(Object::toString).collect(Collectors.toList());
+			assertThat(rendered).hasSize(1);
+			assertThat(rendered.get(0)).contains("\u00ac(");
 		}
 	}
 
 	@Test
-	public void tracedReportsPortsInTheTracerDoorsOrder() {
+	public void tracedReportsPortsInPrologOrder() {
+		// depth-first by default: one Call, an Exit per solution, Redo between
 		Unifiable<Integer> x = lvar();
-		List<String> door = new ArrayList<>();
-		x.unifies(1).or(x.unifies(2)).named("g").solve(x, recorder(door)).count();
-
 		List<String> mine = new ArrayList<>();
 		try (Stream<Reified<Integer>> s = Query.of(x.unifies(1).or(x.unifies(2)).named("g"))
 				.traced(recorder(mine)).solve(x)) {
 			s.count();
 		}
-		assertThat(mine).isEqualTo(door);
-		assertThat(door).isNotEmpty();
+		assertThat(mine.stream().filter(port -> port.endsWith(" g")).collect(Collectors.toList()))
+				.containsExactly("Call g", "Exit g", "Redo g", "Exit g");
 	}
 
 	@Test

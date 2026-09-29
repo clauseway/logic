@@ -3,6 +3,7 @@ package org.clauseway.logic;
 // ABOUTME: Pins the solve stream's lifecycle contract: closing the stream closes
 // ABOUTME: the engine — the walk-away pattern is try-with-resources on the stream.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -74,8 +75,7 @@ public class SolveLifecycleTest {
 	public void closingTheSolveStreamClosesTheEngine() {
 		AtomicBoolean closed = new AtomicBoolean();
 		Unifiable<Integer> x = lvar();
-		try (Stream<Reified<Integer>> answers = x.unifies(1).or(x.unifies(2))
-				.solve(x, f -> new ClosingProbe(new BreadthFirstScheduler<>(f), closed))) {
+		try (Stream<Reified<Integer>> answers = Query.of(x.unifies(1).or(x.unifies(2))).on(f -> new ClosingProbe(new BreadthFirstScheduler<>(f), closed)).solve(x)) {
 			// walk away after one answer: the block boundary, not exhaustion,
 			// ends the solve
 			assertThat(answers.findAny()).isPresent();

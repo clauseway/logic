@@ -1,5 +1,6 @@
 package org.clauseway.logic.finitedomain;
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -39,7 +40,7 @@ public class SummationTest {
 						.and(dom(k, Longs.interval(0, 100)));
 
 		List<Tuple3<Long, Long, Long>> result =
-				Utils.collect(goal.solve(lval(Tuple.of(i, j, k)), TestSchedulers.factory())
+				Utils.collect(Query.of(goal).on(TestSchedulers.factory()).solve(lval(Tuple.of(i, j, k)))
 						.map(Term::get)
 						.map(t -> t
 								.map1(Term::get)
@@ -110,8 +111,7 @@ public class SummationTest {
 	public void shouldSend() {
 		Unifiable<LList<Integer>> letters = lvar();
 
-		List<List<Integer>> result = Utils.collect(sendMoreMoneyo(letters)
-				.solve(letters, TestSchedulers.factory())
+		List<List<Integer>> result = Utils.collect(Query.of(sendMoreMoneyo(letters)).on(TestSchedulers.factory()).solve(letters)
 				.map(Term::get)
 				.map(l -> l.toValueStream().collect(Collectors.toList())));
 
@@ -157,10 +157,9 @@ public class SummationTest {
 		Unifiable<Integer> b = lvar();
 		Unifiable<Integer> c = lvar();
 		List<Tuple3<Integer, Integer, Integer>> results =
-				Utils.collect(Ints.addo(a, b, c)
+				Utils.collect(Query.of(Ints.addo(a, b, c)
 						.and(dom(a, Ints.interval(0, 10)))
-						.and(dom(c, Ints.interval(0, 10)))
-						.solve(lval(Tuple.of(a, b, c)), TestSchedulers.factory())
+						.and(dom(c, Ints.interval(0, 10)))).on(TestSchedulers.factory()).solve(lval(Tuple.of(a, b, c)))
 						.map(Term::get)
 						.map(t -> t.map1(Term::get).map2(Term::get).map3(Term::get)));
 
@@ -176,9 +175,8 @@ public class SummationTest {
 		Unifiable<Integer> c = lvar();
 		// two positions without domains: nothing determines them, and the
 		// parked constraint refuses at reify instead of losing answers
-		Assertions.assertThat(Utils.collect(Ints.addo(a, b, c)
-						.and(dom(a, Ints.interval(0, 10)))
-						.solve(lval(Tuple.of(a, b, c)), TestSchedulers.factory())
+		Assertions.assertThat(Utils.collect(Query.of(Ints.addo(a, b, c)
+						.and(dom(a, Ints.interval(0, 10)))).on(TestSchedulers.factory()).solve(lval(Tuple.of(a, b, c)))
 						.map(Term::get)))
 				.isEmpty();
 	}

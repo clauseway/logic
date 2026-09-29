@@ -1,5 +1,7 @@
 package org.clauseway.logic.aggregate;
 
+import org.clauseway.functional.fibers.schedulers.ForkJoinScheduler;
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
@@ -31,7 +33,7 @@ public class AggregateTest {
 
 		Goal g = Aggregate.findall((Unifiable<Integer> x) -> oneTwoThree(x), result);
 
-		List<Integer> list = g.solve(result, TestSchedulers.factory()).findFirst().get().get()
+		List<Integer> list = Query.of(g).on(TestSchedulers.factory()).solve(result).findFirst().get().get()
 				.toValueStream().collect(Collectors.toList());
 		assertThat(list).containsExactlyInAnyOrder(1, 2, 3);
 	}
@@ -42,7 +44,7 @@ public class AggregateTest {
 
 		Goal g = Aggregate.findall((Unifiable<Integer> x) -> oneTwoThree(x), result);
 
-		assertThat(g.solve(result, TestSchedulers.factory()).count()).isEqualTo(1);
+		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(result).count()).isEqualTo(1);
 	}
 
 	@Test
@@ -51,7 +53,7 @@ public class AggregateTest {
 
 		Goal g = Aggregate.findall((Unifiable<Integer> x) -> x.unifies(1).and(x.unifies(2)), result);
 
-		List<Integer> list = g.solve(result, TestSchedulers.factory()).findFirst().get().get()
+		List<Integer> list = Query.of(g).on(TestSchedulers.factory()).solve(result).findFirst().get().get()
 				.toValueStream().collect(Collectors.toList());
 		assertThat(list).isEmpty();
 	}
@@ -65,7 +67,7 @@ public class AggregateTest {
 		Goal g = Aggregate.findall((Unifiable<Integer> t) -> oneTwoThree(t), result)
 				.and(x.unifies(99));
 
-		Integer bound = g.solve(x, TestSchedulers.factory()).findFirst().get().get();
+		Integer bound = Query.of(g).on(TestSchedulers.factory()).solve(x).findFirst().get().get();
 		assertThat(bound).isEqualTo(99);
 	}
 
@@ -73,8 +75,7 @@ public class AggregateTest {
 	public void countCountsSolutions() {
 		Unifiable<Integer> n = lvar();
 
-		int result = Aggregate.count((Unifiable<Integer> x) -> oneTwoThree(x), n)
-				.solve(n, TestSchedulers.factory()).findFirst().get().get();
+		int result = Query.of(Aggregate.count((Unifiable<Integer> x) -> oneTwoThree(x), n)).on(TestSchedulers.factory()).solve(n).findFirst().get().get();
 
 		assertThat(result).isEqualTo(3);
 	}
@@ -84,9 +85,8 @@ public class AggregateTest {
 		// x = 2 is proven twice; the answer set is {1, 2}
 		Unifiable<Integer> n = lvar();
 
-		int result = Aggregate.count((Unifiable<Integer> x) ->
-						x.unifies(1).or(x.unifies(2)).or(x.unifies(2)), n)
-				.solve(n, TestSchedulers.factory()).findFirst().get().get();
+		int result = Query.of(Aggregate.count((Unifiable<Integer> x) ->
+						x.unifies(1).or(x.unifies(2)).or(x.unifies(2)), n)).on(TestSchedulers.factory()).solve(n).findFirst().get().get();
 
 		assertThat(result).isEqualTo(2);
 	}
@@ -96,12 +96,11 @@ public class AggregateTest {
 		// the boundary idiom is the oracle: solve, distinct, count
 		Unifiable<Integer> x = lvar();
 		Goal dup = x.unifies(1).or(x.unifies(2)).or(x.unifies(2));
-		long boundary = dup.solve(x, TestSchedulers.factory()).distinct().count();
+		long boundary = Query.of(dup).on(TestSchedulers.factory()).solve(x).distinct().count();
 
 		Unifiable<Integer> n = lvar();
-		int inGoal = Aggregate.count((Unifiable<Integer> t) ->
-						t.unifies(1).or(t.unifies(2)).or(t.unifies(2)), n)
-				.solve(n, TestSchedulers.factory()).findFirst().get().get();
+		int inGoal = Query.of(Aggregate.count((Unifiable<Integer> t) ->
+						t.unifies(1).or(t.unifies(2)).or(t.unifies(2)), n)).on(TestSchedulers.factory()).solve(n).findFirst().get().get();
 
 		assertThat((long) inGoal).isEqualTo(boundary);
 	}
@@ -115,7 +114,7 @@ public class AggregateTest {
 
 		Goal g = Aggregate.count((Unifiable<Integer> x) -> exclude(x.unifies(lval(3))), n);
 
-		assertThatThrownBy(() -> g.solve(n, TestSchedulers.factory()).count())
+		assertThatThrownBy(() -> Query.of(g).on(TestSchedulers.factory()).solve(n).count())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("free");
 	}
@@ -127,7 +126,7 @@ public class AggregateTest {
 
 		Goal g = Aggregate.count((Unifiable<Integer> x) -> Goal.success(), n);
 
-		assertThatThrownBy(() -> g.solve(n, TestSchedulers.factory()).count())
+		assertThatThrownBy(() -> Query.of(g).on(TestSchedulers.factory()).solve(n).count())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("free");
 	}
@@ -144,7 +143,7 @@ public class AggregateTest {
 					return x.unifies(1).and(exclude(y.unifies(lval(3))));
 				}), n);
 
-		assertThat(g.solve(n, TestSchedulers.factory()).findFirst().get().get())
+		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(n).findFirst().get().get())
 				.isEqualTo(1);
 	}
 
@@ -152,8 +151,7 @@ public class AggregateTest {
 	public void countOfAFailingGoalIsZero() {
 		Unifiable<Integer> n = lvar();
 
-		int result = Aggregate.count((Unifiable<Integer> x) -> x.unifies(1).and(x.unifies(2)), n)
-				.solve(n, TestSchedulers.factory()).findFirst().get().get();
+		int result = Query.of(Aggregate.count((Unifiable<Integer> x) -> x.unifies(1).and(x.unifies(2)), n)).on(TestSchedulers.factory()).solve(n).findFirst().get().get();
 
 		assertThat(result).isZero();
 	}
@@ -162,8 +160,7 @@ public class AggregateTest {
 	public void sumAddsTheExpression() {
 		Unifiable<Integer> total = lvar();
 
-		int result = Aggregate.sum(x -> oneTwoThree(x), total)
-				.solve(total, TestSchedulers.factory()).findFirst().get().get();
+		int result = Query.of(Aggregate.sum(x -> oneTwoThree(x), total)).on(TestSchedulers.factory()).solve(total).findFirst().get().get();
 
 		assertThat(result).isEqualTo(6);
 	}
@@ -173,9 +170,8 @@ public class AggregateTest {
 		// x = 2 proven twice contributes once: {1, 2} sums to 3
 		Unifiable<Integer> total = lvar();
 
-		int result = Aggregate.sum((Unifiable<Integer> x) ->
-						x.unifies(1).or(x.unifies(2)).or(x.unifies(2)), total)
-				.solve(total, TestSchedulers.factory()).findFirst().get().get();
+		int result = Query.of(Aggregate.sum((Unifiable<Integer> x) ->
+						x.unifies(1).or(x.unifies(2)).or(x.unifies(2)), total)).on(TestSchedulers.factory()).solve(total).findFirst().get().get();
 
 		assertThat(result).isEqualTo(3);
 	}
@@ -186,11 +182,10 @@ public class AggregateTest {
 		// the payload is not the solution identity
 		Unifiable<Integer> total = lvar();
 
-		int result = Aggregate.sum((Unifiable<String> s, Unifiable<Integer> v) ->
+		int result = Query.of(Aggregate.sum((Unifiable<String> s, Unifiable<Integer> v) ->
 						s.unifies("a").and(v.unifies(10))
 								.or(s.unifies("a").and(v.unifies(10)))
-								.or(s.unifies("b").and(v.unifies(10))), total)
-				.solve(total, TestSchedulers.factory()).findFirst().get().get();
+								.or(s.unifies("b").and(v.unifies(10))), total)).on(TestSchedulers.factory()).solve(total).findFirst().get().get();
 
 		assertThat(result).isEqualTo(20);
 	}
@@ -199,8 +194,7 @@ public class AggregateTest {
 	public void maxTakesTheLargest() {
 		Unifiable<Integer> m = lvar();
 
-		int result = Aggregate.max(x -> x.unifies(1).or(x.unifies(3)).or(x.unifies(2)), m)
-				.solve(m, TestSchedulers.factory()).findFirst().get().get();
+		int result = Query.of(Aggregate.max(x -> x.unifies(1).or(x.unifies(3)).or(x.unifies(2)), m)).on(TestSchedulers.factory()).solve(m).findFirst().get().get();
 
 		assertThat(result).isEqualTo(3);
 	}
@@ -209,8 +203,7 @@ public class AggregateTest {
 	public void minTakesTheSmallest() {
 		Unifiable<Integer> m = lvar();
 
-		int result = Aggregate.min(x -> x.unifies(3).or(x.unifies(1)).or(x.unifies(2)), m)
-				.solve(m, TestSchedulers.factory()).findFirst().get().get();
+		int result = Query.of(Aggregate.min(x -> x.unifies(3).or(x.unifies(1)).or(x.unifies(2)), m)).on(TestSchedulers.factory()).solve(m).findFirst().get().get();
 
 		assertThat(result).isEqualTo(1);
 	}
@@ -219,8 +212,7 @@ public class AggregateTest {
 	public void maxOfAFailingGoalFails() {
 		Unifiable<Integer> m = lvar();
 
-		long count = Aggregate.max(x -> x.unifies(1).and(x.unifies(2)), m)
-				.solve(m, TestSchedulers.factory()).count();
+		long count = Query.of(Aggregate.max(x -> x.unifies(1).and(x.unifies(2)), m)).on(TestSchedulers.factory()).solve(m).count();
 
 		assertThat(count).isZero();
 	}
@@ -230,8 +222,7 @@ public class AggregateTest {
 		// alice's descendants, counted inside the logic
 		Unifiable<Integer> n = lvar();
 
-		int result = Aggregate.count((Unifiable<String> d) -> descendant(d), n)
-				.solve(n, TestSchedulers.factory()).findFirst().get().get();
+		int result = Query.of(Aggregate.count((Unifiable<String> d) -> descendant(d), n)).on(TestSchedulers.factory()).solve(n).findFirst().get().get();
 
 		assertThat(result).isEqualTo(3);
 	}
@@ -242,8 +233,7 @@ public class AggregateTest {
 		for (int i = 0; i < 20; i++) {
 			Unifiable<Integer> n = lvar();
 
-			int result = Aggregate.count((Unifiable<Integer> x) -> oneTwoThree(x), n)
-					.solveParallel(n).findFirst().get().get();
+			int result = Query.of(Aggregate.count((Unifiable<Integer> x) -> oneTwoThree(x), n)).on(ForkJoinScheduler::new).solve(n).findFirst().get().get();
 
 			assertThat(result).isEqualTo(3);
 		}
@@ -255,7 +245,7 @@ public class AggregateTest {
 
 		Goal g = Aggregate.findall((Unifiable<Long> i) -> dom(i, Longs.range(0, 6)), result);
 
-		List<Long> list = g.solve(result, TestSchedulers.factory()).findFirst().get().get()
+		List<Long> list = Query.of(g).on(TestSchedulers.factory()).solve(result).findFirst().get().get()
 				.toValueStream().collect(Collectors.toList());
 		assertThat(list).containsExactlyInAnyOrder(0L, 1L, 2L, 3L, 4L, 5L);
 	}
@@ -264,8 +254,7 @@ public class AggregateTest {
 	public void countCountsFiniteDomainSolutions() {
 		Unifiable<Integer> n = lvar();
 
-		int result = Aggregate.count((Unifiable<Long> i) -> dom(i, Longs.range(0, 6)), n)
-				.solve(n, TestSchedulers.factory()).findFirst().get().get();
+		int result = Query.of(Aggregate.count((Unifiable<Long> i) -> dom(i, Longs.range(0, 6)), n)).on(TestSchedulers.factory()).solve(n).findFirst().get().get();
 
 		assertThat(result).isEqualTo(6);
 	}
@@ -278,7 +267,7 @@ public class AggregateTest {
 						x.unifies(2).or(x.unifies(3)).or(x.unifies(4)).and(exclude(x.unifies(lval(3)))),
 				result);
 
-		List<Integer> list = g.solve(result, TestSchedulers.factory()).findFirst().get().get()
+		List<Integer> list = Query.of(g).on(TestSchedulers.factory()).solve(result).findFirst().get().get()
 				.toValueStream().collect(Collectors.toList());
 		assertThat(list).containsExactlyInAnyOrder(2, 4);
 	}
@@ -295,7 +284,7 @@ public class AggregateTest {
 
 		Goal g = Aggregate.count((Unifiable<Integer> x) -> x.unifies(y), n);
 
-		assertThatThrownBy(() -> g.solve(n, TestSchedulers.factory()).count())
+		assertThatThrownBy(() -> Query.of(g).on(TestSchedulers.factory()).solve(n).count())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("smuggled");
 	}
@@ -309,7 +298,7 @@ public class AggregateTest {
 		Goal g = Aggregate.count((Unifiable<LList<Integer>> x) ->
 				x.unifies(LList.ofAll(y, z)), n);
 
-		assertThatThrownBy(() -> g.solve(n, TestSchedulers.factory()).count())
+		assertThatThrownBy(() -> Query.of(g).on(TestSchedulers.factory()).solve(n).count())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("first")
 				.hasMessageContaining("second");
@@ -326,7 +315,7 @@ public class AggregateTest {
 		Goal g = Aggregate.count((Unifiable<Integer> x) ->
 				exclude(y.unifies(lval(1))).and(x.unifies(1)), n);
 
-		assertThatThrownBy(() -> g.solve(n, TestSchedulers.factory()).count())
+		assertThatThrownBy(() -> Query.of(g).on(TestSchedulers.factory()).solve(n).count())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("constrained");
 	}
@@ -342,7 +331,7 @@ public class AggregateTest {
 		Goal g = Aggregate.count((Unifiable<Integer> x) ->
 				Projection.project(y, v -> x.unifies(v)), n);
 
-		assertThatThrownBy(() -> g.solve(n, TestSchedulers.factory()).count())
+		assertThatThrownBy(() -> Query.of(g).on(TestSchedulers.factory()).solve(n).count())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("watched");
 	}
@@ -359,7 +348,7 @@ public class AggregateTest {
 		Goal g = Aggregate.count((Unifiable<Integer> x) ->
 				Propagation.suspend(Collections.singletonList(y), s -> true, x.unifies(1)), n);
 
-		assertThatThrownBy(() -> g.solve(n, TestSchedulers.factory()).count())
+		assertThatThrownBy(() -> Query.of(g).on(TestSchedulers.factory()).solve(n).count())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("declared");
 	}
@@ -374,7 +363,7 @@ public class AggregateTest {
 		Goal g = y.unifies(5)
 				.and(Aggregate.count((Unifiable<Integer> x) -> x.unifies(y), n));
 
-		assertThat(g.solve(n, TestSchedulers.factory()).findFirst().get().get())
+		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(n).findFirst().get().get())
 				.isEqualTo(1);
 	}
 }

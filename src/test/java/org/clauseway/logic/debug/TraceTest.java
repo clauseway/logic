@@ -1,5 +1,7 @@
 package org.clauseway.logic.debug;
 
+import org.clauseway.logic.debug.Trace;
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +48,7 @@ public class TraceTest {
 		Unifiable<Integer> x = lvar();
 
 		Goal g = Trace.traced("g", x.unifies(1).or(x.unifies(2)), recorder);
-		long count = g.solve(x, TestSchedulers.factory()).count();
+		long count = Query.of(g).on(TestSchedulers.factory()).solve(x).count();
 
 		assertThat(count).isEqualTo(2);
 		assertThat(recorder.ports).containsExactly("Call g", "Exit g", "Redo g", "Exit g");
@@ -59,7 +61,7 @@ public class TraceTest {
 
 		// contradictory: x cannot be both 1 and 2
 		Goal g = Trace.traced("g", x.unifies(1).and(x.unifies(2)), recorder);
-		long count = g.solve(x, TestSchedulers.factory()).count();
+		long count = Query.of(g).on(TestSchedulers.factory()).solve(x).count();
 
 		assertThat(count).isEqualTo(0);
 		assertThat(recorder.ports).containsExactly("Call g", "Fail g");
@@ -74,7 +76,7 @@ public class TraceTest {
 		// no hand-wrapping: named goals report their ports because a tracer is seeded
 		Goal inner = y.unifies(10).named("inner");
 		Goal outer = x.unifies(1).and(inner).named("outer");
-		outer.solve(x, recorder).count();
+		Query.of(outer).traced(recorder).solve(x).count();
 
 		// every named goal reached reports its ports; inner nests within outer
 		assertThat(recorder.ports)
@@ -89,7 +91,7 @@ public class TraceTest {
 
 		Goal left = a.unifies(1).and(b.unifies(10).named("p1")).named("LEFT");
 		Goal right = a.unifies(2).and(b.unifies(20).named("q1")).named("RIGHT");
-		left.or(right).named("ROOT").solve(a, recorder).count();
+		Query.of(left.or(right).named("ROOT")).traced(recorder).solve(a).count();
 
 		// the trace reads depth-first: LEFT's body finishes before RIGHT's body starts
 		assertThat(recorder.ports.indexOf("Exit p1"))
@@ -103,7 +105,7 @@ public class TraceTest {
 
 		// the label walks x against the state, so it is rendered per port
 		Goal g = x.unifies(5).named(pkg -> "x=" + pkg.walk(x));
-		g.solve(x, recorder).count();
+		Query.of(g).traced(recorder).solve(x).count();
 
 		// at Exit x is bound, so the label shows the value, not the variable name
 		assertThat(recorder.ports.stream()
@@ -119,7 +121,7 @@ public class TraceTest {
 		long count;
 		try {
 			Unifiable<Integer> x = lvar();
-			count = x.unifies(1).named("g").trace(x).count();
+			count = Query.of(x.unifies(1).named("g")).traced(Trace.printing()).solve(x).count();
 		} finally {
 			System.setOut(original);
 		}
@@ -135,7 +137,7 @@ public class TraceTest {
 
 		Goal keep = x.unifies(1).named("keep");
 		Goal drop = Goal.success().named("drop");
-		keep.and(drop).solve(x, recorder.filter(label -> label.contains("keep"))).count();
+		Query.of(keep.and(drop)).traced(recorder.filter(label -> label.contains("keep"))).solve(x).count();
 
 		// only the matching box's ports reach the inner tracer
 		assertThat(recorder.ports).containsExactly("Call keep", "Exit keep");
@@ -168,7 +170,7 @@ public class TraceTest {
 
 		Goal inner = y.unifies(10).named("inner");
 		Goal outer = x.unifies(1).and(inner).named("outer");
-		outer.solve(x, tracer).count();
+		Query.of(outer).traced(tracer).solve(x).count();
 
 		assertThat(depthAtCall.get("inner")).isGreaterThan(depthAtCall.get("outer"));
 	}
@@ -181,7 +183,7 @@ public class TraceTest {
 
 		Goal inner = Trace.traced("inner", y.unifies(10), recorder);
 		Goal outer = Trace.traced("outer", x.unifies(1).and(inner), recorder);
-		outer.solve(x, TestSchedulers.factory()).count();
+		Query.of(outer).on(TestSchedulers.factory()).solve(x).count();
 
 		// outer Call, inner runs and exits, outer exits
 		assertThat(recorder.ports).containsExactly("Call outer", "Call inner", "Exit inner", "Exit outer");

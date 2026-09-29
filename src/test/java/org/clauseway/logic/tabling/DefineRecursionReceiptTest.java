@@ -3,6 +3,7 @@ package org.clauseway.logic.tabling;
 // ABOUTME: Receipt: plain define-path tabling handles self-recursion through
 // ABOUTME: completion detection — defineRecursive is Java knot-tying, not a semantic mode.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,8 +65,7 @@ public class DefineRecursionReceiptTest {
 			Tabled<Tuple2<Unifiable<Integer>, Unifiable<Integer>>> reach, int from) {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		return x.unifies(from).and(reach.apply(Tuple.of(x, y)))
-				.solve(y, TestSchedulers.factory())
+		return Query.of(x.unifies(from).and(reach.apply(Tuple.of(x, y)))).on(TestSchedulers.factory()).solve(y)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -134,14 +134,12 @@ public class DefineRecursionReceiptTest {
 		oddHole.set(odd);
 
 		Unifiable<Integer> n = lvar();
-		List<String> evens = n.unifies(4).and(even.apply(Tuple.of(n)))
-				.solve(n, TestSchedulers.factory())
+		List<String> evens = Query.of(n.unifies(4).and(even.apply(Tuple.of(n)))).on(TestSchedulers.factory()).solve(n)
 				.map(Object::toString).collect(Collectors.toList());
 		assertThat(evens).containsExactly("{4}");
 
 		Unifiable<Integer> n2 = lvar();
-		List<String> notOdd = n2.unifies(4).and(odd.apply(Tuple.of(n2)))
-				.solve(n2, TestSchedulers.factory())
+		List<String> notOdd = Query.of(n2.unifies(4).and(odd.apply(Tuple.of(n2)))).on(TestSchedulers.factory()).solve(n2)
 				.map(Object::toString).collect(Collectors.toList());
 		assertThat(notOdd).isEmpty();
 	}

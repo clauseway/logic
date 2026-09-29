@@ -3,6 +3,7 @@ package org.clauseway.logic.aggregate;
 // ABOUTME: Pins aggregation over tabling: a consumer of a tabled entry suspends as
 // ABOUTME: a frame, so findall folds only when the sub-tree is honestly exhausted.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -55,8 +56,7 @@ public class AggregateTablingPinTest {
 				x.unifies(1).or(x.unifies(2)));
 		Unifiable<LList<Integer>> collected = lvar();
 
-		List<Integer> sizes = Aggregate.findall((Unifiable<Integer> x) -> rel.apply(x), collected)
-				.solve(collected, TestSchedulers.factory())
+		List<Integer> sizes = Query.of(Aggregate.findall((Unifiable<Integer> x) -> rel.apply(x), collected)).on(TestSchedulers.factory()).solve(collected)
 				.map(Term::get)
 				.map(l -> (int) l.toValueStream().count())
 				.collect(Collectors.toList());
@@ -70,9 +70,8 @@ public class AggregateTablingPinTest {
 	public void findallOverAColdRecursiveTabledGoal() {
 		Unifiable<LList<String>> collected = lvar();
 
-		List<Integer> sizes = Aggregate.findall(
-						(Unifiable<String> who) -> ancestor(lval("alice"), who), collected)
-				.solve(collected, TestSchedulers.factory())
+		List<Integer> sizes = Query.of(Aggregate.findall(
+						(Unifiable<String> who) -> ancestor(lval("alice"), who), collected)).on(TestSchedulers.factory()).solve(collected)
 				.map(Term::get)
 				.map(l -> (int) l.toValueStream().count())
 				.collect(Collectors.toList());
@@ -86,8 +85,7 @@ public class AggregateTablingPinTest {
 	public void countOverAColdTabledGoal() {
 		Unifiable<Integer> n = lvar();
 
-		List<Integer> counts = Aggregate.count((Unifiable<String> who) -> ancestor(lval("alice"), who), n)
-				.solve(n, TestSchedulers.factory())
+		List<Integer> counts = Query.of(Aggregate.count((Unifiable<String> who) -> ancestor(lval("alice"), who), n)).on(TestSchedulers.factory()).solve(n)
 				.map(Term::get)
 				.collect(Collectors.toList());
 

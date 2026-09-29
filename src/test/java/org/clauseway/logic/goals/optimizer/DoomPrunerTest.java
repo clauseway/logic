@@ -3,6 +3,7 @@ package org.clauseway.logic.goals.optimizer;
 // ABOUTME: Receipts for the doom pruning pass: doomed postings rewrite to failure,
 // ABOUTME: dead conjuncts collapse their conjunction, dead conde alternatives drop.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -58,8 +59,7 @@ public class DoomPrunerTest {
 		for (Goal deadPost : dead) {
 			Unifiable<Long> x = lvar();
 			AtomicLong spawns = new AtomicLong();
-			assertThat(oneOf(x, spawns).and(deadPost)
-					.solve(x, new DoomPruner()).count()).isZero();
+			assertThat(Query.of(oneOf(x, spawns).and(deadPost)).optimized(new DoomPruner()).solve(x).count()).isZero();
 			assertThat(spawns.get()).describedAs(deadPost.toString()).isZero();
 		}
 	}
@@ -70,7 +70,7 @@ public class DoomPrunerTest {
 		AtomicLong spawns = new AtomicLong();
 		Goal g = new Probe(spawns).and(unify(x, lval(1L))).and(Longs.leq(lval(5L), lval(2L)))
 				.or(unify(x, lval(2L)));
-		assertThat(g.solve(x, new DoomPruner())
+		assertThat(Query.of(g).optimized(new DoomPruner()).solve(x)
 				.map(Object::toString).collect(Collectors.toList()))
 				.containsExactly("{2}");
 		assertThat(spawns.get()).isZero();
@@ -82,8 +82,7 @@ public class DoomPrunerTest {
 		// under partial knowledge claims nothing — the tree is untouched
 		Unifiable<Long> x = lvar();
 		AtomicLong spawns = new AtomicLong();
-		assertThat(oneOf(x, spawns).and(Longs.leq(x, lval(5L)))
-				.solve(x, new DoomPruner()).count()).isEqualTo(5);
+		assertThat(Query.of(oneOf(x, spawns).and(Longs.leq(x, lval(5L)))).optimized(new DoomPruner()).solve(x).count()).isEqualTo(5);
 		assertThat(spawns.get()).isEqualTo(N);
 	}
 
@@ -96,7 +95,7 @@ public class DoomPrunerTest {
 		AtomicLong spawns = new AtomicLong();
 		Goal g = FiniteDomain.dom(x, Longs.interval(0, 4))
 				.and(Goal.defer(() -> oneOf(y, spawns).and(FiniteDomain.dom(x, Longs.interval(8, 12)))));
-		assertThat(g.solve(y, new DoomPruner()).count()).isZero();
+		assertThat(Query.of(g).optimized(new DoomPruner()).solve(y).count()).isZero();
 		assertThat(spawns.get()).isZero();
 	}
 

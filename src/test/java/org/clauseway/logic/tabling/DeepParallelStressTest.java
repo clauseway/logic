@@ -3,6 +3,7 @@ package org.clauseway.logic.tabling;
 // ABOUTME: Parallel completion stress: a deep tabled chain looped in-JVM, where a
 // ABOUTME: premature seal loses answers. Caught the group-seal admission race.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.junit.Assert.fail;
@@ -53,8 +54,7 @@ public class DeepParallelStressTest {
 			Unifiable<Integer> x = lvar();
 			Unifiable<Integer> y = lvar();
 
-			List<Integer> descendants = x.unifies(1).and(anc.apply(Tuple.of(x, y)))
-					.solveFrom(Knowledge.empty().withStore(table), y, ForkJoinScheduler::new)
+			List<Integer> descendants = Query.of(x.unifies(1).and(anc.apply(Tuple.of(x, y)))).from(Knowledge.empty().withStore(table)).on(ForkJoinScheduler::new).solve(y)
 					.map(Term::get)
 					.sorted()
 					.collect(Collectors.toList());

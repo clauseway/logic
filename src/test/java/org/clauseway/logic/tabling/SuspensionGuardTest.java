@@ -3,6 +3,7 @@ package org.clauseway.logic.tabling;
 // ABOUTME: Parked suspensions at a tabled-call boundary refuse loudly: the call key
 // ABOUTME: cannot see them and an answer cannot carry them, so silence would be unsound.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.projection.Projection.project;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -38,7 +39,7 @@ public class SuspensionGuardTest {
 		Goal query = project(pending, v -> Goal.success())
 				.and(rel.apply(out));
 
-		assertThatThrownBy(() -> query.solve(out, TestSchedulers.factory()).count())
+		assertThatThrownBy(() -> Query.of(query).on(TestSchedulers.factory()).solve(out).count())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("parked suspensions");
 	}
@@ -52,7 +53,7 @@ public class SuspensionGuardTest {
 				}));
 		Unifiable<Integer> out = lvar();
 
-		assertThatThrownBy(() -> rel.apply(out).solve(out, TestSchedulers.factory()).count())
+		assertThatThrownBy(() -> Query.of(rel.apply(out)).on(TestSchedulers.factory()).solve(out).count())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("suspension");
 	}
@@ -73,7 +74,7 @@ public class SuspensionGuardTest {
 				.and(rel.apply(b))
 				.and(pending.unifies(7));
 
-		List<String> pairs = query.solve(lval(Tuple.of(a, b)), TestSchedulers.factory())
+		List<String> pairs = Query.of(query).on(TestSchedulers.factory()).solve(lval(Tuple.of(a, b)))
 				.map(Object::toString)
 				.collect(Collectors.toList());
 		assertThat(pairs).hasSize(4);

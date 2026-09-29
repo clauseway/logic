@@ -3,6 +3,7 @@ package org.clauseway.logic.lattice;
 // ABOUTME: The parking propagator's schema contract: identity by (family, name,
 // ABOUTME: watched terms), kind-distinct from the sync Propagator, watch matching.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -114,17 +115,15 @@ public class ParkingPropagatorTest {
 		// first examination on arrival (keep), wake on the binding, verdict
 		// consumed — the same lifecycle as a sync propagator, fiber-shaped
 		Unifiable<Integer> x = lvar();
-		assertThat(flat(x, FlatSet.of(1, 2, 3, 4))
+		assertThat(Query.of(flat(x, FlatSet.of(1, 2, 3, 4))
 				.and(parkingEven(x))
-				.and(x.unifies(4))
-				.solve(x, TestSchedulers.factory()).count())
+				.and(x.unifies(4))).on(TestSchedulers.factory()).solve(x).count())
 				.isEqualTo(1);
 
 		Unifiable<Integer> y = lvar();
-		assertThat(flat(y, FlatSet.of(1, 2, 3, 4))
+		assertThat(Query.of(flat(y, FlatSet.of(1, 2, 3, 4))
 				.and(parkingEven(y))
-				.and(y.unifies(3))
-				.solve(y, TestSchedulers.factory()).count())
+				.and(y.unifies(3))).on(TestSchedulers.factory()).solve(y).count())
 				.isZero();
 	}
 
@@ -156,10 +155,9 @@ public class ParkingPropagatorTest {
 		// inferred binding lands through the chokepoint like any other
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		List<Integer> answers = flat(x, FlatSet.of(1, 2, 3, 4))
+		List<Integer> answers = Query.of(flat(x, FlatSet.of(1, 2, 3, 4))
 				.and(narrowsOnGround(y, x, 4))
-				.and(y.unifies(0))
-				.solve(x, TestSchedulers.factory())
+				.and(y.unifies(0))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.collect(Collectors.toList());
 		assertThat(answers).containsExactly(4);
@@ -171,11 +169,10 @@ public class ParkingPropagatorTest {
 		// wakes on the collapse and vetoes — one cascade, both lanes
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		assertThat(flat(x, FlatSet.of(1, 2, 3, 4))
+		assertThat(Query.of(flat(x, FlatSet.of(1, 2, 3, 4))
 				.and(syncEven(x))
 				.and(narrowsOnGround(y, x, 3))
-				.and(y.unifies(0))
-				.solve(x, TestSchedulers.factory()).count())
+				.and(y.unifies(0))).on(TestSchedulers.factory()).solve(x).count())
 				.isZero();
 	}
 

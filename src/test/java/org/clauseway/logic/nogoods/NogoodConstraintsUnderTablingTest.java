@@ -3,6 +3,7 @@ package org.clauseway.logic.nogoods;
 // ABOUTME: NogoodConstraints through the tabling machinery: caller nogoods key the call,
 // ABOUTME: equal keys share, body locals ride as witnesses, recursion carries them.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.goals.Goal.defer;
@@ -42,7 +43,7 @@ public class NogoodConstraintsUnderTablingTest {
 		Goal caller2 = gen.apply(u);
 
 		Unifiable<Tuple2<Unifiable<Long>, Unifiable<Long>>> out = lval(Tuple.of(x, u));
-		long combos = caller1.and(caller2).solve(out, TestSchedulers.factory()).count();
+		long combos = Query.of(caller1.and(caller2)).on(TestSchedulers.factory()).solve(out).count();
 
 		// caller 1 labels to {0,1,2,4}; caller 2 to all five
 		assertThat(combos).isEqualTo(4L * 5L);
@@ -60,7 +61,7 @@ public class NogoodConstraintsUnderTablingTest {
 		Goal caller2 = exclude(u.unifies(3L)).and(gen.apply(u));
 
 		Unifiable<Tuple2<Unifiable<Long>, Unifiable<Long>>> out = lval(Tuple.of(x, u));
-		long combos = caller1.and(caller2).solve(out, TestSchedulers.factory()).count();
+		long combos = Query.of(caller1.and(caller2)).on(TestSchedulers.factory()).solve(out).count();
 
 		assertThat(combos).isEqualTo(4L * 4L);
 	}
@@ -79,8 +80,7 @@ public class NogoodConstraintsUnderTablingTest {
 		});
 		Unifiable<Long> x = lvar();
 
-		List<Long> values = notTheLocal.apply(x)
-				.solve(x, TestSchedulers.factory())
+		List<Long> values = Query.of(notTheLocal.apply(x)).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -97,8 +97,7 @@ public class NogoodConstraintsUnderTablingTest {
 						.and(exclude(dom(x, Longs.range(2, 4)))));
 		Unifiable<Long> x = lvar();
 
-		List<Long> values = outsideTheBox.apply(x)
-				.solve(x, TestSchedulers.factory())
+		List<Long> values = Query.of(outsideTheBox.apply(x)).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -113,13 +112,11 @@ public class NogoodConstraintsUnderTablingTest {
 
 		// bind before the call: the ground call's master is born violated
 		Unifiable<Long> y = lvar();
-		assertThat(y.unifies(3L).and(notThree.apply(y))
-				.solve(y, TestSchedulers.factory()).count()).isZero();
+		assertThat(Query.of(y.unifies(3L).and(notThree.apply(y))).on(TestSchedulers.factory()).solve(y).count()).isZero();
 
 		// bind after the call: the replayed nogood vetoes at the caller
 		Unifiable<Long> z = lvar();
-		assertThat(notThree.apply(z).and(z.unifies(3L))
-				.solve(z, TestSchedulers.factory()).count()).isZero();
+		assertThat(Query.of(notThree.apply(z).and(z.unifies(3L))).on(TestSchedulers.factory()).solve(z).count()).isZero();
 	}
 
 	@Test
@@ -127,8 +124,7 @@ public class NogoodConstraintsUnderTablingTest {
 		Tabled<Unifiable<Long>> gen = zeroToFour();
 		Unifiable<Long> y = lvar();
 
-		List<Long> values = gen.apply(y).and(exclude(y.unifies(1L)))
-				.solve(y, TestSchedulers.factory())
+		List<Long> values = Query.of(gen.apply(y).and(exclude(y.unifies(1L)))).on(TestSchedulers.factory()).solve(y)
 				.map(Term::get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -162,8 +158,7 @@ public class NogoodConstraintsUnderTablingTest {
 		// delta: alice's descendants minus bob
 		Unifiable<String> who = lvar();
 
-		List<String> values = ancestorButNotBob(lval("alice"), who)
-				.solve(who, TestSchedulers.factory())
+		List<String> values = Query.of(ancestorButNotBob(lval("alice"), who)).on(TestSchedulers.factory()).solve(who)
 				.map(Term::get)
 				.sorted()
 				.collect(Collectors.toList());

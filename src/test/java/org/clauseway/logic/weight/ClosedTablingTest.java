@@ -3,6 +3,7 @@ package org.clauseway.logic.weight;
 // ABOUTME: The closed (star) tabling path. Wait-mode explore seals like plain
 // ABOUTME: tabling, drops escapes, and captures each answer's base weight on the entry.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -104,7 +105,7 @@ public class ClosedTablingTest {
 		Unifiable<Integer> out = lvar();
 		Knowledge root = Knowledge.empty().withStore(table).withStore(ring.one());
 
-		loop.apply(Tuple.of(lval(1))).solveFrom(root, out, BreadthFirstScheduler::new).count();
+		Query.of(loop.apply(Tuple.of(lval(1)))).from(root).on(BreadthFirstScheduler::new).solve(out).count();
 
 		assertThat(closed.graph().bases().values()).hasSize(1);
 		SemiringStore base = closed.graph().bases().values().iterator().next();
@@ -125,8 +126,7 @@ public class ClosedTablingTest {
 		Closed closed = new Closed(ring);
 		Table table = Table.of(closed);
 		Unifiable<Integer> out = lvar();
-		loop.apply(Tuple.of(lval(1)))
-				.solveFrom(Knowledge.empty().withStore(table).withStore(ring.one()), out, BreadthFirstScheduler::new)
+		Query.of(loop.apply(Tuple.of(lval(1)))).from(Knowledge.empty().withStore(table).withStore(ring.one())).on(BreadthFirstScheduler::new).solve(out)
 				.count();
 
 		assertThat(closed.graph().bases().values()).hasSize(1);
@@ -145,8 +145,7 @@ public class ClosedTablingTest {
 		Closed closed = new Closed(ring);
 		Table table = Table.of(closed);
 		Unifiable<Integer> out = lvar();
-		r.apply(Tuple.of(out))
-				.solveFrom(Knowledge.empty().withStore(table).withStore(ring.one()), out, BreadthFirstScheduler::new)
+		Query.of(r.apply(Tuple.of(out))).from(Knowledge.empty().withStore(table).withStore(ring.one())).on(BreadthFirstScheduler::new).solve(out)
 				.count();
 
 		List<String> bases = closed.graph().bases().values().stream()
@@ -168,8 +167,7 @@ public class ClosedTablingTest {
 		Closed closed = new Closed(ring);
 		Table table = Table.of(closed);
 		Unifiable<Integer> out = lvar();
-		r.apply(Tuple.of(out))
-				.solveFrom(Knowledge.empty().withStore(table).withStore(ring.one()), out, BreadthFirstScheduler::new)
+		Query.of(r.apply(Tuple.of(out))).from(Knowledge.empty().withStore(table).withStore(ring.one())).on(BreadthFirstScheduler::new).solve(out)
 				.count();
 
 		assertThat(closed.graph().bases().values()).hasSize(1);
@@ -191,8 +189,7 @@ public class ClosedTablingTest {
 		Closed closed = new Closed(ring);
 		Table table = Table.of(closed);
 		Unifiable<Integer> out = lvar();
-		loop.apply(Tuple.of(lval(1)))
-				.solveFrom(Knowledge.empty().withStore(table).withStore(ring.one()), out, BreadthFirstScheduler::new)
+		Query.of(loop.apply(Tuple.of(lval(1)))).from(Knowledge.empty().withStore(table).withStore(ring.one())).on(BreadthFirstScheduler::new).solve(out)
 				.count();
 
 		assertThat(closed.graph().coefficients()).hasSize(1);
@@ -228,8 +225,7 @@ public class ClosedTablingTest {
 		ClosedSemiring<SemiringStore> ring = SemiringStore.closedProduct(Semirings.PROVENANCE);
 		Closed closed = new Closed(ring);
 		Table table = Table.of(closed);
-		loop.apply(Tuple.of(lval(1)))
-				.solveFrom(Knowledge.empty().withStore(table).withStore(ring.one()), lvar(), BreadthFirstScheduler::new)
+		Query.of(loop.apply(Tuple.of(lval(1)))).from(Knowledge.empty().withStore(table).withStore(ring.one())).on(BreadthFirstScheduler::new).solve(lvar())
 				.count();
 
 		TableEntry<Object> entry = table.entries().iterator().next();

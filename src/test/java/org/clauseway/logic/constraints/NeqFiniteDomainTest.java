@@ -1,5 +1,6 @@
 package org.clauseway.logic.constraints;
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
@@ -30,7 +31,7 @@ public class NeqFiniteDomainTest {
 		Goal g = dom(x, Longs.range(0, 3))
 				.and(exclude(x.unifies(lval(1L))));
 
-		List<Long> result = g.solve(x, TestSchedulers.factory())
+		List<Long> result = Query.of(g).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.collect(Collectors.toList());
 
@@ -45,7 +46,7 @@ public class NeqFiniteDomainTest {
 		Goal g = exclude(x.unifies(lval(1L)))
 				.and(dom(x, Longs.range(0, 3)));
 
-		List<Long> result = g.solve(x, TestSchedulers.factory())
+		List<Long> result = Query.of(g).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.collect(Collectors.toList());
 

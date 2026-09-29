@@ -3,6 +3,7 @@ package org.clauseway.logic.finitedomain;
 // ABOUTME: Pins the SEARCH COST of a fork-heavy bounded solve as a step budget -
 // ABOUTME: driver ordering changes that explode exploration fail here, wall-free.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -41,12 +42,10 @@ public class SearchCostPinTest {
 			}
 		};
 
-		long solutions = Ints.multo(a, b, c)
+		long solutions = Query.of(Ints.multo(a, b, c)
 				.and(dom(a, Ints.interval(0, 12)))
 				.and(dom(b, Ints.interval(0, 12)))
-				.and(dom(c, Ints.interval(0, 144)))
-				.solve(lval(Tuple.of(a, b, c)),
-						fiber -> new UnfairBreadthFirstScheduler<>(fiber).withListener(counting))
+				.and(dom(c, Ints.interval(0, 144)))).on(fiber -> new UnfairBreadthFirstScheduler<>(fiber).withListener(counting)).solve(lval(Tuple.of(a, b, c)))
 				.count();
 
 		assertThat(solutions).isGreaterThan(0);

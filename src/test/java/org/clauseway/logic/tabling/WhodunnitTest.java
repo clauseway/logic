@@ -3,6 +3,7 @@ package org.clauseway.logic.tabling;
 // ABOUTME: A murder mystery where tabling and TCLP are both load-bearing: cyclic
 // ABOUTME: reachability diverges untabled, and the murder hour rides as a witness.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -116,8 +117,7 @@ public class WhodunnitTest {
 		// many emissions as we care to take and would never complete. This
 		// is the query tabling exists for
 		Unifiable<Integer> room = lvar();
-		long emissions = reachableUntabled(room)
-				.solve(room, TestSchedulers.factory())
+		long emissions = Query.of(reachableUntabled(room)).on(TestSchedulers.factory()).solve(room)
 				.limit(12)
 				.count();
 		assertThat(emissions).isEqualTo(12);   // …and it would keep going
@@ -129,8 +129,7 @@ public class WhodunnitTest {
 		// query TERMINATES — the recursive call joins its own entry under
 		// live domains (a region key; the pre-TCLP wall refused this call)
 		Unifiable<Integer> room = lvar();
-		List<Integer> rooms = reachableFromGarden().apply(Tuple.of(room))
-				.solve(room, TestSchedulers.factory())
+		List<Integer> rooms = Query.of(reachableFromGarden().apply(Tuple.of(room))).on(TestSchedulers.factory()).solve(room)
 				.map(Term::<Integer>get)
 				.distinct()
 				.sorted()
@@ -145,8 +144,7 @@ public class WhodunnitTest {
 		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		Unifiable<Integer> who = lvar();
-		List<Integer> culprits = investigation.apply(Tuple.of(who))
-				.solveFrom(p, who, BreadthFirstScheduler::new)
+		List<Integer> culprits = Query.of(investigation.apply(Tuple.of(who))).from(p).on(BreadthFirstScheduler::new).solve(who)
 				.map(Term::<Integer>get)
 				.distinct()
 				.collect(Collectors.toList());
@@ -172,8 +170,7 @@ public class WhodunnitTest {
 
 		// the inspector's open question first — this runs the masters once
 		Unifiable<Integer> who = lvar();
-		investigation.apply(Tuple.of(who))
-				.solveFrom(p, who, BreadthFirstScheduler::new)
+		Query.of(investigation.apply(Tuple.of(who))).from(p).on(BreadthFirstScheduler::new).solve(who)
 				.count();
 		int investigated = p.getStore(Table.class).entries().size();
 
@@ -181,9 +178,8 @@ public class WhodunnitTest {
 		// it reads the open investigation's cache through subsumption and
 		// labels the cook's cached witness, which clears her
 		Unifiable<Integer> cook = lvar();
-		long accusation = unify(cook, lval(2))
-				.and(investigation.apply(Tuple.of(cook)))
-				.solveFrom(p, cook, BreadthFirstScheduler::new)
+		long accusation = Query.of(unify(cook, lval(2))
+				.and(investigation.apply(Tuple.of(cook)))).from(p).on(BreadthFirstScheduler::new).solve(cook)
 				.count();
 		assertThat(accusation).isEqualTo(0);
 		assertThat(p.getStore(Table.class).entries()).hasSize(investigated);

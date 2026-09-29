@@ -3,6 +3,7 @@ package org.clauseway.logic.nogoods;
 // ABOUTME: exclude accepts any Postable — foreign literals convert at the door,
 // ABOUTME: Postings pass through as themselves, mixes form one forbidden conjunction.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +18,7 @@ import org.junit.Test;
 public class PostableTest {
 
 	private static List<String> answers(Goal g, Unifiable<?> out) {
-		return g.solve(out).map(Object::toString).sorted().collect(Collectors.toList());
+		return Query.of(g).solve(out).map(Object::toString).sorted().collect(Collectors.toList());
 	}
 
 	@Test

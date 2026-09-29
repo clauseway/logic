@@ -3,6 +3,7 @@ package org.clauseway.logic.tabling;
 // ABOUTME: Pins subsumptive reuse: a SEALED general entry serves bound instance
 // ABOUTME: calls as a read-only relation — no new master, answers filtered.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -98,14 +99,13 @@ public class SubsumptiveReuseTest {
 		// run the general call to exhaustion: Tier 1 seals it
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		assertThat(rel.apply(Tuple.of(x, y)).solveFrom(p, y, BreadthFirstScheduler::new).count())
+		assertThat(Query.of(rel.apply(Tuple.of(x, y))).from(p).on(BreadthFirstScheduler::new).solve(y).count())
 				.isEqualTo(2);
 		assertThat(p.getStore(Table.class).entries()).hasSize(1);
 
 		// the bound call reads the sealed entry: filtered answers, still one entry
 		Unifiable<Integer> out = lvar();
-		assertThat(rel.apply(Tuple.of(lval(1), out))
-				.solveFrom(p, out, BreadthFirstScheduler::new)
+		assertThat(Query.of(rel.apply(Tuple.of(lval(1), out))).from(p).on(BreadthFirstScheduler::new).solve(out)
 				.map(Object::toString)
 				.collect(Collectors.toList()))
 				.containsExactly("{10}");
@@ -118,7 +118,7 @@ public class SubsumptiveReuseTest {
 		Knowledge p = Knowledge.empty().withStore(Table.empty());
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		rel.apply(Tuple.of(x, y)).solveFrom(p, y, BreadthFirstScheduler::new).count();
+		Query.of(rel.apply(Tuple.of(x, y))).from(p).on(BreadthFirstScheduler::new).solve(y).count();
 
 		// exact miss, sealed subsumer: ∞ improves to the general's count —
 		// sound, since the instance emits a subset of the general's answers
@@ -140,9 +140,8 @@ public class SubsumptiveReuseTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Unifiable<Integer> out = lvar();
-		long n = rel.apply(Tuple.of(x, y))
-				.and(rel.apply(Tuple.of(lval(2), out)))
-				.solveFrom(p, lval(Tuple.of(x, y, out)), BreadthFirstScheduler::new)
+		long n = Query.of(rel.apply(Tuple.of(x, y))
+				.and(rel.apply(Tuple.of(lval(2), out)))).from(p).on(BreadthFirstScheduler::new).solve(lval(Tuple.of(x, y, out)))
 				.count();
 
 		assertThat(n).isEqualTo(2);   // general (1,10) (2,20) × instance (2,20)
@@ -156,13 +155,13 @@ public class SubsumptiveReuseTest {
 
 		// seal the bound variant first
 		Unifiable<Integer> out1 = lvar();
-		rel.apply(Tuple.of(lval(1), out1)).solveFrom(p, out1, BreadthFirstScheduler::new).count();
+		Query.of(rel.apply(Tuple.of(lval(1), out1))).from(p).on(BreadthFirstScheduler::new).solve(out1).count();
 		assertThat(p.getStore(Table.class).entries()).allMatch(TableEntry::isComplete);
 
 		// the general call has more answers than the sealed instance holds
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		assertThat(rel.apply(Tuple.of(x, y)).solveFrom(p, y, BreadthFirstScheduler::new).count())
+		assertThat(Query.of(rel.apply(Tuple.of(x, y))).from(p).on(BreadthFirstScheduler::new).solve(y).count())
 				.isEqualTo(2);
 		assertThat(p.getStore(Table.class).entries()).hasSize(2);
 	}

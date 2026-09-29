@@ -3,6 +3,7 @@ package org.clauseway.logic.goals;
 // ABOUTME: Committed choice under exhaustion: a nested condu inside a clause
 // ABOUTME: must not leak the fallback when the head clause has solutions.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -25,7 +26,7 @@ public class ConduNestingTest {
 				Goal.condu(unify(x, lval("keep")), unify(x, lval("inner-fallback"))),
 				unify(x, lval("outer-fallback")));
 
-		List<String> got = g.solve(x, TestSchedulers.factory()).map(Reified::toString).collect(Collectors.toList());
+		List<String> got = Query.of(g).on(TestSchedulers.factory()).solve(x).map(Reified::toString).collect(Collectors.toList());
 
 		assertThat(got).containsExactly("{keep}");
 	}
@@ -40,7 +41,7 @@ public class ConduNestingTest {
 						.and(unify(x, lval("keep")))),
 				unify(x, lval("skip"))));
 
-		List<String> got = g.solve(x, TestSchedulers.factory()).map(Reified::toString).collect(Collectors.toList());
+		List<String> got = Query.of(g).on(TestSchedulers.factory()).solve(x).map(Reified::toString).collect(Collectors.toList());
 
 		assertThat(got).containsExactly("{keep}");
 	}
@@ -50,9 +51,8 @@ public class ConduNestingTest {
 		// SortingTest.filter, shrunk: keep elements != 1 of [1, 2]
 		Unifiable<LList<Integer>> out =
 				lvar();
-		List<String> got = filter(LList.ofAll(1, 2, 1, 3, 1, 4), out,
-				a -> Logic.project(a, v -> v != 1 ? Goal.success() : Goal.failure()))
-				.solve(out, TestSchedulers.factory()).map(Reified::toString).collect(Collectors.toList());
+		List<String> got = Query.of(filter(LList.ofAll(1, 2, 1, 3, 1, 4), out,
+				a -> Logic.project(a, v -> v != 1 ? Goal.success() : Goal.failure()))).on(TestSchedulers.factory()).solve(out).map(Reified::toString).collect(Collectors.toList());
 
 		assertThat(got).hasSize(1);
 	}
@@ -78,7 +78,7 @@ public class ConduNestingTest {
 
 	private static List<String> countdown(int n) {
 		Unifiable<String> out = lvar();
-		return level(n, out).solve(out, TestSchedulers.factory()).map(Reified::toString).collect(Collectors.toList());
+		return Query.of(level(n, out)).on(TestSchedulers.factory()).solve(out).map(Reified::toString).collect(Collectors.toList());
 	}
 
 	/** level(n): condu(succeed with "hit-n" and recurse; fallback). */

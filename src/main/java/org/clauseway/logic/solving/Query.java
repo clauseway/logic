@@ -5,6 +5,7 @@ package org.clauseway.logic.solving;
 // ABOUTME: knowledge it implies -- the Cont face primitive, Stream the harvest.
 
 import java.util.stream.Collectors;
+import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.algebra.BoundedSemiring;
 import org.clauseway.functional.algebra.ClosedSemiring;
 import org.clauseway.functional.algebra.Semiring;
@@ -188,10 +189,10 @@ public final class Query {
 		} else if (!occupied) {
 			root = root.withStore(Table.empty());
 		}
-		for (Slot slot : slots) {
-			root = planted(root, slot.getStore(), slot.getOwner());
-		}
-		return root;
+		return slots.toJavaStream()
+				.reduce(root,
+						(r, s) -> planted(r, s.getStore(), s.getOwner()),
+						Exceptions.throwingBiOp(UnsupportedOperationException::new));
 	}
 
 	private static Knowledge planted(Knowledge root, Packaged store, String owner) {

@@ -1,5 +1,6 @@
 package org.clauseway.logic.finitedomain;
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.goals.Goal.success;
@@ -42,11 +43,10 @@ public class OrderConstraintsTest {
 
 		// completeness, not just soundness: the boundary pair (2,2) must be found
 		List<Tuple2<Long, Long>> result =
-				Utils.collect(Goal.success()
+				Utils.collect(Query.of(Goal.success()
 						.and(dom(i, Longs.range(1, 3)))
 						.and(dom(j, Longs.range(1, 3)))
-						.and(Longs.leq(i, j))
-						.solve(lval(Tuple.of(i, j)), TestSchedulers.factory())
+						.and(Longs.leq(i, j))).on(TestSchedulers.factory()).solve(lval(Tuple.of(i, j)))
 						.map(Term::get)
 						.map(t -> t.map1(Term::get).map2(Term::get)));
 
@@ -63,11 +63,10 @@ public class OrderConstraintsTest {
 		Unifiable<Long> j = lvar();
 
 		List<Tuple2<Long, Long>> result =
-				Utils.collect(Goal.success()
+				Utils.collect(Query.of(Goal.success()
 						.and((Longs.leq(i, j)))
 						.and(dom(i, Longs.range(0, 4)))
-						.and(dom(j, Longs.range(0, 4)))
-						.solve(lval(Tuple.of(i, j)), TestSchedulers.factory())
+						.and(dom(j, Longs.range(0, 4)))).on(TestSchedulers.factory()).solve(lval(Tuple.of(i, j)))
 						.map(Term::get)
 						.map(t -> t.map1(Term::get).map2(Term::get)));
 
@@ -81,11 +80,10 @@ public class OrderConstraintsTest {
 		Unifiable<Long> j = lvar();
 
 		List<Tuple2<Long, Long>> result =
-				Utils.collect(Goal.success()
+				Utils.collect(Query.of(Goal.success()
 						.and(dom(i, Longs.range(0, 4)))
 						.and(dom(j, Longs.range(0, 4)))
-						.and((Longs.leq(i, j)))
-						.solve(lval(Tuple.of(i, j)), TestSchedulers.factory())
+						.and((Longs.leq(i, j)))).on(TestSchedulers.factory()).solve(lval(Tuple.of(i, j)))
 						.map(Term::get)
 						.map(t -> t.map1(Term::get).map2(Term::get)));
 
@@ -99,13 +97,12 @@ public class OrderConstraintsTest {
 		Unifiable<Long> y = lvar();
 		Unifiable<Long> z = lvar();
 
-		List<Tuple2<Long, Long>> results = Utils.collect(Goal.success()
+		List<Tuple2<Long, Long>> results = Utils.collect(Query.of(Goal.success()
 				.and(dom(x, Longs.range(3, 6)))
 				.and(dom(z, Longs.range(3, 6)))
 				.and(dom(y, Longs.range(1, 5)))
 				.and(Longs.leq(x, lval(5L)))
-				.and(Constraints.unify(x, y))
-				.solve(lval(Tuple.of(y, z)), TestSchedulers.factory())
+				.and(Constraints.unify(x, y))).on(TestSchedulers.factory()).solve(lval(Tuple.of(y, z)))
 				.map(Term::get)
 				.map(t -> t.map(Term::get, Term::get)));
 
@@ -124,14 +121,13 @@ public class OrderConstraintsTest {
 		int n = 6;
 
 		Unifiable<LList<Integer>> lst = LList.ofAll(v0, v1, v2, v3, v4, v5);
-		var result = Utils.collect(allLesso(lst)
+		var result = Utils.collect(Query.of(allLesso(lst)
 				.and(dom(v0, Ints.interval(0, n)))
 				.and(dom(v1, Ints.interval(0, n)))
 				.and(dom(v2, Ints.interval(0, n)))
 				.and(dom(v3, Ints.interval(0, n)))
 				.and(dom(v4, Ints.interval(0, n)))
-				.and(dom(v5, Ints.interval(0, n)))
-				.solve(lst, TestSchedulers.factory())
+				.and(dom(v5, Ints.interval(0, n)))).on(TestSchedulers.factory()).solve(lst)
 				.map(Term::get)
 				.map(LList::toValueStream)
 				.map(s -> s.collect(Collectors.toList())));
@@ -155,9 +151,9 @@ public class OrderConstraintsTest {
 	@Test
 	public void geqGroundHoldsWhenMoreExceedsLess() {
 		// geq(more, less) means more >= less; ground both ways
-		Assertions.assertThat(Longs.geq(lval(480L), lval(400L)).solve(lvar(), TestSchedulers.factory()).count())
+		Assertions.assertThat(Query.of(Longs.geq(lval(480L), lval(400L))).on(TestSchedulers.factory()).solve(lvar()).count())
 				.isEqualTo(1L);
-		Assertions.assertThat(Longs.geq(lval(250L), lval(400L)).solve(lvar(), TestSchedulers.factory()).count())
+		Assertions.assertThat(Query.of(Longs.geq(lval(250L), lval(400L))).on(TestSchedulers.factory()).solve(lvar()).count())
 				.isEqualTo(0L);
 	}
 
@@ -165,9 +161,8 @@ public class OrderConstraintsTest {
 	public void geqBackwardsNarrowsToTheUpperTail() {
 		// geq(x, 400) over [398,403) keeps {400, 401, 402} — the values >= 400
 		Unifiable<Long> x = lvar();
-		List<Long> xs = dom(x, Longs.range(398, 403))
-				.and(Longs.geq(x, lval(400L)))
-				.solve(x, TestSchedulers.factory())
+		List<Long> xs = Query.of(dom(x, Longs.range(398, 403))
+				.and(Longs.geq(x, lval(400L)))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -200,11 +195,10 @@ public class OrderConstraintsTest {
 			captured[0] = s;
 			return Cont.just(s);
 		};
-		long answers = dom(x, Longs.range(1, 5))
+		long answers = Query.of(dom(x, Longs.range(1, 5))
 				.and(dom(y, Longs.range(1, 5)))
 				.and(Longs.lss(x, y))
-				.and(probe)
-				.solve(x, TestSchedulers.factory())
+				.and(probe)).on(TestSchedulers.factory()).solve(x)
 				.count();
 		Assertions.assertThat(answers).isGreaterThan(0);
 		Assertions.assertThat(FiniteDomainConstraints.getDom(captured[0], captured[0].walk(x))
@@ -219,9 +213,9 @@ public class OrderConstraintsTest {
 
 	@Test
 	public void gtrGroundIsStrict() {
-		Assertions.assertThat(Longs.gtr(lval(401L), lval(400L)).solve(lvar(), TestSchedulers.factory()).count())
+		Assertions.assertThat(Query.of(Longs.gtr(lval(401L), lval(400L))).on(TestSchedulers.factory()).solve(lvar()).count())
 				.isEqualTo(1L);
-		Assertions.assertThat(Longs.gtr(lval(400L), lval(400L)).solve(lvar(), TestSchedulers.factory()).count())
+		Assertions.assertThat(Query.of(Longs.gtr(lval(400L), lval(400L))).on(TestSchedulers.factory()).solve(lvar()).count())
 				.isEqualTo(0L);
 	}
 
@@ -229,9 +223,8 @@ public class OrderConstraintsTest {
 	public void gtrBackwardsNarrowsStrictly() {
 		// gtr(x, 400) over [398,403) keeps {401, 402}
 		Unifiable<Long> x = lvar();
-		List<Long> xs = dom(x, Longs.range(398, 403))
-				.and(Longs.gtr(x, lval(400L)))
-				.solve(x, TestSchedulers.factory())
+		List<Long> xs = Query.of(dom(x, Longs.range(398, 403))
+				.and(Longs.gtr(x, lval(400L)))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.sorted()
 				.collect(Collectors.toList());

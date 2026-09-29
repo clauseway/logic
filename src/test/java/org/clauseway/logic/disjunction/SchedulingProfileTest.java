@@ -3,6 +3,7 @@ package org.clauseway.logic.disjunction;
 // ABOUTME: The scope profiler over the scheduling race: where the conde
 // ABOUTME: lane's steps go — drains, statements, labelling, by workforce.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.functional.fibers.interpreter.OriginCapture;
@@ -78,7 +79,7 @@ public class SchedulingProfileTest {
 	}
 
 	private static void solveProfiled(Goal g, List<Strip> ss, ScopeProfiler profiler) {
-		g.solve(SchedulingBenchmarkTest.starts(ss), profiler)
+		Query.of(g).profiled(profiler).solve(SchedulingBenchmarkTest.starts(ss))
 				.collect(Collectors.toList());
 	}
 }

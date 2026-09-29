@@ -1,5 +1,6 @@
 package org.clauseway.logic.unification;
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.LogicTest.runStream;
 import static org.clauseway.logic.constraints.Constraints.unify;
@@ -405,11 +406,10 @@ public class MiniKanrenTest {
 		Unifiable<Option<Unifiable<Integer>>> v = lvar();
 		Unifiable<Integer> val = lvar();
 		Unifiable<Integer> val2 = lvar();
-		Assertions.assertThat(Utils.collect(unify(u, Option.of(val2))
+		Assertions.assertThat(Utils.collect(Query.of(unify(u, Option.of(val2))
 						.and(unify(v, Option.of(val)))
 						.and(unify(u, v))
-						.and(unify(val, 123))
-						.solve(val2, TestSchedulers.factory())
+						.and(unify(val, 123))).on(TestSchedulers.factory()).solve(val2)
 						.map(Term::get)))
 				.isEmpty();
 	}
@@ -423,8 +423,7 @@ public class MiniKanrenTest {
 						LTree.of(lvar(), LList.empty()),
 						LTree.of(lval(3), LList.empty())));
 
-		Assertions.assertThat(Utils.collect(x.unifies(tlTree1)
-								.solve(x, TestSchedulers.factory())
+		Assertions.assertThat(Utils.collect(Query.of(x.unifies(tlTree1)).on(TestSchedulers.factory()).solve(x)
 								.map(Term::get))
 						.toString())
 				.isEqualTo("[LTree(value={1}, children={({LTree(value=_.0, children={()})}, {LTree(value={3}, children={()})})})]");
@@ -441,9 +440,8 @@ public class MiniKanrenTest {
 						LTree.of(lval(3), LList.empty())));
 
 		Assertions.assertThat(
-						Utils.collect(x.unifies(tlTree1)
-										.and(y.unifies(1))
-										.solve(x, TestSchedulers.factory())
+						Utils.collect(Query.of(x.unifies(tlTree1)
+										.and(y.unifies(1))).on(TestSchedulers.factory()).solve(x)
 										.map(Term::get))
 								.toString())
 				.isEqualTo("[LTree(value={1}, children={({LTree(value=_.0, children={()})}, {LTree(value={3}, children={()})})})]");
@@ -464,8 +462,7 @@ public class MiniKanrenTest {
 						LTree.of(lval(2), LList.empty()),
 						LTree.of(lval(3), LList.empty())));
 
-		Assertions.assertThat(Utils.collect(tlTree1.unifies(tlTree)
-						.solve(lval(Tuple.of(x, y, z)), TestSchedulers.factory())
+		Assertions.assertThat(Utils.collect(Query.of(tlTree1.unifies(tlTree)).on(TestSchedulers.factory()).solve(lval(Tuple.of(x, y, z)))
 						.map(Term::get)
 						.map(t -> t.map(Term::get, Term::get, Term::get))))
 				.containsExactly(Tuple.of(1, 2, 3));
@@ -485,8 +482,7 @@ public class MiniKanrenTest {
 						LTree.of(lval(2), LList.empty()),
 						LTree.of(lval(3), LList.empty())));
 
-		Assertions.assertThat(Utils.collect(tlTree1.unifies(tlTree)
-								.solve(lval(Tuple.of(x, y, z, children)), TestSchedulers.factory())
+		Assertions.assertThat(Utils.collect(Query.of(tlTree1.unifies(tlTree)).on(TestSchedulers.factory()).solve(lval(Tuple.of(x, y, z, children)))
 								.map(Term::get))
 						.toString())
 				.isEqualTo("[({1}, _.0, _.1, {({LTree(value={2}, children={()})}, {LTree(value={3}, children={()})})})]");
@@ -508,8 +504,7 @@ public class MiniKanrenTest {
 						LTree.of(lval(2), LList.empty()),
 						LTree.of(lval(3), LList.empty())));
 
-		Assertions.assertThat(Utils.collect(tlTree1.unifies(tlTree)
-								.solve(lval(Tuple.of(x, y, z, children)), TestSchedulers.factory())
+		Assertions.assertThat(Utils.collect(Query.of(tlTree1.unifies(tlTree)).on(TestSchedulers.factory()).solve(lval(Tuple.of(x, y, z, children)))
 								.map(Term::get))
 						.toString())
 				.isEqualTo("[({1}, {2}, _.0, {({LTree(value={3}, children={()})})})]");
@@ -519,8 +514,7 @@ public class MiniKanrenTest {
 	public void shouldUnifyEmptyLTree() {
 		Unifiable<LTree<Integer>> tree = lvar();
 
-		java.util.List<LTree<Integer>> collect = tree.unifies(LTree.empty())
-				.solve(tree, TestSchedulers.factory())
+		java.util.List<LTree<Integer>> collect = Query.of(tree.unifies(LTree.empty())).on(TestSchedulers.factory()).solve(tree)
 				.map(Term::get)
 				.collect(Collectors.toList());
 
@@ -532,8 +526,7 @@ public class MiniKanrenTest {
 	public void shouldUnifyEmptyLTree2() {
 		Unifiable<LTree<Integer>> tree = LTree.ofAll(3);
 
-		java.util.List<LTree<Integer>> collect = tree.unifies(LTree.empty())
-				.solve(tree, TestSchedulers.factory())
+		java.util.List<LTree<Integer>> collect = Query.of(tree.unifies(LTree.empty())).on(TestSchedulers.factory()).solve(tree)
 				.map(Term::get)
 				.collect(Collectors.toList());
 

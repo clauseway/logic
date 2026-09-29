@@ -3,6 +3,7 @@ package org.clauseway.logic.finitedomain;
 // ABOUTME: The typed fronts' receipts: each front pins its type's seats — dense
 // ABOUTME: decimals propagate but refuse labelling, dates label, instants compare.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -34,13 +35,12 @@ public class TypedFrontsTest {
 		// tight dense bounds collapse the domained third to a binding
 		Unifiable<BigDecimal> c = lvar();
 
-		List<BigDecimal> result = Utils.collect(Goal.success()
+		List<BigDecimal> result = Utils.collect(Query.of(Goal.success()
 				.and(dom(c, BigDecimals.interval(BigDecimal.ZERO, BigDecimal.ONE)))
 				.and(BigDecimals.addo(
 						lval(new BigDecimal("0.1")),
 						lval(new BigDecimal("0.2")),
-						c))
-				.solve(c, TestSchedulers.factory())
+						c))).on(TestSchedulers.factory()).solve(c)
 				.map(Term::get));
 
 		Assertions.assertThat(result).containsExactly(new BigDecimal("0.3"));
@@ -48,43 +48,38 @@ public class TypedFrontsTest {
 
 	@Test
 	public void decimalAddoVerifiesAGroundTriple() {
-		List<BigDecimal> good = Utils.collect(Goal.success()
+		List<BigDecimal> good = Utils.collect(Query.of(Goal.success()
 				.and(BigDecimals.addo(
 						lval(new BigDecimal("2.5")),
 						lval(new BigDecimal("0.25")),
-						lval(new BigDecimal("2.75"))))
-				.solve(lval(BigDecimal.ONE), TestSchedulers.factory())
+						lval(new BigDecimal("2.75"))))).on(TestSchedulers.factory()).solve(lval(BigDecimal.ONE))
 				.map(Term::get));
 		Assertions.assertThat(good).hasSize(1);
 
-		List<BigDecimal> bad = Utils.collect(Goal.success()
+		List<BigDecimal> bad = Utils.collect(Query.of(Goal.success()
 				.and(BigDecimals.addo(
 						lval(new BigDecimal("2.5")),
 						lval(new BigDecimal("0.25")),
-						lval(new BigDecimal("3"))))
-				.solve(lval(BigDecimal.ONE), TestSchedulers.factory())
+						lval(new BigDecimal("3"))))).on(TestSchedulers.factory()).solve(lval(BigDecimal.ONE))
 				.map(Term::get));
 		Assertions.assertThat(bad).isEmpty();
 	}
 
 	@Test
 	public void decimalOrderDecidesOnGround() {
-		Assertions.assertThat(Utils.collect(Goal.success()
-				.and(BigDecimals.leq(lval(new BigDecimal("2.5")), lval(new BigDecimal("2.5"))))
-				.solve(lval(BigDecimal.ONE), TestSchedulers.factory()))).hasSize(1);
+		Assertions.assertThat(Utils.collect(Query.of(Goal.success()
+				.and(BigDecimals.leq(lval(new BigDecimal("2.5")), lval(new BigDecimal("2.5"))))).on(TestSchedulers.factory()).solve(lval(BigDecimal.ONE)))).hasSize(1);
 
-		Assertions.assertThat(Utils.collect(Goal.success()
-				.and(BigDecimals.lss(lval(new BigDecimal("2.5")), lval(new BigDecimal("2.5"))))
-				.solve(lval(BigDecimal.ONE), TestSchedulers.factory()))).isEmpty();
+		Assertions.assertThat(Utils.collect(Query.of(Goal.success()
+				.and(BigDecimals.lss(lval(new BigDecimal("2.5")), lval(new BigDecimal("2.5"))))).on(TestSchedulers.factory()).solve(lval(BigDecimal.ONE)))).isEmpty();
 	}
 
 	@Test
 	public void denseIntervalRefusesLabellingLoudly() {
 		Unifiable<BigDecimal> x = lvar();
 
-		Assertions.assertThatThrownBy(() -> Utils.collect(Goal.success()
-						.and(dom(x, BigDecimals.interval(BigDecimal.ZERO, BigDecimal.ONE)))
-						.solve(x, TestSchedulers.factory())))
+		Assertions.assertThatThrownBy(() -> Utils.collect(Query.of(Goal.success()
+						.and(dom(x, BigDecimals.interval(BigDecimal.ZERO, BigDecimal.ONE)))).on(TestSchedulers.factory()).solve(x)))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("Discrete");
 	}
@@ -94,10 +89,9 @@ public class TypedFrontsTest {
 		// an enumerated dense domain knows its elements — labelling needs no stepping
 		Unifiable<BigDecimal> x = lvar();
 
-		List<BigDecimal> result = Utils.collect(Goal.success()
+		List<BigDecimal> result = Utils.collect(Query.of(Goal.success()
 				.and(dom(x, BigDecimals.enumerated(
-						new BigDecimal("0.5"), new BigDecimal("1.5"))))
-				.solve(x, TestSchedulers.factory())
+						new BigDecimal("0.5"), new BigDecimal("1.5"))))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get));
 
 		Assertions.assertThat(result).containsExactlyInAnyOrder(
@@ -108,10 +102,9 @@ public class TypedFrontsTest {
 	public void dateIntervalsLabelByDays() {
 		Unifiable<LocalDate> d = lvar();
 
-		List<LocalDate> result = Utils.collect(Goal.success()
+		List<LocalDate> result = Utils.collect(Query.of(Goal.success()
 				.and(dom(d, Dates.interval(
-						LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 3))))
-				.solve(d, TestSchedulers.factory())
+						LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 3))))).on(TestSchedulers.factory()).solve(d)
 				.map(Term::get));
 
 		Assertions.assertThat(result).containsExactlyInAnyOrder(
@@ -124,11 +117,10 @@ public class TypedFrontsTest {
 	public void dateOrderPrunesTheDomain() {
 		Unifiable<LocalDate> d = lvar();
 
-		List<LocalDate> result = Utils.collect(Goal.success()
+		List<LocalDate> result = Utils.collect(Query.of(Goal.success()
 				.and(dom(d, Dates.interval(
 						LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 10))))
-				.and(Dates.lss(d, lval(LocalDate.of(2026, 1, 4))))
-				.solve(d, TestSchedulers.factory())
+				.and(Dates.lss(d, lval(LocalDate.of(2026, 1, 4))))).on(TestSchedulers.factory()).solve(d)
 				.map(Term::get));
 
 		Assertions.assertThat(result).containsExactlyInAnyOrder(
@@ -212,13 +204,11 @@ public class TypedFrontsTest {
 		Instant earlier = Instant.parse("1969-07-20T20:17:00Z");
 		Instant later = Instant.parse("2026-09-18T12:00:00Z");
 
-		Assertions.assertThat(Utils.collect(Goal.success()
-				.and(Instants.lss(lval(earlier), lval(later)))
-				.solve(lval(0L), TestSchedulers.factory()))).hasSize(1);
+		Assertions.assertThat(Utils.collect(Query.of(Goal.success()
+				.and(Instants.lss(lval(earlier), lval(later)))).on(TestSchedulers.factory()).solve(lval(0L)))).hasSize(1);
 
-		Assertions.assertThat(Utils.collect(Goal.success()
-				.and(Instants.lss(lval(later), lval(earlier)))
-				.solve(lval(0L), TestSchedulers.factory()))).isEmpty();
+		Assertions.assertThat(Utils.collect(Query.of(Goal.success()
+				.and(Instants.lss(lval(later), lval(earlier)))).on(TestSchedulers.factory()).solve(lval(0L)))).isEmpty();
 	}
 
 	@Test
@@ -311,7 +301,7 @@ public class TypedFrontsTest {
 		Unifiable<Integer> t1 = lvar(), t2 = lvar(), e = lvar();
 
 		List<Tuple4<Integer, Integer, Integer, Integer>> result =
-				Utils.collect(Goal.success()
+				Utils.collect(Query.of(Goal.success()
 						.and(dom(a, Ints.interval(0, 5)))
 						.and(dom(b, Ints.interval(0, 5)))
 						.and(dom(c, Ints.interval(0, 5)))
@@ -319,8 +309,7 @@ public class TypedFrontsTest {
 						.and(Ints.addo(a, b, t1))
 						.and(Ints.addo(t1, c, t2))
 						.and(Ints.addo(t2, d, e))
-						.and(Ints.lss(e, lval(2)))
-						.solve(lval(Tuple.of(a, b, c, d)), TestSchedulers.factory())
+						.and(Ints.lss(e, lval(2)))).on(TestSchedulers.factory()).solve(lval(Tuple.of(a, b, c, d)))
 						.map(Term::get)
 						.map(t -> t.map(Term::get, Term::get, Term::get, Term::get)));
 
@@ -529,12 +518,11 @@ public class TypedFrontsTest {
 		Unifiable<Integer> v = lvar();
 		Unifiable<Integer> w = lvar();
 
-		List<Integer> result = Utils.collect(Goal.success()
+		List<Integer> result = Utils.collect(Query.of(Goal.success()
 				.and(dom(u, Ints.interval(2, 3)))
 				.and(dom(v, Ints.interval(2, 3)))
 				.and(dom(w, Ints.interval(10, 20)))
-				.and(Ints.multo(u, v, w))
-				.solve(w, TestSchedulers.factory())
+				.and(Ints.multo(u, v, w))).on(TestSchedulers.factory()).solve(w)
 				.map(Term::get));
 
 		Assertions.assertThat(result).isEmpty();

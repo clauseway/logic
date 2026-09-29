@@ -3,6 +3,7 @@ package org.clauseway.logic.nogoods;
 // ABOUTME: The trial's edges: a woken suspension may legally fork an imposition,
 // ABOUTME: and double negation decides at the ground floor without eager narrowing.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
@@ -53,9 +54,8 @@ public class TrialEdgeTest {
 		// future earliness, not a soundness need
 		Unifiable<Long> x = lvar();
 
-		java.util.List<Long> answers = dom(x, Longs.range(5, 9))
-				.and(exclude(x.unifies(3L)))
-				.solve(x, TestSchedulers.factory())
+		java.util.List<Long> answers = Query.of(dom(x, Longs.range(5, 9))
+				.and(exclude(x.unifies(3L)))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.sorted()
 				.collect(java.util.stream.Collectors.toList());
@@ -72,7 +72,7 @@ public class TrialEdgeTest {
 		Goal g = dom(x, Longs.range(0, 10))
 				.and(exclude(inner));
 
-		java.util.List<Long> answers = g.solve(x, TestSchedulers.factory())
+		java.util.List<Long> answers = Query.of(g).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get).collect(Collectors.toList());
 		assertThat(answers).containsExactlyInAnyOrder(0L, 1L, 2L, 3L, 4L);
 	}
@@ -83,12 +83,12 @@ public class TrialEdgeTest {
 		Unifiable<Long> x = lvar();
 		Goal violated = x.unifies(7L)
 				.and(exclude(exclude(dom(x, Longs.range(0, 5)))));
-		assertThat(violated.solve(x, TestSchedulers.factory()).count()).isZero();
+		assertThat(Query.of(violated).on(TestSchedulers.factory()).solve(x).count()).isZero();
 
 		Unifiable<Long> y = lvar();
 		Goal satisfied = y.unifies(3L)
 				.and(exclude(exclude(dom(y, Longs.range(0, 5)))));
-		assertThat(satisfied.solve(y, TestSchedulers.factory()).findFirst().get().get())
+		assertThat(Query.of(satisfied).on(TestSchedulers.factory()).solve(y).findFirst().get().get())
 				.isEqualTo(3L);
 	}
 }

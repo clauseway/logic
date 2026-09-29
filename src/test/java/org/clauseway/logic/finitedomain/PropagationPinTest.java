@@ -1,5 +1,6 @@
 package org.clauseway.logic.finitedomain;
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
@@ -40,7 +41,7 @@ public class PropagationPinTest {
 						dom(x, Longs.range(1, 2)),    // ∩ → {1}: collapse-binds, violates x ≠ 1
 						dom(x, Longs.range(2, 3))));  // ∩ → {2}: the valid branch
 
-		List<Long> result = g.solve(x, TestSchedulers.factory()).map(Term::get).collect(Collectors.toList());
+		List<Long> result = Query.of(g).on(TestSchedulers.factory()).solve(x).map(Term::get).collect(Collectors.toList());
 
 		assertThat(result).containsExactly(2L);
 	}
@@ -62,13 +63,12 @@ public class PropagationPinTest {
 			return Cont.just(s);
 		};
 
-		long count = dom(x, Longs.range(1, 11))        // {1..10}
+		long count = Query.of(dom(x, Longs.range(1, 11))        // {1..10}
 				.and(dom(y, Longs.range(1, 11)))       // {1..10}
 				.and(dom(z, Longs.range(1, 4)))        // {1..3}
 				.and(Longs.leq(x, y))                                     // runs while y is wide
 				.and(Longs.leq(y, z))                                     // narrows y to {1..3}
-				.and(probe)
-				.solve(x, TestSchedulers.factory())
+				.and(probe)).on(TestSchedulers.factory()).solve(x)
 				.count();
 
 		assertThat(count).isGreaterThan(0);
@@ -92,13 +92,12 @@ public class PropagationPinTest {
 			return Cont.just(s);
 		};
 
-		long count = dom(x, Longs.range(1, 11))
+		long count = Query.of(dom(x, Longs.range(1, 11))
 				.and(dom(y, Longs.range(1, 11)))
 				.and(dom(z, Longs.range(1, 4)))
 				.and(Longs.leq(y, z))                                     // y → {1..3} first
 				.and(Longs.leq(x, y))                                     // then x ≤ max(y) = 3
-				.and(probe)
-				.solve(x, TestSchedulers.factory())
+				.and(probe)).on(TestSchedulers.factory()).solve(x)
 				.count();
 
 		assertThat(count).isGreaterThan(0);

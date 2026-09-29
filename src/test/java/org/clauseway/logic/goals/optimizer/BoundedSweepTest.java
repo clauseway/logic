@@ -3,6 +3,7 @@ package org.clauseway.logic.goals.optimizer;
 // ABOUTME: Pins the Bounded sweep: constraint posts price 1, failure prices 0 and
 // ABOUTME: kills segments by sorting, FD constrain-first cuts branch spawns.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.constraints.Constraints.unify;
@@ -73,14 +74,13 @@ public class BoundedSweepTest {
 		// generate-then-constrain, deliberately mis-ordered: domains posted last
 		Unifiable<Long> x1 = lvar(), y1 = lvar();
 		AtomicLong plain = new AtomicLong();
-		assertThat(misOrdered(x1, y1, plain).solve(x1, TestSchedulers.factory())
+		assertThat(Query.of(misOrdered(x1, y1, plain)).on(TestSchedulers.factory()).solve(x1)
 				.map(Object::toString).collect(Collectors.toList()))
 				.containsExactly("{7}");
 
 		Unifiable<Long> x2 = lvar(), y2 = lvar();
 		AtomicLong planned = new AtomicLong();
-		assertThat(misOrdered(x2, y2, planned)
-				.solve(x2, Optimizer.pipeline(new CascadingOptimizer(), new OrderingOptimizer()))
+		assertThat(Query.of(misOrdered(x2, y2, planned)).optimized(Optimizer.pipeline(new CascadingOptimizer(), new OrderingOptimizer())).solve(x2)
 				.map(Object::toString).collect(Collectors.toList()))
 				.containsExactly("{7}");
 
@@ -95,27 +95,24 @@ public class BoundedSweepTest {
 		// rewrite-time kill is DoomPruner's, receipted in DoomPrunerTest
 		Unifiable<Long> x = lvar();
 		AtomicLong plain = new AtomicLong();
-		assertThat(oneOf(x, plain).and(lval(1L).unifies(lval(2L))).solve(x, TestSchedulers.factory()).count()).isZero();
+		assertThat(Query.of(oneOf(x, plain).and(lval(1L).unifies(lval(2L)))).on(TestSchedulers.factory()).solve(x).count()).isZero();
 		assertThat(plain.get()).isEqualTo(N);
 
 		Unifiable<Long> x2 = lvar();
 		AtomicLong planned = new AtomicLong();
-		assertThat(oneOf(x2, planned).and(lval(1L).unifies(lval(2L)))
-				.solve(x2, new OrderingOptimizer()).count()).isZero();
+		assertThat(Query.of(oneOf(x2, planned).and(lval(1L).unifies(lval(2L)))).optimized(new OrderingOptimizer()).solve(x2).count()).isZero();
 		assertThat(planned.get()).isZero();
 
 		// partially-ground contradiction: heads clash through free tails — 0 too
 		Unifiable<Long> xp = lvar();
 		AtomicLong partial = new AtomicLong();
-		assertThat(oneOf(xp, partial)
-				.and(lval(Tuple.of(lvar(), 1L)).unifies(lval(Tuple.of(lvar(), 2L))))
-				.solve(xp, new OrderingOptimizer()).count()).isZero();
+		assertThat(Query.of(oneOf(xp, partial)
+				.and(lval(Tuple.of(lvar(), 1L)).unifies(lval(Tuple.of(lvar(), 2L))))).optimized(new OrderingOptimizer()).solve(xp).count()).isZero();
 		assertThat(partial.get()).isZero();
 
 		// and the ground-TRUE twin stays order 1: the segment survives
 		Unifiable<Long> x3 = lvar();
-		assertThat(oneOf(x3, new AtomicLong()).and(lval(1L).unifies(lval(1L)))
-				.solve(x3, new OrderingOptimizer()).count()).isEqualTo(N);
+		assertThat(Query.of(oneOf(x3, new AtomicLong()).and(lval(1L).unifies(lval(1L)))).optimized(new OrderingOptimizer()).solve(x3).count()).isEqualTo(N);
 	}
 
 	@Test
@@ -132,8 +129,7 @@ public class BoundedSweepTest {
 		for (Goal deadPost : dead) {
 			Unifiable<Long> x = lvar();
 			AtomicLong planned = new AtomicLong();
-			assertThat(oneOf(x, planned).and(deadPost)
-					.solve(x, new OrderingOptimizer()).count()).isZero();
+			assertThat(Query.of(oneOf(x, planned).and(deadPost)).optimized(new OrderingOptimizer()).solve(x).count()).isZero();
 			assertThat(planned.get()).describedAs(deadPost.toString()).isZero();
 		}
 	}
@@ -148,13 +144,12 @@ public class BoundedSweepTest {
 	public void failureSortsFirstAndKillsTheSegmentBeforeGeneration() {
 		Unifiable<Long> x = lvar();
 		AtomicLong plain = new AtomicLong();
-		assertThat(oneOf(x, plain).and(Goal.failure()).solve(x, TestSchedulers.factory()).count()).isZero();
+		assertThat(Query.of(oneOf(x, plain).and(Goal.failure())).on(TestSchedulers.factory()).solve(x).count()).isZero();
 		assertThat(plain.get()).isEqualTo(N);
 
 		Unifiable<Long> x2 = lvar();
 		AtomicLong planned = new AtomicLong();
-		assertThat(oneOf(x2, planned).and(Goal.failure())
-				.solve(x2, new OrderingOptimizer()).count()).isZero();
+		assertThat(Query.of(oneOf(x2, planned).and(Goal.failure())).optimized(new OrderingOptimizer()).solve(x2).count()).isZero();
 		assertThat(planned.get()).isZero();
 	}
 }

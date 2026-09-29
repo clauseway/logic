@@ -3,6 +3,7 @@ package org.clauseway.logic.nogoods;
 // ABOUTME: NogoodConstraints' boundary faces: split keeps wholly-named nogoods, rename
 // ABOUTME: transcribes literals wrapped, and nogoods cross tabled calls whole.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
@@ -109,11 +110,11 @@ public class NogoodProjectionTest {
 
 		Unifiable<Integer> y = lvar();
 		Goal violating = notThree.apply(y).and(y.unifies(3));
-		assertThat(violating.solve(y, TestSchedulers.factory()).count()).isZero();
+		assertThat(Query.of(violating).on(TestSchedulers.factory()).solve(y).count()).isZero();
 
 		Unifiable<Integer> z = lvar();
 		Goal escaping = notThree.apply(z).and(z.unifies(5));
-		assertThat(escaping.solve(z, TestSchedulers.factory()).findFirst().get().get())
+		assertThat(Query.of(escaping).on(TestSchedulers.factory()).solve(z).findFirst().get().get())
 				.isEqualTo(5);
 	}
 
@@ -124,8 +125,7 @@ public class NogoodProjectionTest {
 						.and(exclude(x.unifies(3L))));
 
 		Unifiable<Long> y = lvar();
-		java.util.List<Long> answers = constrained.apply(y)
-				.solve(y, TestSchedulers.factory())
+		java.util.List<Long> answers = Query.of(constrained.apply(y)).on(TestSchedulers.factory()).solve(y)
 				.map(Term::get).collect(Collectors.toList());
 
 		assertThat(answers).containsExactlyInAnyOrder(0L, 1L, 2L, 4L);

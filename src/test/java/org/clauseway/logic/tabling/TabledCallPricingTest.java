@@ -3,6 +3,7 @@ package org.clauseway.logic.tabling;
 // ABOUTME: Pins the ∞→exact pricing transition: a tabled call prices MAX while its
 // ABOUTME: entry is incomplete and the exact answer count once the entry completes.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -41,7 +42,7 @@ public class TabledCallPricingTest {
 
 		// run the relation to exhaustion in this package's table: the full
 		// drain seals the entries through completion detection
-		assertThat(call.solveFrom(p, out, BreadthFirstScheduler::new).count()).isEqualTo(2);
+		assertThat(Query.of(call).from(p).on(BreadthFirstScheduler::new).solve(out).count()).isEqualTo(2);
 
 		assertThat(((Bounded) call).answers(p)).isEqualTo(2);
 	}

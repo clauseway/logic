@@ -3,6 +3,7 @@ package org.clauseway.logic.tabling;
 // ABOUTME: Pins TCLP stage 1: tabled calls under FD domains — residues key the
 // ABOUTME: cache, the master runs FROM the key, consumers filter by their own state.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -58,9 +59,8 @@ public class TabledUnderDomainsTest {
 		Tabled<Tuple1<Unifiable<Integer>>> gen = oneToFive();
 		Unifiable<Integer> x = lvar();
 
-		List<Integer> values = FiniteDomain.dom(x, dom(1, 2, 3))
-				.and(gen.apply(Tuple.of(x)))
-				.solve(x, TestSchedulers.factory())
+		List<Integer> values = Query.of(FiniteDomain.dom(x, dom(1, 2, 3))
+				.and(gen.apply(Tuple.of(x)))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::<Integer>get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -91,7 +91,7 @@ public class TabledUnderDomainsTest {
 
 		Unifiable<Tuple4<Unifiable<Integer>, Unifiable<Integer>, Unifiable<Integer>, Unifiable<Integer>>> out =
 				lval(Tuple.of(x, y, u, v));
-		long combos = caller1.and(caller2).solve(out, TestSchedulers.factory()).count();
+		long combos = Query.of(caller1.and(caller2)).on(TestSchedulers.factory()).solve(out).count();
 
 		// caller 1 filters to its three sum-4 pairs; caller 2 gets all nine
 		assertThat(combos).isEqualTo(3L * 9L);
@@ -110,7 +110,7 @@ public class TabledUnderDomainsTest {
 		Goal caller2 = FiniteDomain.dom(u, dom(2, 3)).and(gen.apply(Tuple.of(u)));
 
 		Unifiable<Tuple2<Unifiable<Integer>, Unifiable<Integer>>> out = lval(Tuple.of(x, u));
-		long combos = caller1.and(caller2).solve(out, TestSchedulers.factory()).count();
+		long combos = Query.of(caller1.and(caller2)).on(TestSchedulers.factory()).solve(out).count();
 
 		assertThat(combos).isEqualTo(2L * 2L);
 	}
@@ -125,10 +125,9 @@ public class TabledUnderDomainsTest {
 		Unifiable<Integer> other = lvar();
 		Unifiable<Integer> x = lvar();
 
-		List<Integer> values = FiniteDomain.dom(other, dom(7))
+		List<Integer> values = Query.of(FiniteDomain.dom(other, dom(7))
 				.and(unify(x, lval(2)))
-				.and(gen.apply(Tuple.of(x)))
-				.solve(x, TestSchedulers.factory())
+				.and(gen.apply(Tuple.of(x)))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::<Integer>get)
 				.collect(Collectors.toList());
 
@@ -144,8 +143,7 @@ public class TabledUnderDomainsTest {
 						FiniteDomain.dom(x, dom(1, 2, 3))));
 		Unifiable<Integer> x = lvar();
 
-		List<Integer> values = vague.apply(Tuple.of(x))
-				.solve(x, TestSchedulers.factory())
+		List<Integer> values = Query.of(vague.apply(Tuple.of(x))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::<Integer>get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -164,8 +162,7 @@ public class TabledUnderDomainsTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 
-		long pairs = region.apply(Tuple.of(x, y))
-				.solve(lval(Tuple.of(x, y)), TestSchedulers.factory())
+		long pairs = Query.of(region.apply(Tuple.of(x, y))).on(TestSchedulers.factory()).solve(lval(Tuple.of(x, y)))
 				.count();
 		assertThat(pairs).isEqualTo(3);   // (1,3) (2,2) (3,1)
 	}
@@ -178,9 +175,8 @@ public class TabledUnderDomainsTest {
 						FiniteDomain.dom(x, dom(1, 2, 3))));
 		Unifiable<Integer> x = lvar();
 
-		List<Integer> values = FiniteDomain.dom(x, dom(2, 3))
-				.and(vague.apply(Tuple.of(x)))
-				.solve(x, TestSchedulers.factory())
+		List<Integer> values = Query.of(FiniteDomain.dom(x, dom(2, 3))
+				.and(vague.apply(Tuple.of(x)))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::<Integer>get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -200,8 +196,7 @@ public class TabledUnderDomainsTest {
 								.or(FiniteDomain.dom(x, dom(1, 2, 3)))));
 		Unifiable<Integer> x = lvar();
 
-		List<Integer> values = gen.apply(Tuple.of(x))
-				.solve(x, TestSchedulers.factory())
+		List<Integer> values = Query.of(gen.apply(Tuple.of(x))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::<Integer>get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -221,8 +216,7 @@ public class TabledUnderDomainsTest {
 						inner.apply(Tuple.of(x))));
 		Unifiable<Integer> x = lvar();
 
-		List<Integer> values = outer.apply(Tuple.of(x))
-				.solve(x, TestSchedulers.factory())
+		List<Integer> values = Query.of(outer.apply(Tuple.of(x))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::<Integer>get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -245,8 +239,7 @@ public class TabledUnderDomainsTest {
 						inner.apply(Tuple.of(x))));
 		Unifiable<Integer> x = lvar();
 
-		List<Integer> values = outer.apply(Tuple.of(x))
-				.solve(x, TestSchedulers.factory())
+		List<Integer> values = Query.of(outer.apply(Tuple.of(x))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::<Integer>get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -263,8 +256,7 @@ public class TabledUnderDomainsTest {
 								.or(FiniteDomain.dom(x, dom(1, 2)))));
 		Unifiable<Integer> x = lvar();
 
-		List<Integer> values = gen.apply(Tuple.of(x))
-				.solve(x, TestSchedulers.factory())
+		List<Integer> values = Query.of(gen.apply(Tuple.of(x))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::<Integer>get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -286,8 +278,7 @@ public class TabledUnderDomainsTest {
 				}));
 		Unifiable<Integer> x = lvar();
 
-		List<Integer> values = throughLocal.apply(Tuple.of(x))
-				.solve(x, TestSchedulers.factory())
+		List<Integer> values = Query.of(throughLocal.apply(Tuple.of(x))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::<Integer>get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -309,8 +300,7 @@ public class TabledUnderDomainsTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 
-		List<String> pairs = rel.apply(Tuple.of(x, y))
-				.solve(lval(Tuple.of(x, y)), TestSchedulers.factory())
+		List<String> pairs = Query.of(rel.apply(Tuple.of(x, y))).on(TestSchedulers.factory()).solve(lval(Tuple.of(x, y)))
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -338,7 +328,7 @@ public class TabledUnderDomainsTest {
 				}));
 		Unifiable<Integer> x = lvar();
 
-		assertThat(withIsland.apply(Tuple.of(x)).solve(x, TestSchedulers.factory()).count()).isEqualTo(0);
+		assertThat(Query.of(withIsland.apply(Tuple.of(x))).on(TestSchedulers.factory()).solve(x).count()).isEqualTo(0);
 	}
 
 	@Test
@@ -356,9 +346,8 @@ public class TabledUnderDomainsTest {
 		Unifiable<Integer> u = lvar();
 		Unifiable<Integer> v = lvar();
 
-		long quads = region.apply(Tuple.of(x, y))
-				.and(region.apply(Tuple.of(u, v)))
-				.solve(lval(Tuple.of(x, y, u, v)), TestSchedulers.factory())
+		long quads = Query.of(region.apply(Tuple.of(x, y))
+				.and(region.apply(Tuple.of(u, v)))).on(TestSchedulers.factory()).solve(lval(Tuple.of(x, y, u, v)))
 				.count();
 		assertThat(quads).isEqualTo(9);   // the coupled line (1,3)(2,2)(3,1), squared
 	}
@@ -371,9 +360,8 @@ public class TabledUnderDomainsTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 
-		long pairs = gen.apply(Tuple.of(x))
-				.and(gen.apply(Tuple.of(y)))
-				.solve(lval(Tuple.of(x, y)), TestSchedulers.factory())
+		long pairs = Query.of(gen.apply(Tuple.of(x))
+				.and(gen.apply(Tuple.of(y)))).on(TestSchedulers.factory()).solve(lval(Tuple.of(x, y)))
 				.count();
 		assertThat(pairs).isEqualTo(4);
 	}
@@ -395,8 +383,7 @@ public class TabledUnderDomainsTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> z = lvar();
 
-		List<String> pairs = rel.apply(Tuple.of(x, z))
-				.solve(lval(Tuple.of(x, z)), TestSchedulers.factory())
+		List<String> pairs = Query.of(rel.apply(Tuple.of(x, z))).on(TestSchedulers.factory()).solve(lval(Tuple.of(x, z)))
 				.map(Object::toString)
 				.distinct()
 				.sorted()
@@ -420,8 +407,7 @@ public class TabledUnderDomainsTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 
-		List<String> distinct = rel.apply(Tuple.of(x, y))
-				.solve(lval(Tuple.of(x, y)), TestSchedulers.factory())
+		List<String> distinct = Query.of(rel.apply(Tuple.of(x, y))).on(TestSchedulers.factory()).solve(lval(Tuple.of(x, y)))
 				.map(Object::toString)
 				.distinct()
 				.sorted()
@@ -445,11 +431,10 @@ public class TabledUnderDomainsTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 
-		long answers = FiniteDomain.dom(x, dom(1, 2, 3))
+		long answers = Query.of(FiniteDomain.dom(x, dom(1, 2, 3))
 				.and(FiniteDomain.dom(y, dom(1, 2, 3)))
 				.and(Ints.addo(x, y, lval(4)))
-				.and(rel.apply(Tuple.of(x, y)))
-				.solve(lval(Tuple.of(x, y)), TestSchedulers.factory())
+				.and(rel.apply(Tuple.of(x, y)))).on(TestSchedulers.factory()).solve(lval(Tuple.of(x, y)))
 				.count();
 		assertThat(answers).isEqualTo(1);   // (1,3)
 	}

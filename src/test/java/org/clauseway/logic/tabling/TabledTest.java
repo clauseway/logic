@@ -1,5 +1,6 @@
 package org.clauseway.logic.tabling;
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -42,9 +43,8 @@ public class TabledTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 
-		long count = x.unifies(1).and(y.unifies(4))
-				.and(path.apply(Tuple.of(x, y)))
-				.solve(lvar(), TestSchedulers.factory())
+		long count = Query.of(x.unifies(1).and(y.unifies(4))
+				.and(path.apply(Tuple.of(x, y)))).on(TestSchedulers.factory()).solve(lvar())
 				.count();
 
 		assertThat(count).isEqualTo(1);
@@ -57,10 +57,9 @@ public class TabledTest {
 		Unifiable<Integer> b = lvar();
 
 		// path(1, _) = {2, 3, 4}; the second application consumes the first's cache
-		long count = one.unifies(1)
+		long count = Query.of(one.unifies(1)
 				.and(path.apply(Tuple.of(one, a)))
-				.and(path.apply(Tuple.of(one, b)))
-				.solve(lval(Tuple.of(a, b)), TestSchedulers.factory())
+				.and(path.apply(Tuple.of(one, b)))).on(TestSchedulers.factory()).solve(lval(Tuple.of(a, b)))
 				.count();
 
 		assertThat(count).isEqualTo(9);
@@ -78,9 +77,8 @@ public class TabledTest {
 		Unifiable<Integer> y = lvar();
 
 		List<Tuple2<Integer, Integer>> results =
-				constant1.apply(Tuple.of(x))
-						.and(constant2.apply(Tuple.of(y)))
-						.solve(lval(Tuple.of(x, y)), TestSchedulers.factory())
+				Query.of(constant1.apply(Tuple.of(x))
+						.and(constant2.apply(Tuple.of(y)))).on(TestSchedulers.factory()).solve(lval(Tuple.of(x, y)))
 						.map(Term::get)
 						.map(t -> t.map1(Term::get).map2(Term::get))
 						.collect(Collectors.toList());
@@ -104,7 +102,7 @@ public class TabledTest {
 				}));
 
 		Unifiable<Object> p = lvar();
-		long count = pairs.apply(Tuple.of(p)).solve(p, TestSchedulers.factory()).count();
+		long count = Query.of(pairs.apply(Tuple.of(p))).on(TestSchedulers.factory()).solve(p).count();
 
 		assertThat(count).isEqualTo(1);
 	}
@@ -126,9 +124,8 @@ public class TabledTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 
-		long count = x.unifies(1).and(y.unifies(4))
-				.and(pathNoSelf(x, y))
-				.solve(lvar(), TestSchedulers.factory())
+		long count = Query.of(x.unifies(1).and(y.unifies(4))
+				.and(pathNoSelf(x, y))).on(TestSchedulers.factory()).solve(lvar())
 				.count();
 
 		assertThat(count).isEqualTo(1);

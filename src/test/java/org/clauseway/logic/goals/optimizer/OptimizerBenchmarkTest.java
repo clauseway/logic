@@ -3,6 +3,7 @@ package org.clauseway.logic.goals.optimizer;
 // ABOUTME: Proves the ordering optimizer reduces search work: identical answers,
 // ABOUTME: an order of magnitude fewer branch spawns on a mis-ordered query.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -60,14 +61,13 @@ public class OptimizerBenchmarkTest {
 	public void orderingCutsBranchSpawnsByAnOrderOfMagnitude() {
 		Unifiable<Integer> x1 = lvar(), y1 = lvar();
 		AtomicLong plain = new AtomicLong();
-		assertThat(misOrdered(x1, y1, plain).solve(x1, TestSchedulers.factory())
+		assertThat(Query.of(misOrdered(x1, y1, plain)).on(TestSchedulers.factory()).solve(x1)
 				.map(Object::toString).collect(Collectors.toList()))
 				.containsExactly("{7}");
 
 		Unifiable<Integer> x2 = lvar(), y2 = lvar();
 		AtomicLong planned = new AtomicLong();
-		assertThat(misOrdered(x2, y2, planned)
-				.solve(x2, Optimizer.pipeline(new CascadingOptimizer(), new OrderingOptimizer()))
+		assertThat(Query.of(misOrdered(x2, y2, planned)).optimized(Optimizer.pipeline(new CascadingOptimizer(), new OrderingOptimizer())).solve(x2)
 				.map(Object::toString).collect(Collectors.toList()))
 				.containsExactly("{7}");
 

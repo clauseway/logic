@@ -3,6 +3,7 @@ package org.clauseway.logic.tabling;
 // ABOUTME: The public tabled-call door: any value-equal token keys the solve's
 // ABOUTME: table, bodies ride the call, method recursion re-enters and seals.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -39,9 +40,8 @@ public class TablingCallDoorTest {
 		int[][] edges = {{1, 2}, {1, 3}};
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		List<String> answers = x.unifies(1)
-				.and(Tabling.call("edges", Tuple.of(x, y), () -> edge(edges, x, y)))
-				.solve(y, TestSchedulers.factory())
+		List<String> answers = Query.of(x.unifies(1)
+				.and(Tabling.call("edges", Tuple.of(x, y), () -> edge(edges, x, y)))).on(TestSchedulers.factory()).solve(y)
 				.map(Object::toString).sorted().collect(Collectors.toList());
 		assertThat(answers).containsExactlyInAnyOrder("{2}", "{3}");
 	}
@@ -58,7 +58,7 @@ public class TablingCallDoorTest {
 		Unifiable<Integer> one = lvar();
 		Unifiable<Integer> a = lvar();
 		Unifiable<Integer> b = lvar();
-		List<String> pairs = one.unifies(1)
+		List<String> pairs = Query.of(one.unifies(1)
 				.and(Tabling.call(token1, Tuple.of(one, a), () -> {
 					productions.incrementAndGet();
 					return edge(edges, one, a);
@@ -66,8 +66,7 @@ public class TablingCallDoorTest {
 				.and(Tabling.call(token2, Tuple.of(one, b), () -> {
 					productions.incrementAndGet();
 					return edge(edges, one, b);
-				}))
-				.solve(lval(Tuple.of(a, b)), TestSchedulers.factory())
+				}))).on(TestSchedulers.factory()).solve(lval(Tuple.of(a, b)))
 				.map(Term::get)
 				.map(t -> t._1.get() + "," + t._2.get())
 				.collect(Collectors.toList());
@@ -80,15 +79,14 @@ public class TablingCallDoorTest {
 		AtomicInteger productions = new AtomicInteger();
 		Unifiable<Integer> a = lvar();
 		Unifiable<Integer> b = lvar();
-		List<String> pairs = Tabling.call("p", Tuple.of(a), () -> {
+		List<String> pairs = Query.of(Tabling.call("p", Tuple.of(a), () -> {
 					productions.incrementAndGet();
 					return a.unifies(1);
 				})
 				.and(Tabling.call("q", Tuple.of(b), () -> {
 					productions.incrementAndGet();
 					return b.unifies(2);
-				}))
-				.solve(lval(Tuple.of(a, b)), TestSchedulers.factory())
+				}))).on(TestSchedulers.factory()).solve(lval(Tuple.of(a, b)))
 				.map(Term::get)
 				.map(t -> t._1.get() + "," + t._2.get())
 				.collect(Collectors.toList());
@@ -111,8 +109,7 @@ public class TablingCallDoorTest {
 		int[][] cycle = {{1, 2}, {2, 3}, {3, 1}};
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		List<String> answers = x.unifies(1).and(reach(cycle, x, y))
-				.solve(y, TestSchedulers.factory())
+		List<String> answers = Query.of(x.unifies(1).and(reach(cycle, x, y))).on(TestSchedulers.factory()).solve(y)
 				.map(Object::toString).sorted().collect(Collectors.toList());
 		assertThat(answers).containsExactlyInAnyOrder("{1}", "{2}", "{3}");
 	}

@@ -3,6 +3,7 @@ package org.clauseway.logic.constraints;
 // ABOUTME: Posting is the chokepoint vocabulary lifted to Goal: apply IS the
 // ABOUTME: imposition, and Bounded's order is a count — doom never prices.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -29,14 +30,14 @@ public class PostingTest {
 		Goal g = FiniteDomain.dom(x, Longs.range(0, 5))
 				.and(x.unifies(3L));
 
-		List<Long> answers = g.solve(x, TestSchedulers.factory())
+		List<Long> answers = Query.of(g).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get).collect(Collectors.toList());
 		assertThat(answers).containsExactly(3L);
 
 		Unifiable<Long> y = lvar();
 		Goal outside = FiniteDomain.dom(y, Longs.range(0, 5))
 				.and(y.unifies(7L));
-		assertThat(outside.solve(y, TestSchedulers.factory()).count()).isZero();
+		assertThat(Query.of(outside).on(TestSchedulers.factory()).solve(y).count()).isZero();
 	}
 
 	@Test

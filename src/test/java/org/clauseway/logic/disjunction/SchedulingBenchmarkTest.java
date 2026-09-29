@@ -3,6 +3,7 @@ package org.clauseway.logic.disjunction;
 // ABOUTME: The ratified benchmark (SO 70288953): pairwise non-overlap scheduling
 // ABOUTME: as one disjunct per pair, raced against the conde spelling of 2021.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -121,7 +122,7 @@ public class SchedulingBenchmarkTest {
 				count.incrementAndGet();
 			}
 		};
-		List<Reified<T>> results = goal.solve(out, fiber -> new BreadthFirstScheduler<>(fiber).withListener(counting))
+		List<Reified<T>> results = Query.of(goal).on(fiber -> new BreadthFirstScheduler<>(fiber).withListener(counting)).solve(out)
 				.collect(Collectors.toList());
 		return count.get();
 	}
@@ -159,7 +160,7 @@ public class SchedulingBenchmarkTest {
 	}
 
 	private static List<Reified<LList<Long>>> answers(Goal goal, Unifiable<LList<Long>> out) {
-		return goal.solve(out, TestSchedulers.factory()).collect(Collectors.toList());
+		return Query.of(goal).on(TestSchedulers.factory()).solve(out).collect(Collectors.toList());
 	}
 
 	@Test
@@ -193,7 +194,7 @@ public class SchedulingBenchmarkTest {
 				count.incrementAndGet();
 			}
 		};
-		goal.solve(out, fiber -> DepthFirstScheduler.of(fiber).withListener(counting))
+		Query.of(goal).on(fiber -> DepthFirstScheduler.of(fiber).withListener(counting)).solve(out)
 				.limit(1)
 				.forEach(r -> {
 				});

@@ -3,6 +3,7 @@ package org.clauseway.logic.goals;
 // ABOUTME: Pins the Optimizer seam: cascading normalization flattens nested and/or
 // ABOUTME: in one pass, is transparent to NamedGoal, and treats Guard/opaque goals as leaves.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -78,10 +79,10 @@ public class OptimizerTest {
 	public void rewrittenGoalSolvesToTheSameAnswers() {
 		Unifiable<Integer> x = lvar();
 		Goal g = unify(x, lval(3)).and(Goal.success().and(Goal.success()));
-		assertThat(g.accept(new CascadingOptimizer()).ground().solve(x, TestSchedulers.factory())
+		assertThat(Query.of(g.accept(new CascadingOptimizer()).ground()).on(TestSchedulers.factory()).solve(x)
 				.map(Object::toString)
 				.collect(Collectors.toList()))
-				.isEqualTo(g.solve(x, TestSchedulers.factory())
+				.isEqualTo(Query.of(g).on(TestSchedulers.factory()).solve(x)
 						.map(Object::toString)
 						.collect(Collectors.toList()));
 	}

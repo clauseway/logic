@@ -3,6 +3,7 @@ package org.clauseway.logic.goals.optimizer;
 // ABOUTME: Law-tests the shipped pricers along growing-knowledge chains: a price
 // ABOUTME: must never rise as knowledge grows — stale prices stay sound.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -53,7 +54,7 @@ public class PricerMonotonicityTest {
 		Knowledge noTable = Knowledge.empty();
 		Knowledge incomplete = Knowledge.empty().withStore(Table.empty());
 		Knowledge complete = Knowledge.empty().withStore(Table.empty());
-		assertThat(call.solveFrom(complete, out, BreadthFirstScheduler::new).count()).isEqualTo(2);
+		assertThat(Query.of(call).from(complete).on(BreadthFirstScheduler::new).solve(out).count()).isEqualTo(2);
 
 		MonotoneLaws.check(
 				Arrays.asList(noTable, incomplete, complete),

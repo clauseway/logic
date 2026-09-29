@@ -1,5 +1,7 @@
 package org.clauseway.logic.tabling;
 
+import org.clauseway.functional.fibers.schedulers.ForkJoinScheduler;
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -65,8 +67,8 @@ public class TablingTest {
 		// the conjunction supplies the step boundary (its apply suspends), so
 		// the spin steps forever fairly instead of overflowing at apply time
 		spin[0] = defer(() -> Goal.success().and(spin[0]));
-		List<Integer> got = r.apply(x)
-				.and(x.unifies(1).and(spin[0]).orElseFirst(x.unifies(2)))
+		List<Integer> got = Query.of(r.apply(x)
+				.and(x.unifies(1).and(spin[0]).orElseFirst(x.unifies(2))))
 				// PINNED to the default breadth-first drive: this is the crash
 				// hatch's acceptance test — the dead spin level pours through,
 				// so the sibling delivery gets its turns
@@ -89,7 +91,7 @@ public class TablingTest {
 				.and(ancestor(alice, charlie))
 				.and(result.unifies("yes"));
 
-		Stream<Reified<String>> results = query.solve(result, TestSchedulers.factory());
+		Stream<Reified<String>> results = Query.of(query).on(TestSchedulers.factory()).solve(result);
 
 		// Should find answer (through bob)
 		assertThat(results.count()).isEqualTo(1);
@@ -103,7 +105,7 @@ public class TablingTest {
 
 		Goal query = x.unifies("alice").and(ancestor(x, y));
 
-		List<String> descendants = query.solve(y, TestSchedulers.factory())
+		List<String> descendants = Query.of(query).on(TestSchedulers.factory()).solve(y)
 				.map(Term::get)
 				.collect(Collectors.toList());
 
@@ -119,8 +121,7 @@ public class TablingTest {
 			Unifiable<String> x = lvar();
 			Unifiable<String> y = lvar();
 
-			List<String> descendants = x.unifies("alice").and(ancestor(x, y))
-					.solveParallel(y)
+			List<String> descendants = Query.of(x.unifies("alice").and(ancestor(x, y))).on(ForkJoinScheduler::new).solve(y)
 					.map(Term::get)
 					.collect(Collectors.toList());
 
@@ -151,8 +152,7 @@ public class TablingTest {
 			Unifiable<Integer> x = lvar();
 			Unifiable<Integer> y = lvar();
 
-			long count = x.unifies(1).and(y.unifies(4)).and(pg.path.apply(Tuple.of(x, y)))
-					.solveParallel(lvar())
+			long count = Query.of(x.unifies(1).and(y.unifies(4)).and(pg.path.apply(Tuple.of(x, y)))).on(ForkJoinScheduler::new).solve(lvar())
 					.count();
 
 			assertThat(count).isEqualTo(1);
@@ -167,7 +167,7 @@ public class TablingTest {
 
 		Goal query = y.unifies("david").and(ancestor(x, y));
 
-		List<String> ancestors = query.solve(x, TestSchedulers.factory())
+		List<String> ancestors = Query.of(query).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.collect(Collectors.toList());
 
@@ -183,8 +183,7 @@ public class TablingTest {
 			Unifiable<String> x = lvar();
 			Unifiable<String> y = lvar();
 
-			List<String> descendants = x.unifies("alice").and(ancestor(x, y))
-					.solve(y, TestSchedulers.factory())
+			List<String> descendants = Query.of(x.unifies("alice").and(ancestor(x, y))).on(TestSchedulers.factory()).solve(y)
 					.map(Term::get)
 					.collect(Collectors.toList());
 
@@ -204,7 +203,7 @@ public class TablingTest {
 						x.unifies(1).and(x.unifies(2))));
 
 		Unifiable<Integer> x = lvar();
-		long count = x.unifies(42).and(alwaysFail.apply(Tuple.of(x))).solve(x, TestSchedulers.factory()).count();
+		long count = Query.of(x.unifies(42).and(alwaysFail.apply(Tuple.of(x)))).on(TestSchedulers.factory()).solve(x).count();
 
 		assertThat(count).isEqualTo(0);
 	}
@@ -216,7 +215,7 @@ public class TablingTest {
 						x.unifies(42)));
 
 		Unifiable<Integer> x = lvar();
-		List<Integer> results = single.apply(Tuple.of(x)).solve(x, TestSchedulers.factory())
+		List<Integer> results = Query.of(single.apply(Tuple.of(x))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.collect(Collectors.toList());
 
@@ -235,8 +234,7 @@ public class TablingTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 
-		List<Tuple2<Integer, Integer>> results = numRel.apply(Tuple.of(x, y))
-				.solve(lval(Tuple.of(x, y)), TestSchedulers.factory())
+		List<Tuple2<Integer, Integer>> results = Query.of(numRel.apply(Tuple.of(x, y))).on(TestSchedulers.factory()).solve(lval(Tuple.of(x, y)))
 				.map(Term::get)
 				.map(t -> t.map1(Term::get).map2(Term::get))
 				.collect(Collectors.toList());
@@ -296,15 +294,15 @@ public class TablingTest {
 		Unifiable<Integer> x = lvar();
 
 		// Check that 10 is even
-		long evenCount = x.unifies(10).and(even(x)).solve(x, TestSchedulers.factory()).count();
+		long evenCount = Query.of(x.unifies(10).and(even(x))).on(TestSchedulers.factory()).solve(x).count();
 		assertThat(evenCount).isEqualTo(1);
 
 		// Check that 9 is odd
-		long oddCount = x.unifies(9).and(odd(x)).solve(x, TestSchedulers.factory()).count();
+		long oddCount = Query.of(x.unifies(9).and(odd(x))).on(TestSchedulers.factory()).solve(x).count();
 		assertThat(oddCount).isEqualTo(1);
 
 		// Check that 10 is not odd
-		long notOddCount = x.unifies(10).and(odd(x)).solve(x, TestSchedulers.factory()).count();
+		long notOddCount = Query.of(x.unifies(10).and(odd(x))).on(TestSchedulers.factory()).solve(x).count();
 		assertThat(notOddCount).isEqualTo(0);
 	}
 
@@ -342,8 +340,7 @@ public class TablingTest {
 		Unifiable<Integer> y = lvar();
 
 		// Can we reach 50 from 0?
-		long count = x.unifies(0).and(y.unifies(50)).and(rg.reach.apply(Tuple.of(x, y)))
-				.solve(lvar(), TestSchedulers.factory())
+		long count = Query.of(x.unifies(0).and(y.unifies(50)).and(rg.reach.apply(Tuple.of(x, y)))).on(TestSchedulers.factory()).solve(lvar())
 				.count();
 
 		assertThat(count).isEqualTo(1);
@@ -366,7 +363,7 @@ public class TablingTest {
 				}));
 
 		Unifiable<Integer> x = lvar();
-		List<Integer> results = manyNumbers.apply(Tuple.of(x)).solve(x, TestSchedulers.factory())
+		List<Integer> results = Query.of(manyNumbers.apply(Tuple.of(x))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.collect(Collectors.toList());
 
@@ -396,7 +393,7 @@ public class TablingTest {
 				.and(x3.unifies("alice")).and(y3.unifies("david"))
 				.and(ancestor(x3, y3));
 
-		long count = query.solve(lvar(), TestSchedulers.factory()).count();
+		long count = Query.of(query).on(TestSchedulers.factory()).solve(lvar()).count();
 
 		// alice is ancestor of david via bob -> charlie -> david
 		assertThat(count).isEqualTo(1);
@@ -415,8 +412,7 @@ public class TablingTest {
 								.or(p.unifies(Tuple.of("charlie", "david")))));
 
 		Unifiable<Tuple2<String, String>> pair = lvar();
-		List<Tuple2<String, String>> results = familyPair.apply(Tuple.of(pair))
-				.solve(pair, TestSchedulers.factory())
+		List<Tuple2<String, String>> results = Query.of(familyPair.apply(Tuple.of(pair))).on(TestSchedulers.factory()).solve(pair)
 				.map(Term::get)
 				.collect(Collectors.toList());
 
@@ -440,8 +436,7 @@ public class TablingTest {
 
 		// second call consumes the cache: 2 × 2 pairs proves both the
 		// producer and the consumer paths see through the wrapping
-		List<String> pairs = rel.apply(a).and(rel.apply(b))
-				.solve(lval(Tuple.of(a, b)), TestSchedulers.factory())
+		List<String> pairs = Query.of(rel.apply(a).and(rel.apply(b))).on(TestSchedulers.factory()).solve(lval(Tuple.of(a, b)))
 				.map(Object::toString)
 				.collect(Collectors.toList());
 		assertThat(pairs).hasSize(4);
@@ -459,7 +454,7 @@ public class TablingTest {
 				x.unifies(1).and(Goal.goal(s -> Cont.just(Knowledge.empty()))));
 		Unifiable<Integer> out = lvar();
 
-		assertThatThrownBy(() -> rel.apply(out).solve(out, TestSchedulers.factory()).count())
+		assertThatThrownBy(() -> Query.of(rel.apply(out)).on(TestSchedulers.factory()).solve(out).count())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("dropped its stores");
 	}

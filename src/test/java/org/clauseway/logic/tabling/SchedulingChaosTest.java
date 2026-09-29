@@ -4,6 +4,7 @@ package org.clauseway.logic.tabling;
 // ABOUTME: random scheduling seeds must yield the same solutions - any seed that
 // ABOUTME: differs is an order-dependence bug, replayable by its seed.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -45,12 +46,12 @@ public class SchedulingChaosTest {
 	 */
 	private static void orderFree(Supplier<Tuple2<Goal, Unifiable<Integer>>> program) {
 		Tuple2<Goal, Unifiable<Integer>> reference = program.get();
-		List<Integer> expected = reference._1.solve(reference._2, TestSchedulers.factory())
+		List<Integer> expected = Query.of(reference._1).on(TestSchedulers.factory()).solve(reference._2)
 				.map(Term::<Integer>get).sorted().collect(Collectors.toList());
 		for (long seed = 0; seed < SEEDS; seed++) {
 			Tuple2<Goal, Unifiable<Integer>> chaotic = program.get();
 			long s = seed;
-			List<Integer> actual = chaotic._1.solve(chaotic._2, f -> RandomizedScheduler.of(f, s))
+			List<Integer> actual = Query.of(chaotic._1).on(f -> RandomizedScheduler.of(f, s)).solve(chaotic._2)
 					.map(Term::<Integer>get).sorted().collect(Collectors.toList());
 			assertThat(actual)
 					.as("seed %d must match the default driver", s)

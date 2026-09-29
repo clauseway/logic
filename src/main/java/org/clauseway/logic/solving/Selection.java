@@ -77,7 +77,7 @@ public final class Selection {
 			return IntStream.range(0, folded.size())
 					.mapToObj(folded::get)
 					.map(entry -> new Row(keys,
-							Answer.of((Unifiable<?>) anchor, entry._1, entry._2)))
+							Answer.of(anchor, entry._1, entry._2)))
 					.collect(Collectors.toList())
 					.stream();
 		}
@@ -86,10 +86,10 @@ public final class Selection {
 	private Fiber<Nothing> extracted(Knowledge world, Unifiable<Object> anchor,
 			Fiber.Fn<Answer<Unifiable<?>>, Nothing> k) {
 		if (raw) {
-			return Answer.<Unifiable<?>> capture(anchor, world, anchor).flatMap(k::apply);
+			return Answer.<Unifiable<?>> capture(anchor, world, anchor).flatMap(k);
 		}
 		return Constraints.enforced(world, anchor)
 				.apply(committed -> Answer.<Unifiable<?>> capture(anchor, committed, anchor)
-						.flatMap(k::apply));
+						.flatMap(k));
 	}
 }

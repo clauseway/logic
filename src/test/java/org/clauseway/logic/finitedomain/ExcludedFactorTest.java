@@ -3,6 +3,7 @@ package org.clauseway.logic.finitedomain;
 // ABOUTME: The trial's Absorption row through the solve pipeline: an excluded
 // ABOUTME: FD factor read three ways — refuted discharges, entailed fails, owed carves.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -40,9 +41,8 @@ public class ExcludedFactorTest {
 		Theory<FiniteDomainConstraints> factor = FiniteDomainConstraints.withDomain(
 				Theory.empty(), varOf(x), Longs.range(1, 3));
 
-		List<Long> answers = x.unifies(7L)
-				.and(exclude(Propagation.absorb(factor)))
-				.solve(x, TestSchedulers.factory())
+		List<Long> answers = Query.of(x.unifies(7L)
+				.and(exclude(Propagation.absorb(factor)))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.collect(Collectors.toList());
 		assertThat(answers).containsExactly(7L);
@@ -59,7 +59,7 @@ public class ExcludedFactorTest {
 
 		Goal g = dom(x, Longs.range(2, 5))
 				.and(exclude(Propagation.absorb(factor)));
-		assertThat(g.solve(x, TestSchedulers.factory()).count()).isZero();
+		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(x).count()).isZero();
 	}
 
 	@Test
@@ -71,9 +71,8 @@ public class ExcludedFactorTest {
 		Theory<FiniteDomainConstraints> factor = FiniteDomainConstraints.withDomain(
 				Theory.empty(), varOf(x), Longs.range(2, 5));
 
-		List<Long> answers = dom(x, Longs.range(0, 7))
-				.and(exclude(Propagation.absorb(factor)))
-				.solve(x, TestSchedulers.factory())
+		List<Long> answers = Query.of(dom(x, Longs.range(0, 7))
+				.and(exclude(Propagation.absorb(factor)))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.sorted()
 				.collect(Collectors.toList());

@@ -3,6 +3,7 @@ package org.clauseway.logic.algebra;
 // ABOUTME: Semiring laws for the goal witnesses up to answer equality —
 // ABOUTME: multiset Eq for DERIVATIONS, set Eq for ANSWERS (the dedup quotient).
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.constraints.Constraints.unify;
@@ -49,7 +50,7 @@ public class GoalSemiringLawsTest {
 			Logic.membero(X, LList.ofAll(1, 2, 3)).and(exclude(X.unifies(lval(2)))));
 
 	private static List<String> answers(Goal g) {
-		return g.solve(X, TestSchedulers.factory()).map(Object::toString).sorted().collect(Collectors.toList());
+		return Query.of(g).on(TestSchedulers.factory()).solve(X).map(Object::toString).sorted().collect(Collectors.toList());
 	}
 
 	/** Same answers with multiplicities — one occurrence per derivation. */

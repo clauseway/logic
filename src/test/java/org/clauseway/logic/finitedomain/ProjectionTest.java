@@ -3,6 +3,7 @@ package org.clauseway.logic.finitedomain;
 // ABOUTME: Pins the FD store's single-sorted boundary algebra: named value-equal
 // ABOUTME: propagators, lossless split, renaming across namespaces, absorbed replay.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -80,15 +81,13 @@ public class ProjectionTest {
 		Unifiable<Integer> x = lvar();
 		Theory<FiniteDomainConstraints> incoming = domained(Theory.empty(), x, dom(1, 2));
 
-		assertThat(Constraints.unify(x, lval(7))
-				.and(Propagation.absorb(incoming))
-				.solve(x, TestSchedulers.factory())
+		assertThat(Query.of(Constraints.unify(x, lval(7))
+				.and(Propagation.absorb(incoming))).on(TestSchedulers.factory()).solve(x)
 				.count()).isEqualTo(0);
 
 		Theory<FiniteDomainConstraints> wide = domained(Theory.empty(), x, dom(5, 7, 9));
-		assertThat(Constraints.unify(x, lval(7))
-				.and(Propagation.absorb(wide))
-				.solve(x, TestSchedulers.factory())
+		assertThat(Query.of(Constraints.unify(x, lval(7))
+				.and(Propagation.absorb(wide))).on(TestSchedulers.factory()).solve(x)
 				.count()).isEqualTo(1);
 	}
 
@@ -98,13 +97,12 @@ public class ProjectionTest {
 		// theory never drifts, and capture-normalization has nothing to drop
 		Unifiable<Integer> x = lvar();
 		boolean[] pruned = new boolean[1];
-		FiniteDomain.dom(x, dom(1, 2, 3))
+		Query.of(FiniteDomain.dom(x, dom(1, 2, 3))
 				.and(Constraints.unify(x, lval(2)))
 				.and(p -> {
 					pruned[0] = FiniteDomainConstraints.getDomains(p).isEmpty();
 					return Goal.success().apply(p);
-				})
-				.solve(x, TestSchedulers.factory())
+				})).on(TestSchedulers.factory()).solve(x)
 				.count();
 		assertThat(pruned[0]).isTrue();
 	}
@@ -281,8 +279,7 @@ public class ProjectionTest {
 		Unifiable<Integer> x = lvar();
 		Knowledge p = FiniteDomainTestSupport.withDomain(x, dom(1, 2));
 
-		List<Integer> values = Propagation.absorb(theoryIn(p))
-				.solve(x, TestSchedulers.factory())
+		List<Integer> values = Query.of(Propagation.absorb(theoryIn(p))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::<Integer>get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -327,18 +324,16 @@ public class ProjectionTest {
 		Unifiable<Integer> fresh = lvar();
 		java.util.Map<LVar<?>, Term<?>> seed = new java.util.HashMap<>();
 		seed.put(varOf(orig), fresh);
-		assertThat(Propagation.absorb(store.rename(Renaming.minting(seed)).ground())
-				.and(Constraints.unify(fresh, lval(7)))
-				.solve(fresh, TestSchedulers.factory())
+		assertThat(Query.of(Propagation.absorb(store.rename(Renaming.minting(seed)).ground())
+				.and(Constraints.unify(fresh, lval(7)))).on(TestSchedulers.factory()).solve(fresh)
 				.count()).isEqualTo(0);
 
 		Unifiable<Integer> fresh2 = lvar();
 		java.util.Map<LVar<?>, Term<?>> seed2 = new java.util.HashMap<>();
 		seed2.put(varOf(orig), fresh2);
-		assertThat(Propagation.absorb(store.rename(Renaming.minting(seed2)).ground())
+		assertThat(Query.of(Propagation.absorb(store.rename(Renaming.minting(seed2)).ground())
 				.and(Constraints.unify(orig, lval(7)))
-				.and(Constraints.unify(fresh2, lval(3)))
-				.solve(fresh2, TestSchedulers.factory())
+				.and(Constraints.unify(fresh2, lval(3)))).on(TestSchedulers.factory()).solve(fresh2)
 				.count()).isEqualTo(1);
 	}
 

@@ -1,5 +1,6 @@
 package org.clauseway.logic.nogoods;
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.LogicTest.runStream;
 import static org.clauseway.logic.goals.Goal.defer;
@@ -290,11 +291,10 @@ public class SeparateTest {
 	@Test
 	public void shouldReturnFromSingleGoalThatSucceeds() {
 		Unifiable<Integer> x = lvar();
-		List<Integer> results = Utils.collect(Goal.condu(
+		List<Integer> results = Utils.collect(Query.of(Goal.condu(
 						exclude(x.unifies(x)),
 						x.unifies(1).or(x.unifies(2)),
-						x.unifies(3))
-				.solve(x, TestSchedulers.factory())
+						x.unifies(3))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get));
 
 		Assertions.assertThat(results)
@@ -305,11 +305,10 @@ public class SeparateTest {
 	public void shouldReturnFromSingleBranch() {
 		Unifiable<Integer> x = lvar();
 		List<Integer> results =
-				Goal.condu(
+				Query.of(Goal.condu(
 								x.unifies(2).or(x.unifies(3)),
 								x.unifies(1),
-								x.unifies(3))
-						.solve(x, TestSchedulers.factory())
+								x.unifies(3))).on(TestSchedulers.factory()).solve(x)
 						.map(Term::get)
 						.collect(Collectors.toList());
 
@@ -320,11 +319,10 @@ public class SeparateTest {
 	@Test
 	public void shouldReturnSingleElementFromSingleGoalThatSucceeds() {
 		Unifiable<Integer> x = lvar();
-		List<Integer> results = Goal.conda(
+		List<Integer> results = Query.of(Goal.conda(
 						exclude(x.unifies(x)),
 						x.unifies(1).or(x.unifies(2)),
-						x.unifies(3))
-				.solve(x, TestSchedulers.factory())
+						x.unifies(3))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.collect(Collectors.toList());
 

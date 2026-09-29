@@ -3,6 +3,7 @@ package org.clauseway.logic.tabling;
 // ABOUTME: Pins tabled calls under disequality: neq residues key the cache, ride
 // ABOUTME: answers, and replay by copy — canonical across caller lineages.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.constraints.Constraints.unify;
@@ -38,15 +39,13 @@ public class TabledUnderNeqTest {
 						exclude(x.unifies(lval(1)))));
 
 		Unifiable<Integer> y = lvar();
-		assertThat(notOne.apply(Tuple.of(y))
-				.and(unify(y, lval(2)))
-				.solve(y, TestSchedulers.factory())
+		assertThat(Query.of(notOne.apply(Tuple.of(y))
+				.and(unify(y, lval(2)))).on(TestSchedulers.factory()).solve(y)
 				.count()).isEqualTo(1);
 
 		Unifiable<Integer> z = lvar();
-		assertThat(notOne.apply(Tuple.of(z))
-				.and(unify(z, lval(1)))
-				.solve(z, TestSchedulers.factory())
+		assertThat(Query.of(notOne.apply(Tuple.of(z))
+				.and(unify(z, lval(1)))).on(TestSchedulers.factory()).solve(z)
 				.count()).isEqualTo(0);
 	}
 
@@ -58,16 +57,14 @@ public class TabledUnderNeqTest {
 		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		Unifiable<Integer> x = lvar();
-		List<Integer> constrained = exclude(x.unifies(lval(2)))
-				.and(gen.apply(Tuple.of(x)))
-				.solveFrom(p, x, BreadthFirstScheduler::new)
+		List<Integer> constrained = Query.of(exclude(x.unifies(lval(2)))
+				.and(gen.apply(Tuple.of(x)))).from(p).on(BreadthFirstScheduler::new).solve(x)
 				.map(Term::<Integer>get)
 				.collect(Collectors.toList());
 		assertThat(constrained).containsExactly(1);
 
 		Unifiable<Integer> z = lvar();
-		List<Integer> free = gen.apply(Tuple.of(z))
-				.solveFrom(p, z, BreadthFirstScheduler::new)
+		List<Integer> free = Query.of(gen.apply(Tuple.of(z))).from(p).on(BreadthFirstScheduler::new).solve(z)
 				.map(Term::<Integer>get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -83,15 +80,13 @@ public class TabledUnderNeqTest {
 		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		Unifiable<Integer> u = lvar();
-		assertThat(exclude(u.unifies(lval(5)))
-				.and(gen.apply(Tuple.of(u)))
-				.solveFrom(p, u, BreadthFirstScheduler::new)
+		assertThat(Query.of(exclude(u.unifies(lval(5)))
+				.and(gen.apply(Tuple.of(u)))).from(p).on(BreadthFirstScheduler::new).solve(u)
 				.count()).isEqualTo(2);
 
 		Unifiable<Integer> v = lvar();
-		assertThat(exclude(v.unifies(lval(5)))
-				.and(gen.apply(Tuple.of(v)))
-				.solveFrom(p, v, BreadthFirstScheduler::new)
+		assertThat(Query.of(exclude(v.unifies(lval(5)))
+				.and(gen.apply(Tuple.of(v)))).from(p).on(BreadthFirstScheduler::new).solve(v)
 				.count()).isEqualTo(2);
 
 		assertThat(p.getStore(Table.class).entries()).hasSize(1);
@@ -107,11 +102,10 @@ public class TabledUnderNeqTest {
 
 		Unifiable<Integer> a = lvar();
 		Unifiable<Integer> b = lvar();
-		assertThat(notOne.apply(Tuple.of(a))
+		assertThat(Query.of(notOne.apply(Tuple.of(a))
 				.and(notOne.apply(Tuple.of(b)))
 				.and(unify(a, lval(2)))
-				.and(unify(b, lval(3)))
-				.solve(lval(Tuple.of(a, b)), TestSchedulers.factory())
+				.and(unify(b, lval(3)))).on(TestSchedulers.factory()).solve(lval(Tuple.of(a, b)))
 				.count()).isEqualTo(1);
 	}
 }

@@ -3,6 +3,7 @@ package org.clauseway.logic.goals.optimizer;
 // ABOUTME: Pins the ambient ordering layer: ascending sort within barrier-delimited
 // ABOUTME: segments, derived orders through combinators, and ambient-solve equivalence.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -138,9 +139,8 @@ public class OrderingOptimizerTest {
 		// aggregates; holding position is what keeps this query meaning itself.
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> n = lvar();
-		java.util.List<Integer> counts = x.unifies(1).or(x.unifies(2))
-				.and(Aggregate.count(t -> unify(x, lval(5)), n))
-				.solve(n, new OrderingOptimizer())
+		java.util.List<Integer> counts = Query.of(x.unifies(1).or(x.unifies(2))
+				.and(Aggregate.count(t -> unify(x, lval(5)), n))).optimized(new OrderingOptimizer()).solve(n)
 				.map(Term::get)
 				.collect(Collectors.toList());
 
@@ -171,19 +171,19 @@ public class OrderingOptimizerTest {
 	public void ambientSolveYieldsTheSameAnswers() {
 		Unifiable<Integer> x = lvar();
 		Goal g = unify(x, lval(3)).or(unify(x, lval(4)));
-		assertThat(g.solve(x, Optimizer.pipeline(new CascadingOptimizer(), new OrderingOptimizer()))
+		assertThat(Query.of(g).optimized(Optimizer.pipeline(new CascadingOptimizer(), new OrderingOptimizer())).solve(x)
 				.map(Object::toString).collect(Collectors.toList()))
 				.hasSameElementsAs(
-						g.solve(x, TestSchedulers.factory()).map(Object::toString).collect(Collectors.toList()));
+						Query.of(g).on(TestSchedulers.factory()).solve(x).map(Object::toString).collect(Collectors.toList()));
 	}
 
 	@Test
 	public void recursionUnfoldsThroughTheDeferHook() {
 		Unifiable<Integer> x = lvar();
-		assertThat(countdown(x, 3).solve(x, new OrderingOptimizer())
+		assertThat(Query.of(countdown(x, 3)).optimized(new OrderingOptimizer()).solve(x)
 				.map(Object::toString).collect(Collectors.toList()))
 				.hasSameElementsAs(
-						countdown(x, 3).solve(x, TestSchedulers.factory()).map(Object::toString).collect(Collectors.toList()));
+						Query.of(countdown(x, 3)).on(TestSchedulers.factory()).solve(x).map(Object::toString).collect(Collectors.toList()));
 	}
 
 	private static Goal countdown(Unifiable<Integer> x, int n) {

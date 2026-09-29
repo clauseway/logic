@@ -3,6 +3,7 @@ package org.clauseway.logic.lattice;
 // ABOUTME: Proves the lattice store is generic: a flat set-of-values instance gets
 // ABOUTME: verification, narrowing, collapse, propagators, split and rename for free.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -149,20 +150,19 @@ public class LatticeFactorTest {
 	@Test
 	public void aGroundBindingIsVerifiedAgainstTheFlatValue() {
 		Unifiable<Integer> x = lvar();
-		assertThat(flat(x, FlatSet.of(1, 2)).and(x.unifies(1)).solve(x, TestSchedulers.factory()).count())
+		assertThat(Query.of(flat(x, FlatSet.of(1, 2)).and(x.unifies(1))).on(TestSchedulers.factory()).solve(x).count())
 				.isEqualTo(1);
 
 		Unifiable<Integer> y = lvar();
-		assertThat(flat(y, FlatSet.of(1, 2)).and(y.unifies(3)).solve(y, TestSchedulers.factory()).count())
+		assertThat(Query.of(flat(y, FlatSet.of(1, 2)).and(y.unifies(3))).on(TestSchedulers.factory()).solve(y).count())
 				.isZero();
 	}
 
 	@Test
 	public void meetNarrowsAndACollapseInfersTheBinding() {
 		Unifiable<Integer> x = lvar();
-		List<Integer> answers = flat(x, FlatSet.of(1, 2))
-				.and(flat(x, FlatSet.of(2, 3)))
-				.solve(x, TestSchedulers.factory())
+		List<Integer> answers = Query.of(flat(x, FlatSet.of(1, 2))
+				.and(flat(x, FlatSet.of(2, 3)))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.collect(Collectors.toList());
 		assertThat(answers).containsExactly(2);
@@ -171,18 +171,18 @@ public class LatticeFactorTest {
 	@Test
 	public void disjointImpositionsFail() {
 		Unifiable<Integer> x = lvar();
-		assertThat(flat(x, FlatSet.of(1, 2)).and(flat(x, FlatSet.of(3, 4))).solve(x, TestSchedulers.factory()).count())
+		assertThat(Query.of(flat(x, FlatSet.of(1, 2)).and(flat(x, FlatSet.of(3, 4)))).on(TestSchedulers.factory()).solve(x).count())
 				.isZero();
 	}
 
 	@Test
 	public void aNamedPropagatorWakesOnItsWatchedTerm() {
 		Unifiable<Integer> x = lvar();
-		assertThat(flat(x, FlatSet.of(1, 2, 3, 4)).and(evenO(x)).and(x.unifies(4)).solve(x, TestSchedulers.factory()).count())
+		assertThat(Query.of(flat(x, FlatSet.of(1, 2, 3, 4)).and(evenO(x)).and(x.unifies(4))).on(TestSchedulers.factory()).solve(x).count())
 				.isEqualTo(1);
 
 		Unifiable<Integer> y = lvar();
-		assertThat(flat(y, FlatSet.of(1, 2, 3, 4)).and(evenO(y)).and(y.unifies(3)).solve(y, TestSchedulers.factory()).count())
+		assertThat(Query.of(flat(y, FlatSet.of(1, 2, 3, 4)).and(evenO(y)).and(y.unifies(3))).on(TestSchedulers.factory()).solve(y).count())
 				.isZero();
 	}
 

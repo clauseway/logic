@@ -3,6 +3,7 @@ package org.clauseway.logic;
 // ABOUTME: Step-count pins per vision workload: exact reduction counts under the
 // ABOUTME: deterministic BFS driver — a changed count is a decision, not drift.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -47,7 +48,7 @@ public class StepCountPinsTest {
 				count.incrementAndGet();
 			}
 		};
-		goal.solve(out, fiber -> new BreadthFirstScheduler<>(fiber).withListener(counting))
+		Query.of(goal).on(fiber -> new BreadthFirstScheduler<>(fiber).withListener(counting)).solve(out)
 				.collect(Collectors.toList());
 		return count.get();
 	}

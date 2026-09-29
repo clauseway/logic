@@ -3,6 +3,7 @@ package org.clauseway.logic.nogoods;
 // ABOUTME: Every FD relation under exclusion: ground entailment fails the branch,
 // ABOUTME: ground refutation discharges, open anchors filter at labelling.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
@@ -20,11 +21,11 @@ import org.junit.Test;
 public class ExcludedFdRelationsTest {
 
 	private static long count(Goal g, Unifiable<Long> out) {
-		return g.solve(out, TestSchedulers.factory()).count();
+		return Query.of(g).on(TestSchedulers.factory()).solve(out).count();
 	}
 
 	private static List<Long> answers(Goal g, Unifiable<Long> out) {
-		return g.solve(out, TestSchedulers.factory())
+		return Query.of(g).on(TestSchedulers.factory()).solve(out)
 				.map(Term::get).collect(Collectors.toList());
 	}
 

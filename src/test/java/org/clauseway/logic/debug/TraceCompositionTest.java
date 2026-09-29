@@ -1,5 +1,6 @@
 package org.clauseway.logic.debug;
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.goals.Goal.defer;
@@ -71,8 +72,8 @@ public class TraceCompositionTest {
 	@Test(timeout = 5000)
 	public void tracingDoesNotChangeTabledResults() {
 		Rec rec = new Rec();
-		long traced = x14().solve(lvar(), rec).count();
-		long untraced = x14().solve(lvar(), TestSchedulers.factory()).count();
+		long traced = Query.of(x14()).traced(rec).solve(lvar()).count();
+		long untraced = Query.of(x14()).on(TestSchedulers.factory()).solve(lvar()).count();
 
 		assertThat(traced).isEqualTo(untraced).isEqualTo(1);
 		assertThat(rec.ports).isNotEmpty();
@@ -90,7 +91,7 @@ public class TraceCompositionTest {
 		Unifiable<Integer> out = lvar();
 		Goal g = exclude(out.unifies(lval(2))).and(Constraints.unify(out, lval(3))).named("constrained");
 
-		List<Integer> traced = g.solve(out, rec).map(Term::get).collect(Collectors.toList());
+		List<Integer> traced = Query.of(g).traced(rec).solve(out).map(Term::get).collect(Collectors.toList());
 
 		assertThat(traced).containsExactly(3);
 		assertThat(rec.ports).contains("Call constrained", "Exit constrained");
@@ -106,7 +107,7 @@ public class TraceCompositionTest {
 		Unifiable<LList<Integer>> result = lvar();
 		Goal g = Aggregate.findall((Unifiable<Integer> x) -> oneTwoThree(x).named("member"), result);
 
-		List<Integer> traced = g.solve(result, rec).findFirst().get().get()
+		List<Integer> traced = Query.of(g).traced(rec).solve(result).findFirst().get().get()
 				.toValueStream().collect(Collectors.toList());
 
 		assertThat(traced).containsExactlyInAnyOrder(1, 2, 3);

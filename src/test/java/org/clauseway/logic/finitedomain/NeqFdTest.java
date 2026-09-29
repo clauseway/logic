@@ -1,5 +1,6 @@
 package org.clauseway.logic.finitedomain;
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
@@ -27,9 +28,8 @@ public class NeqFdTest {
 	public void groundDisequalityExcludesTheValueFromAnswers() {
 		Unifiable<Long> x = lvar();
 
-		assertThat(dom(x, Longs.range(1, 11))        // {1..10}
-				.and(exclude(x.unifies(lval(5L))))
-				.solve(x, TestSchedulers.factory())
+		assertThat(Query.of(dom(x, Longs.range(1, 11))        // {1..10}
+				.and(exclude(x.unifies(lval(5L))))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.collect(Collectors.toList()))
 				.doesNotContain(5L)
@@ -40,9 +40,8 @@ public class NeqFdTest {
 	public void disequalityLeavingOneCandidateYieldsExactlyIt() {
 		Unifiable<Long> x = lvar();
 
-		assertThat(dom(x, Longs.range(4, 6))         // {4,5}
-				.and(exclude(x.unifies(lval(5L))))
-				.solve(x, TestSchedulers.factory())
+		assertThat(Query.of(dom(x, Longs.range(4, 6))         // {4,5}
+				.and(exclude(x.unifies(lval(5L))))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.collect(Collectors.toList()))
 				.containsExactly(4L);
@@ -52,9 +51,8 @@ public class NeqFdTest {
 	public void disequalityAgainstTheOnlyCandidateFails() {
 		Unifiable<Long> x = lvar();
 
-		long count = dom(x, Longs.range(5, 6))       // {5} exactly
-				.and(exclude(x.unifies(lval(5L))))
-				.solve(x, TestSchedulers.factory())
+		long count = Query.of(dom(x, Longs.range(5, 6))       // {5} exactly
+				.and(exclude(x.unifies(lval(5L))))).on(TestSchedulers.factory()).solve(x)
 				.count();
 
 		assertThat(count).isEqualTo(0);
@@ -64,9 +62,8 @@ public class NeqFdTest {
 	public void disequalityStatedBeforeTheDomainStaysCorrect() {
 		Unifiable<Long> x = lvar();
 
-		assertThat(exclude(x.unifies(lval(5L)))
-				.and(dom(x, Longs.range(1, 11)))
-				.solve(x, TestSchedulers.factory())
+		assertThat(Query.of(exclude(x.unifies(lval(5L)))
+				.and(dom(x, Longs.range(1, 11)))).on(TestSchedulers.factory()).solve(x)
 				.map(Term::get)
 				.collect(Collectors.toList()))
 				.doesNotContain(5L)
@@ -77,9 +74,8 @@ public class NeqFdTest {
 	public void nonArithmeticDisequalityKeepsItsRecord() {
 		Unifiable<String> s = lvar();
 
-		assertThat(exclude(s.unifies(lval("no")))
-				.and(Constraints.unify(s, lval("yes")))
-				.solve(s, TestSchedulers.factory())
+		assertThat(Query.of(exclude(s.unifies(lval("no")))
+				.and(Constraints.unify(s, lval("yes")))).on(TestSchedulers.factory()).solve(s)
 				.map(Term::get)
 				.collect(Collectors.toList()))
 				.containsExactly("yes");

@@ -3,6 +3,7 @@ package org.clauseway.logic.tabling;
 // ABOUTME: Pins Tier 1 completion detection: entries complete from counter events
 // ABOUTME: (no end-of-search hook exists), variant cycles stay incomplete — sound.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -41,7 +42,7 @@ public class TableCompletionTest {
 		Unifiable<Integer> out = lvar();
 		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
-		assertThat(rel.apply(Tuple.of(out)).solveFrom(p, out, BreadthFirstScheduler::new).count())
+		assertThat(Query.of(rel.apply(Tuple.of(out))).from(p).on(BreadthFirstScheduler::new).solve(out).count())
 				.isEqualTo(2);
 		assertThat(p.getStore(Table.class).entries())
 				.allMatch(TableEntry::isComplete);
@@ -59,7 +60,7 @@ public class TableCompletionTest {
 		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
 		// path(1, Y) over 1→2→3: answers 2 and 3
-		assertThat(path.apply(Tuple.of(lval(1), y)).solveFrom(p, y, BreadthFirstScheduler::new).count())
+		assertThat(Query.of(path.apply(Tuple.of(lval(1), y))).from(p).on(BreadthFirstScheduler::new).solve(y).count())
 				.isEqualTo(2);
 		assertThat(p.getStore(Table.class).entries())
 				.allMatch(TableEntry::isComplete);
@@ -79,7 +80,7 @@ public class TableCompletionTest {
 		Unifiable<Integer> out = lvar();
 		Knowledge pkg = Knowledge.empty().withStore(Table.empty());
 
-		assertThat(p.apply(Tuple.of(out)).solveFrom(pkg, out, BreadthFirstScheduler::new).count())
+		assertThat(Query.of(p.apply(Tuple.of(out))).from(pkg).on(BreadthFirstScheduler::new).solve(out).count())
 				.isEqualTo(0);
 		assertThat(pkg.getStore(Table.class).entries())
 				.allMatch(TableEntry::isComplete);
@@ -97,7 +98,7 @@ public class TableCompletionTest {
 		Unifiable<Integer> out = lvar();
 		Knowledge pkg = Knowledge.empty().withStore(Table.empty());
 
-		assertThat(pRel.apply(Tuple.of(out)).solveFrom(pkg, out, BreadthFirstScheduler::new).count())
+		assertThat(Query.of(pRel.apply(Tuple.of(out))).from(pkg).on(BreadthFirstScheduler::new).solve(out).count())
 				.isEqualTo(1);
 		assertThat(pkg.getStore(Table.class).entries())
 				.allMatch(TableEntry::isComplete);
@@ -117,7 +118,7 @@ public class TableCompletionTest {
 		Knowledge pkg = Knowledge.empty().withStore(Table.empty());
 
 		Goal query = rels[0].apply(Tuple.of(a)).or(rels[1].apply(Tuple.of(a)));
-		assertThat(query.solveFrom(pkg, a, BreadthFirstScheduler::new).distinct().count())
+		assertThat(Query.of(query).from(pkg).on(BreadthFirstScheduler::new).solve(a).distinct().count())
 				.isEqualTo(2);
 		assertThat(pkg.getStore(Table.class).entries())
 				.allMatch(TableEntry::isComplete);
@@ -138,7 +139,7 @@ public class TableCompletionTest {
 		Unifiable<Integer> y = lvar();
 		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
-		assertThat(path.apply(Tuple.of(lval(1), y)).solveFrom(p, y, BreadthFirstScheduler::new).count())
+		assertThat(Query.of(path.apply(Tuple.of(lval(1), y))).from(p).on(BreadthFirstScheduler::new).solve(y).count())
 				.isEqualTo(2);
 		assertThat(p.getStore(Table.class).entries())
 				.hasSize(3)
@@ -160,7 +161,7 @@ public class TableCompletionTest {
 		Unifiable<Integer> out = lvar();
 		Knowledge pkg = Knowledge.empty().withStore(Table.empty());
 
-		assertThat(pRel.apply(Tuple.of(out)).solveFrom(pkg, out, BreadthFirstScheduler::new).count())
+		assertThat(Query.of(pRel.apply(Tuple.of(out))).from(pkg).on(BreadthFirstScheduler::new).solve(out).count())
 				.isEqualTo(1);
 		assertThat(pkg.getStore(Table.class).entries())
 				.allMatch(TableEntry::isComplete);
@@ -175,7 +176,7 @@ public class TableCompletionTest {
 		Unifiable<Integer> out = lvar();
 		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
-		assertThat(rel.apply(Tuple.of(out)).solveFrom(p, out, BreadthFirstScheduler::new).count())
+		assertThat(Query.of(rel.apply(Tuple.of(out))).from(p).on(BreadthFirstScheduler::new).solve(out).count())
 				.isEqualTo(1);
 		assertThat(p.getStore(Table.class).entries())
 				.allMatch(TableEntry::isComplete);
@@ -191,7 +192,7 @@ public class TableCompletionTest {
 		Goal call = rel.apply(Tuple.of(out));
 		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
-		assertThat(call.solveFrom(p, out, BreadthFirstScheduler::new).count()).isEqualTo(2);
+		assertThat(Query.of(call).from(p).on(BreadthFirstScheduler::new).solve(out).count()).isEqualTo(2);
 		assertThat(((Bounded) call).answers(p)).isEqualTo(2);
 	}
 
@@ -206,7 +207,7 @@ public class TableCompletionTest {
 		Unifiable<Integer> y = lvar();
 		Knowledge p = Knowledge.empty().withStore(Table.empty());
 
-		assertThat(path.apply(Tuple.of(lval(1), y)).solveFrom(p, y, ForkJoinScheduler::new).count())
+		assertThat(Query.of(path.apply(Tuple.of(lval(1), y))).from(p).on(ForkJoinScheduler::new).solve(y).count())
 				.isEqualTo(2);
 		assertThat(p.getStore(Table.class).entries())
 				.allMatch(TableEntry::isComplete);
@@ -222,7 +223,7 @@ public class TableCompletionTest {
 						}))));
 		Unifiable<Integer> y = lvar();
 		Knowledge p = Knowledge.empty().withStore(Table.empty());
-		path.apply(Tuple.of(lval(1), y)).solveFrom(p, y, BreadthFirstScheduler::new).count();
+		Query.of(path.apply(Tuple.of(lval(1), y))).from(p).on(BreadthFirstScheduler::new).solve(y).count();
 
 		assertThat(p.getStore(Table.class).entries())
 				.allMatch(TableEntry::isComplete);

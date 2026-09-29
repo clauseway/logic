@@ -1,5 +1,6 @@
 package org.clauseway.logic.constraints;
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.constraints.store.Atom;
 import org.clauseway.logic.constraints.store.Constraint;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -98,8 +99,7 @@ public class CapabilityDriverTest {
 
 	private static long solutions(Knowledge root) {
 		Unifiable<Long> x = lvar();
-		return x.unifies(0L)
-				.solveFrom(root, x, BreadthFirstScheduler::new)
+		return Query.of(x.unifies(0L)).from(root).on(BreadthFirstScheduler::new).solve(x)
 				.count();
 	}
 
@@ -160,9 +160,8 @@ public class CapabilityDriverTest {
 						.withInferred(Prefix.binding(state.substitution(), q, lval(1L)).get())));
 
 		Unifiable<Long> x = lvar();
-		long count = x.unifies(0L)
-				.and(probe)
-				.solveFrom(root, x, BreadthFirstScheduler::new)
+		long count = Query.of(x.unifies(0L)
+				.and(probe)).from(root).on(BreadthFirstScheduler::new).solve(x)
 				.count();
 
 		assertThat(count).isEqualTo(1);

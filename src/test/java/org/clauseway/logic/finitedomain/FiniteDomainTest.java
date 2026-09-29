@@ -1,5 +1,6 @@
 package org.clauseway.logic.finitedomain;
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.Utils.collect;
@@ -187,7 +188,7 @@ public class FiniteDomainTest {
 		Goal goal = dom(i, Longs.interval(0, 10))
 				.and(Longs.separate(i, lval(5L)));
 
-		var result = collect(goal.solve(i, TestSchedulers.factory())
+		var result = collect(Query.of(goal).on(TestSchedulers.factory()).solve(i)
 				.map(Term::get));
 
 		Assertions.assertThat(result)
@@ -229,13 +230,12 @@ public class FiniteDomainTest {
 		int n = 5;
 
 		Unifiable<LList<Integer>> lst = LList.ofAll(v0, v1, v2, v3, v4);
-		var result = collect(distinctoFd(lst)
+		var result = collect(Query.of(distinctoFd(lst)
 				.and(dom(v0, Ints.interval(0, n)))
 				.and(dom(v1, Ints.interval(0, n)))
 				.and(dom(v2, Ints.interval(0, n)))
 				.and(dom(v3, Ints.interval(0, n)))
-				.and(dom(v4, Ints.interval(0, n)))
-				.solve(lst, TestSchedulers.factory())
+				.and(dom(v4, Ints.interval(0, n)))).on(TestSchedulers.factory()).solve(lst)
 				.map(Term::get)
 				.map(LList::toValueStream)
 				.map(s -> s.collect(Collectors.toList())));
@@ -258,7 +258,7 @@ public class FiniteDomainTest {
 	}
 
 	static <T> Stream<Reified<T>> solve(Unifiable<T> out, Goal g) {
-		return g.solve(out, TestSchedulers.factory());
+		return Query.of(g).on(TestSchedulers.factory()).solve(out);
 	}
 
 	@Test
@@ -269,12 +269,11 @@ public class FiniteDomainTest {
 		Unifiable<Integer> c = lvar();
 
 		lombok.val result = collect(
-				Ints.addo(a, b, c)
+				Query.of(Ints.addo(a, b, c)
 						.and(dom(a, Ints.interval(0, 5)))
 						.and(dom(b, Ints.interval(0, 5)))
 						.and(dom(c, Ints.interval(-5, 10)))
-						.and(exclude(str.unifies(lval("123"))))
-						.solve(lval(Tuple.of(a, b, c, str)), TestSchedulers.factory())
+						.and(exclude(str.unifies(lval("123"))))).on(TestSchedulers.factory()).solve(lval(Tuple.of(a, b, c, str)))
 						.map(Term::get)
 						.map(t -> t.map(Term::get, Term::get, Term::get, Function.identity())));
 

@@ -3,6 +3,7 @@ package org.clauseway.logic.nogoods;
 // ABOUTME: Live nogoods render as answer residuals through Constrained — the ¬
 // ABOUTME: format by toString delegation, invisible names pruned, Neq's discipline.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
@@ -26,7 +27,7 @@ import org.junit.Test;
 public class NogoodRenderingTest {
 
 	private static <T> List<String> rendered(Goal g, Unifiable<T> out) {
-		return g.solve(out, TestSchedulers.factory())
+		return Query.of(g).on(TestSchedulers.factory()).solve(out)
 				.map(Object::toString)
 				.collect(Collectors.toList());
 	}
@@ -127,8 +128,7 @@ public class NogoodRenderingTest {
 		// so everything demanding values must refuse or enforce first
 		Unifiable<Integer> x = lvar();
 
-		List<Reified<Integer>> answers = exclude(x.unifies(3))
-				.solve(x, TestSchedulers.factory())
+		List<Reified<Integer>> answers = Query.of(exclude(x.unifies(3))).on(TestSchedulers.factory()).solve(x)
 				.collect(Collectors.toList());
 
 		assertThat(answers).hasSize(1);

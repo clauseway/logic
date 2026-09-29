@@ -1,5 +1,6 @@
 package org.clauseway.logic;
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 
 import java.util.Arrays;
@@ -23,13 +24,12 @@ public class MatcheTest {
 	@Test
 	public void shouldMatchSingleElementList() {
 		Unifiable<LList<Integer>> i = LVar.lvar();
-		List<List<Integer>> result = Utils.collect(Matche.matche(
+		List<List<Integer>> result = Utils.collect(Query.of(Matche.matche(
 						LList.ofAll(1),
 						Matche.llist(a -> i.unifies(LList.of(a))),
 						Matche.llist((a, d) -> i.unifies(LList.of(a, d))),
 						Matche.llist(3, (lst, d) ->
-								i.unifies(LList.ofAll(lst.toArray(new Unifiable[0])))))
-				.solve(i, TestSchedulers.factory())
+								i.unifies(LList.ofAll(lst.toArray(new Unifiable[0])))))).on(TestSchedulers.factory()).solve(i)
 				.map(Term::get)
 				.map(l -> l.toValueStream().collect(Collectors.toList())));
 		Assertions.assertThat(result)
@@ -42,12 +42,11 @@ public class MatcheTest {
 	@Test
 	public void shouldMatchTwoElementList() {
 		Unifiable<LList<Integer>> i = LVar.lvar();
-		List<List<Integer>> result = Utils.collect(Matche.matche(LList.ofAll(1, 2),
+		List<List<Integer>> result = Utils.collect(Query.of(Matche.matche(LList.ofAll(1, 2),
 						Matche.llist(a -> i.unifies(LList.of(a))),
 						Matche.llist((a, d) -> i.unifies(LList.of(a, d))),
 						Matche.llist(3, (lst, d) ->
-								i.unifies(LList.ofAll(lst.toArray(new Unifiable[0])))))
-				.solve(i, TestSchedulers.factory())
+								i.unifies(LList.ofAll(lst.toArray(new Unifiable[0])))))).on(TestSchedulers.factory()).solve(i)
 				.map(Term::get)
 				.map(l -> l.toValueStream().collect(Collectors.toList())));
 		Assertions.assertThat(result)
@@ -59,12 +58,11 @@ public class MatcheTest {
 	@Test
 	public void shouldMatchMany() {
 		Unifiable<LList<Integer>> i = LVar.lvar();
-		List<List<Integer>> result = Utils.collect(Matche.matche(LList.ofAll(1, 2, 3, 4, 5),
+		List<List<Integer>> result = Utils.collect(Query.of(Matche.matche(LList.ofAll(1, 2, 3, 4, 5),
 						Matche.llist(a -> i.unifies(LList.of(a))),
 						Matche.llist((a, d) -> i.unifies(LList.of(a, d))),
 						Matche.llist(3, (lst, d) ->
-								i.unifies(LList.ofAll(lst.toArray(new Unifiable[0])))))
-				.solve(i, TestSchedulers.factory())
+								i.unifies(LList.ofAll(lst.toArray(new Unifiable[0])))))).on(TestSchedulers.factory()).solve(i)
 				.map(Term::get)
 				.map(l -> l.toValueStream().collect(Collectors.toList())));
 		Assertions.assertThat(result)
@@ -77,9 +75,8 @@ public class MatcheTest {
 	@Test
 	public void shouldMatchTuple() {
 		Unifiable<Tuple2<Unifiable<Integer>, Unifiable<Integer>>> i = LVar.lvar();
-		List<Tuple2<Integer, Integer>> result = Utils.collect(Matche.matche(lval(Tuple.of(lval(1), lval(2))),
-						Matche.tuple((a, b) -> i.unifies(Tuple.of(a, b))))
-				.solve(i, TestSchedulers.factory())
+		List<Tuple2<Integer, Integer>> result = Utils.collect(Query.of(Matche.matche(lval(Tuple.of(lval(1), lval(2))),
+						Matche.tuple((a, b) -> i.unifies(Tuple.of(a, b))))).on(TestSchedulers.factory()).solve(i)
 				.map(Term::get)
 				.map(t -> t.map(LogicTest.applyOnBoth(Term::get))));
 		Assertions.assertThat(result)
@@ -89,8 +86,7 @@ public class MatcheTest {
 	@Test
 	public void shouldMatchLVar() {
 		Unifiable<Integer> i = LVar.lvar();
-		List<Integer> result = Utils.collect(Matche.matche(i, Matche.variable(() -> i.unifies(123)))
-				.solve(i, TestSchedulers.factory())
+		List<Integer> result = Utils.collect(Query.of(Matche.matche(i, Matche.variable(() -> i.unifies(123)))).on(TestSchedulers.factory()).solve(i)
 				.map(Term::get));
 		Assertions.assertThat(result)
 				.containsExactlyInAnyOrder(123);
@@ -99,10 +95,9 @@ public class MatcheTest {
 	@Test
 	public void shouldMatchLVarAfterUnification() {
 		Unifiable<Integer> i = LVar.lvar();
-		List<Integer> result = Utils.collect(Logic.<Integer> exist(j ->
+		List<Integer> result = Utils.collect(Query.of(Logic.<Integer> exist(j ->
 						j.unifies(i)
-								.and(Matche.matche(j, Matche.variable(() -> j.unifies(123)))))
-				.solve(i, TestSchedulers.factory())
+								.and(Matche.matche(j, Matche.variable(() -> j.unifies(123)))))).on(TestSchedulers.factory()).solve(i)
 				.map(Term::get));
 		Assertions.assertThat(result)
 				.containsExactlyInAnyOrder(123);
@@ -111,11 +106,10 @@ public class MatcheTest {
 	@Test
 	public void shouldMatchLVarMultipleTimes() {
 		Unifiable<Integer> i = LVar.lvar();
-		List<Integer> result = Utils.collect(Matche.matche(i,
+		List<Integer> result = Utils.collect(Query.of(Matche.matche(i,
 						Matche.variable(() -> i.unifies(123)),
 						Matche.variable(() -> i.unifies(124)),
-						Matche.variable(() -> i.unifies(125)))
-				.solve(i, TestSchedulers.factory())
+						Matche.variable(() -> i.unifies(125)))).on(TestSchedulers.factory()).solve(i)
 				.map(Term::get));
 		Assertions.assertThat(result)
 				.containsExactlyInAnyOrder(123, 124, 125);
@@ -125,9 +119,8 @@ public class MatcheTest {
 	public void shouldMatchLVal() {
 		Unifiable<Integer> v = lval(123);
 		Unifiable<Integer> i = LVar.lvar();
-		List<Integer> result = Utils.collect(Matche.matche(v,
-						Matche.value(i::unifies))
-				.solve(i, TestSchedulers.factory())
+		List<Integer> result = Utils.collect(Query.of(Matche.matche(v,
+						Matche.value(i::unifies))).on(TestSchedulers.factory()).solve(i)
 				.map(Term::get));
 		Assertions.assertThat(result)
 				.containsExactlyInAnyOrder(123);
@@ -138,9 +131,8 @@ public class MatcheTest {
 		Unifiable<Integer> v = LVar.lvar();
 		Unifiable<Integer> v2 = lval(123);
 		Unifiable<Integer> i = LVar.lvar();
-		List<Integer> result = Utils.collect(v2.unifies(v).and(
-						Matche.matche(v2, Matche.value(i::unifies)))
-				.solve(i, TestSchedulers.factory())
+		List<Integer> result = Utils.collect(Query.of(v2.unifies(v).and(
+						Matche.matche(v2, Matche.value(i::unifies)))).on(TestSchedulers.factory()).solve(i)
 				.map(Term::get));
 		Assertions.assertThat(result)
 				.containsExactlyInAnyOrder(123);
@@ -151,11 +143,10 @@ public class MatcheTest {
 		Unifiable<Integer> v = lval(123);
 		Unifiable<Integer> i = LVar.lvar();
 		List<Integer> result =
-				Utils.collect(Matche.matche(v,
+				Utils.collect(Query.of(Matche.matche(v,
 								Matche.value(i::unifies),
 								Matche.value(val -> i.unifies(val + 1)),
-								Matche.value(val -> i.unifies(val + 2)))
-						.solve(i, TestSchedulers.factory())
+								Matche.value(val -> i.unifies(val + 2)))).on(TestSchedulers.factory()).solve(i)
 						.map(Term::get));
 		Assertions.assertThat(result)
 				.containsExactlyInAnyOrder(123, 124, 125);

@@ -3,6 +3,7 @@ package org.clauseway.logic;
 // ABOUTME: The goal-plane profiler receipt: a profiled solve splits root by
 // ABOUTME: relation, labels rendered from the goals' own .named() labels.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.constraints.Constraints.unify;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,9 +31,8 @@ public class GoalProfileTest {
 			Unifiable<LList<Integer>> front = lvar();
 			Unifiable<LList<Integer>> back = lvar();
 			Unifiable<LList<Integer>> both = lvar();
-			unify(both, LList.ofAll(1, 2, 3, 4, 5, 6))
-					.and(Logic.appendo(front, back, both))
-					.solve(both, profiler)
+			Query.of(unify(both, LList.ofAll(1, 2, 3, 4, 5, 6))
+					.and(Logic.appendo(front, back, both))).profiled(profiler).solve(both)
 					.collect(Collectors.toList());
 
 			try {
@@ -61,9 +61,8 @@ public class GoalProfileTest {
 			Unifiable<LList<Integer>> front = lvar();
 			Unifiable<LList<Integer>> back = lvar();
 			Unifiable<LList<Integer>> both = lvar();
-			unify(both, LList.ofAll(1, 2, 3, 4, 5, 6))
-					.and(Logic.appendo(front, back, both))
-					.solve(both, profiler)
+			Query.of(unify(both, LList.ofAll(1, 2, 3, 4, 5, 6))
+					.and(Logic.appendo(front, back, both))).profiled(profiler).solve(both)
 					.collect(Collectors.toList());
 			counts[0] = profiler.counts();
 			try {
@@ -85,9 +84,8 @@ public class GoalProfileTest {
 		Unifiable<LList<Integer>> front = lvar();
 		Unifiable<LList<Integer>> back = lvar();
 		Unifiable<LList<Integer>> both = lvar();
-		long answers = unify(both, LList.ofAll(1, 2, 3))
-				.and(Logic.appendo(front, back, both))
-				.solve(both)
+		long answers = Query.of(unify(both, LList.ofAll(1, 2, 3))
+				.and(Logic.appendo(front, back, both))).solve(both)
 				.count();
 		assertThat(answers).isEqualTo(4);
 	}
