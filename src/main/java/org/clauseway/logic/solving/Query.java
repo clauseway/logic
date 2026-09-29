@@ -1,4 +1,4 @@
-package org.clauseway.logic;
+package org.clauseway.logic.solving;
 
 // ABOUTME: The front door: seeds a root Knowledge through slots with
 // ABOUTME: fill-absent defaults, runs a goal against it, and hands back the

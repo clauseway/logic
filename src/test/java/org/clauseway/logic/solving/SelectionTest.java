@@ -1,9 +1,10 @@
-package org.clauseway.logic;
+package org.clauseway.logic.solving;
 
 // ABOUTME: Pins the select pipeline: Selection's extraction and multiplicity
 // ABOUTME: switches (enforced+distinct default, raw/all explicit), Stream<Row>
 // ABOUTME: delivery, and Row's Reified-typed keyed get.
 
+import org.clauseway.logic.Utils;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.projection.Projection.project;
@@ -16,7 +17,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.clauseway.logic.finitedomain.Longs;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.junit.Test;

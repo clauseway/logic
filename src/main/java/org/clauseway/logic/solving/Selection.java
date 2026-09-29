@@ -1,4 +1,4 @@
-package org.clauseway.logic;
+package org.clauseway.logic.solving;
 
 // ABOUTME: The middle of the select pipeline, where the user chooses the
 // ABOUTME: reading: extraction (enforced default, raw explicit) and
@@ -13,9 +13,6 @@ import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.logic.constraints.Constraints;
 import org.clauseway.logic.goals.Knowledge;
-import org.clauseway.logic.solving.Answer;
-import org.clauseway.logic.solving.Condition;
-import org.clauseway.logic.solving.JoinMap;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Unifiable;
 import java.util.List;

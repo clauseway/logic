@@ -1,11 +1,9 @@
-package org.clauseway.logic;
+package org.clauseway.logic.solving;
 
 // ABOUTME: One solution row of a select: Reified cells keyed by the selected
 // ABOUTME: variables, under the derivation's Condition -- a view over Answer.
 
 import org.clauseway.functional.tuples.Tuple;
-import org.clauseway.logic.solving.Answer;
-import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;

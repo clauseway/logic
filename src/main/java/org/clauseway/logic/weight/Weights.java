@@ -10,7 +10,7 @@ import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Scheduler;
 import org.clauseway.functional.fibers.Cont;
-import org.clauseway.logic.Query;
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.constraints.Constraints;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;

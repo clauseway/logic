@@ -1,9 +1,10 @@
-package org.clauseway.logic;
+package org.clauseway.logic.solving;
 
 // ABOUTME: Pins the Query front door skeleton: fill-absent slot defaults on the
 // ABOUTME: root, the occupied-slot refusal, and run/stream emitting one
 // ABOUTME: Knowledge per derivation.
 
+import org.clauseway.logic.Utils;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
