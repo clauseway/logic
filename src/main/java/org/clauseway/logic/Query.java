@@ -12,6 +12,7 @@ import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
+import java.util.Arrays;
 import org.clauseway.logic.unification.terms.Unifiable;
 import java.util.Deque;
 import java.util.Spliterator;
@@ -88,14 +89,16 @@ public final class Query {
 		return goal.apply(root());
 	}
 
-	/** ask about {@code out}, answers tagged with the anchor itself. */
-	public <T> Answers<Unifiable<T>, T> ask(Unifiable<T> out) {
-		return ask(out, out);
-	}
-
-	/** ask about {@code out}, answers tagged {@code token} for routing. */
-	public <R, T> Answers<R, T> ask(R token, Unifiable<T> out) {
-		return new Answers<>(this, token, out);
+	/**
+	 * The question's projection: which variables the rows report. Returns a
+	 * {@link Selection} with the reading still open — extraction and
+	 * multiplicity are chosen there before {@link Selection#rows()} streams.
+	 */
+	public Selection select(Unifiable<?>... keys) {
+		if (keys.length == 0) {
+			throw new IllegalArgumentException("select names at least one variable");
+		}
+		return new Selection(this, Arrays.asList(keys), false, false);
 	}
 
 	/** The pull harvest of {@link #run}: lazy, closing closes the driver. */
