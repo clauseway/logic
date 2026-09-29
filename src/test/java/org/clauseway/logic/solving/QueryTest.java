@@ -20,6 +20,7 @@ import org.clauseway.functional.fibers.interpreter.ScopeProfiler;
 import org.clauseway.functional.algebra.BoundedSemiring;
 import org.clauseway.functional.algebra.Semiring;
 import org.clauseway.functional.algebra.Semirings;
+import org.clauseway.logic.debug.ProfilerStore;
 import org.clauseway.logic.debug.Trace;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.optimizer.Optimizer;
@@ -125,7 +126,22 @@ public class QueryTest {
 		Knowledge seeded = Knowledge.empty().withStore(counting.one());
 		assertThatThrownBy(() -> Query.of(Goal.success()).from(seeded).weighted(counting).root())
 				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("semiring");
+				.hasMessageContaining("SemiringStore");
+	}
+
+	@Test
+	public void aGenericSlotPlantsAnyStore() {
+		ProfilerStore mine = ProfilerStore.of();
+		Knowledge root = Query.of(Goal.success()).slot(mine).root();
+		assertThat(root.getStores().get(ProfilerStore.class).get()).isSameAs(mine);
+	}
+
+	@Test
+	public void aSlotMeetingItsOwnFamilyRefuses() {
+		assertThatThrownBy(() -> Query.of(Goal.success())
+				.slot(ProfilerStore.of()).slot(ProfilerStore.of()).root())
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("ProfilerStore");
 	}
 
 	@Test

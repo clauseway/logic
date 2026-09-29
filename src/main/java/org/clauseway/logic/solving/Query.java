@@ -26,6 +26,7 @@ import org.clauseway.logic.goals.optimizer.OptimizerStore;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.weight.SemiringStore;
+import org.clauseway.vavr.collection.List;
 import java.util.Arrays;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -38,6 +39,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import lombok.With;
 
 /**
  * The front door of a solve: a goal, a root {@link Knowledge}, and the
@@ -58,35 +61,51 @@ import lombok.RequiredArgsConstructor;
  * driver.
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@With(AccessLevel.PRIVATE)
 public final class Query {
 
 	private final Goal goal;
 	private final Knowledge from;
 	private final Table table;
-	private final Function<Fiber<Nothing>, Scheduler<Nothing>> driver;
 	private final Table ringTable;
-	private final SemiringStore one;
-	private final Trace.Tracer tracer;
+	private final Function<Fiber<Nothing>, Scheduler<Nothing>> driver;
 	private final ScopeProfiler profiler;
 	private final Optimizer optimizer;
+	private final List<Slot> slots;
+
+	/** One store to plant at the root, remembering which door injected it. */
+	@Value
+	private static class Slot {
+		Packaged store;
+		String owner;
+	}
 
 	public static Query of(Goal goal) {
-		return new Query(goal, null, null, null, null, null, null, null, null);
+		return new Query(goal, null, null, null, null, null, null, List.empty());
 	}
 
 	/** Root injection: start from existing knowledge instead of empty. */
 	public Query from(Knowledge root) {
-		return new Query(goal, root, table, driver, ringTable, one, tracer, profiler, optimizer);
+		return withFrom(root);
 	}
 
 	/** The table slot — pass a shared table to join another solve's residence. */
 	public Query tabled(Table table) {
-		return new Query(goal, from, table, driver, ringTable, one, tracer, profiler, optimizer);
+		return withTable(table);
 	}
 
 	/** The driver slot; the default is a {@link BreadthFirstScheduler}. */
 	public Query on(Function<Fiber<Nothing>, Scheduler<Nothing>> driver) {
-		return new Query(goal, from, table, driver, ringTable, one, tracer, profiler, optimizer);
+		return withDriver(driver);
+	}
+
+	/**
+	 * The generic slot: plant any store at the root. Fill-absent like every
+	 * named door — a slot meeting its own family (in the root or in another
+	 * slot) refuses at build.
+	 */
+	public Query slot(Packaged store) {
+		return slotted(store, "slot()");
 	}
 
 	/**
@@ -97,7 +116,7 @@ public final class Query {
 	 * interleaved trace under a concurrent driver.
 	 */
 	public Query traced(Trace.Tracer tracer) {
-		return new Query(goal, from, table, driver, ringTable, one, tracer, profiler, optimizer);
+		return slotted(DebugStore.of(tracer), "traced()");
 	}
 
 	/**
@@ -106,7 +125,7 @@ public final class Query {
 	 * step listener — steps bill to goal names, workforce labels, or root.
 	 */
 	public Query profiled(ScopeProfiler profiler) {
-		return new Query(goal, from, table, driver, ringTable, one, tracer, profiler, optimizer);
+		return withProfiler(profiler).slotted(ProfilerStore.of(), "profiled()");
 	}
 
 	/**
@@ -116,7 +135,7 @@ public final class Query {
 	 * the {@code defer} hook.
 	 */
 	public Query optimized(Optimizer optimizer) {
-		return new Query(goal, from, table, driver, ringTable, one, tracer, profiler, optimizer);
+		return withOptimizer(optimizer).slotted(OptimizerStore.of(optimizer), "optimized()");
 	}
 
 	/**
@@ -141,7 +160,11 @@ public final class Query {
 	}
 
 	private Query weighted(Table ringTable, SemiringStore one) {
-		return new Query(goal, from, table, driver, ringTable, one, tracer, profiler, optimizer);
+		return withRingTable(ringTable).slotted(one, "weighted()");
+	}
+
+	private Query slotted(Packaged store, String owner) {
+		return withSlots(slots.append(new Slot(store, owner)));
 	}
 
 	/** The seeded root, inspectable: slots checked and defaults filled here. */
@@ -165,28 +188,17 @@ public final class Query {
 		} else if (!occupied) {
 			root = root.withStore(Table.empty());
 		}
-		if (one != null) {
-			if (root.getStores().containsKey(SemiringStore.class)) {
-				throw new IllegalStateException(
-						"the root already carries a semiring store — weighted() may only"
-								+ " fill an empty slot");
-			}
-			root = root.withStore(one);
+		for (Slot slot : slots) {
+			root = planted(root, slot.getStore(), slot.getOwner());
 		}
-		root = planted(root, tracer == null ? null : DebugStore.of(tracer), DebugStore.class, "traced()");
-		root = planted(root, profiler == null ? null : ProfilerStore.of(), ProfilerStore.class, "profiled()");
-		root = planted(root, optimizer == null ? null : OptimizerStore.of(optimizer), OptimizerStore.class, "optimized()");
 		return root;
 	}
 
-	private static Knowledge planted(Knowledge root, Packaged store,
-			Class<? extends Packaged> family, String slot) {
-		if (store == null) {
-			return root;
-		}
-		if (root.getStores().containsKey(family)) {
+	private static Knowledge planted(Knowledge root, Packaged store, String owner) {
+		if (root.getStores().containsKey(store.getClass())) {
 			throw new IllegalStateException("the root already carries a "
-					+ family.getSimpleName() + " — " + slot + " may only fill an empty slot");
+					+ store.getClass().getSimpleName() + " — " + owner
+					+ " may only fill an empty slot");
 		}
 		return root.withStore(store);
 	}
@@ -229,7 +241,9 @@ public final class Query {
 	public Function<Fiber<Nothing>, Scheduler<Nothing>> factory() {
 		Function<Fiber<Nothing>, Scheduler<Nothing>> base = driver != null
 				? driver
-				: tracer != null ? DepthFirstScheduler::of : BreadthFirstScheduler::new;
+				: slots.exists(slot -> slot.getStore() instanceof DebugStore)
+						? DepthFirstScheduler::of
+						: BreadthFirstScheduler::new;
 		return profiler == null ? base : fiber -> base.apply(fiber).withListener(profiler);
 	}
 
