@@ -12,12 +12,22 @@ import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Scheduler;
+import org.clauseway.functional.fibers.interpreter.ScopeProfiler;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
+import org.clauseway.functional.fibers.schedulers.DepthFirstScheduler;
+import org.clauseway.logic.constraints.Constraints;
+import org.clauseway.logic.debug.DebugStore;
+import org.clauseway.logic.debug.ProfilerStore;
+import org.clauseway.logic.debug.Trace;
 import org.clauseway.logic.goals.Goal;
+import org.clauseway.logic.goals.Packaged;
+import org.clauseway.logic.goals.optimizer.Optimizer;
+import org.clauseway.logic.goals.optimizer.OptimizerStore;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.weight.SemiringStore;
 import java.util.Arrays;
+import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Unifiable;
 import java.util.Deque;
 import java.util.Spliterator;
@@ -56,24 +66,57 @@ public final class Query {
 	private final Function<Fiber<Nothing>, Scheduler<Nothing>> driver;
 	private final Table ringTable;
 	private final SemiringStore one;
+	private final Trace.Tracer tracer;
+	private final ScopeProfiler profiler;
+	private final Optimizer optimizer;
 
 	public static Query of(Goal goal) {
-		return new Query(goal, null, null, null, null, null);
+		return new Query(goal, null, null, null, null, null, null, null, null);
 	}
 
 	/** Root injection: start from existing knowledge instead of empty. */
 	public Query from(Knowledge root) {
-		return new Query(goal, root, table, driver, ringTable, one);
+		return new Query(goal, root, table, driver, ringTable, one, tracer, profiler, optimizer);
 	}
 
 	/** The table slot — pass a shared table to join another solve's residence. */
 	public Query tabled(Table table) {
-		return new Query(goal, from, table, driver, ringTable, one);
+		return new Query(goal, from, table, driver, ringTable, one, tracer, profiler, optimizer);
 	}
 
 	/** The driver slot; the default is a {@link BreadthFirstScheduler}. */
 	public Query on(Function<Fiber<Nothing>, Scheduler<Nothing>> driver) {
-		return new Query(goal, from, table, driver, ringTable, one);
+		return new Query(goal, from, table, driver, ringTable, one, tracer, profiler, optimizer);
+	}
+
+	/**
+	 * The trace slot: seeds a {@link DebugStore} so every named goal reports
+	 * its Call/Exit/Redo/Fail ports, and fills an UNSET driver slot with
+	 * depth-first — a branch runs to completion before its siblings, so the
+	 * trace reads in Prolog order. An explicit {@link #on} wins; expect an
+	 * interleaved trace under a concurrent driver.
+	 */
+	public Query traced(Trace.Tracer tracer) {
+		return new Query(goal, from, table, driver, ringTable, one, tracer, profiler, optimizer);
+	}
+
+	/**
+	 * The profiler slot: seeds a {@link ProfilerStore} so every named goal
+	 * names its dynamic extent, and installs the profiler as the driver's
+	 * step listener — steps bill to goal names, workforce labels, or root.
+	 */
+	public Query profiled(ScopeProfiler profiler) {
+		return new Query(goal, from, table, driver, ringTable, one, tracer, profiler, optimizer);
+	}
+
+	/**
+	 * The optimizer slot: the root tree is rewritten once against the
+	 * initial substitution (the static tier), and an {@link OptimizerStore}
+	 * rides the root so each recursion layer is rewritten as it unfolds at
+	 * the {@code defer} hook.
+	 */
+	public Query optimized(Optimizer optimizer) {
+		return new Query(goal, from, table, driver, ringTable, one, tracer, profiler, optimizer);
 	}
 
 	/**
@@ -98,7 +141,7 @@ public final class Query {
 	}
 
 	private Query weighted(Table ringTable, SemiringStore one) {
-		return new Query(goal, from, table, driver, ringTable, one);
+		return new Query(goal, from, table, driver, ringTable, one, tracer, profiler, optimizer);
 	}
 
 	/** The seeded root, inspectable: slots checked and defaults filled here. */
@@ -130,12 +173,30 @@ public final class Query {
 			}
 			root = root.withStore(one);
 		}
+		root = planted(root, tracer == null ? null : DebugStore.of(tracer), DebugStore.class, "traced()");
+		root = planted(root, profiler == null ? null : ProfilerStore.of(), ProfilerStore.class, "profiled()");
+		root = planted(root, optimizer == null ? null : OptimizerStore.of(optimizer), OptimizerStore.class, "optimized()");
 		return root;
+	}
+
+	private static Knowledge planted(Knowledge root, Packaged store,
+			Class<? extends Packaged> family, String slot) {
+		if (store == null) {
+			return root;
+		}
+		if (root.getStores().containsKey(family)) {
+			throw new IllegalStateException("the root already carries a "
+					+ family.getSimpleName() + " — " + slot + " may only fill an empty slot");
+		}
+		return root.withStore(store);
 	}
 
 	/** The primitive: one emission per derivation, driven by the caller. */
 	public Cont<Knowledge, Nothing> run() {
-		return goal.apply(root());
+		Goal entry = optimizer == null
+				? goal
+				: new BreadthFirstScheduler<>(goal.accept(optimizer)).get();
+		return entry.apply(root());
 	}
 
 	/**
@@ -150,14 +211,26 @@ public final class Query {
 				false, false);
 	}
 
+	/**
+	 * The classic reading: answers as reified terms — stores enforce, the
+	 * surviving residues render INTO the term ({@code Constrained}) — one
+	 * element per derivation, streamed lazily under the query's driver.
+	 */
+	public <T> Stream<Reified<T>> solve(Unifiable<T> out) {
+		return harvest(run().flatMap(s -> Constraints.reify(s, out)), factory());
+	}
+
 	/** The pull harvest of {@link #run}: lazy, closing closes the driver. */
 	public Stream<Knowledge> stream() {
 		return harvest(run(), factory());
 	}
 
-	/** The driver slot's occupant, defaulted. */
+	/** The driver slot's occupant, defaulted; traced fills an unset slot with depth-first. */
 	public Function<Fiber<Nothing>, Scheduler<Nothing>> factory() {
-		return driver != null ? driver : BreadthFirstScheduler::new;
+		Function<Fiber<Nothing>, Scheduler<Nothing>> base = driver != null
+				? driver
+				: tracer != null ? DepthFirstScheduler::of : BreadthFirstScheduler::new;
+		return profiler == null ? base : fiber -> base.apply(fiber).withListener(profiler);
 	}
 
 	/** A Cont pulled as a lazy Stream: one element per advance, close closes the driver. */

@@ -5,22 +5,29 @@ package org.clauseway.logic.solving;
 // ABOUTME: Knowledge per derivation.
 
 import org.clauseway.logic.Utils;
+import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
+import org.clauseway.functional.fibers.interpreter.ScopeProfiler;
 import org.clauseway.functional.algebra.BoundedSemiring;
 import org.clauseway.functional.algebra.Semiring;
 import org.clauseway.functional.algebra.Semirings;
+import org.clauseway.logic.debug.Trace;
 import org.clauseway.logic.goals.Goal;
+import org.clauseway.logic.goals.optimizer.Optimizer;
+import org.clauseway.logic.goals.optimizer.OptimizerStore;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.weight.SemiringStore;
+import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.junit.Test;
 
@@ -119,6 +126,93 @@ public class QueryTest {
 		assertThatThrownBy(() -> Query.of(Goal.success()).from(seeded).weighted(counting).root())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("semiring");
+	}
+
+	@Test
+	public void solveStreamsReifiedLikeTheGoalDoor() {
+		Unifiable<Integer> x = lvar();
+		Goal goal = x.unifies(1).or(x.unifies(1)).or(x.unifies(2));
+		List<String> door = goal.solve(x).map(Object::toString).collect(Collectors.toList());
+		try (Stream<Reified<Integer>> mine = Query.of(goal).solve(x)) {
+			assertThat(mine.map(Object::toString).sorted().collect(Collectors.toList()))
+					.isEqualTo(door.stream().sorted().collect(Collectors.toList()));
+		}
+	}
+
+	@Test
+	public void solveRendersResidualsLikeTheGoalDoor() {
+		Unifiable<Integer> x = lvar();
+		List<String> door = exclude(x.unifies(3)).solve(x)
+				.map(Object::toString).collect(Collectors.toList());
+		try (Stream<Reified<Integer>> mine = Query.of(exclude(x.unifies(3))).solve(x)) {
+			assertThat(mine.map(Object::toString).collect(Collectors.toList()))
+					.containsExactlyElementsOf(door);
+		}
+	}
+
+	@Test
+	public void tracedReportsPortsInTheTracerDoorsOrder() {
+		Unifiable<Integer> x = lvar();
+		List<String> door = new ArrayList<>();
+		x.unifies(1).or(x.unifies(2)).named("g").solve(x, recorder(door)).count();
+
+		List<String> mine = new ArrayList<>();
+		try (Stream<Reified<Integer>> s = Query.of(x.unifies(1).or(x.unifies(2)).named("g"))
+				.traced(recorder(mine)).solve(x)) {
+			s.count();
+		}
+		assertThat(mine).isEqualTo(door);
+		assertThat(door).isNotEmpty();
+	}
+
+	@Test
+	public void profiledCountsStepsLikeTheProfilerDoor() {
+		Unifiable<Integer> x = lvar();
+		ScopeProfiler profiler = new ScopeProfiler();
+		try (Stream<Reified<Integer>> s = Query.of(x.unifies(1).or(x.unifies(2)).named("g"))
+				.profiled(profiler).solve(x)) {
+			assertThat(s.count()).isEqualTo(2);
+		}
+		assertThat(profiler.counts()).isNotEmpty();
+	}
+
+	@Test
+	public void optimizedRunsThePrePassAndKeepsTheTableDefault() {
+		// the goal door forgot the table when seeding the optimizer store —
+		// under slots, forgetting is unrepresentable
+		Knowledge root = Query.of(Goal.success()).optimized(new Optimizer() { }).root();
+		assertThat(root.getStores().get(Table.class).isDefined()).isTrue();
+		assertThat(root.getStores().get(OptimizerStore.class).isDefined()).isTrue();
+
+		Unifiable<Integer> x = lvar();
+		try (Stream<Reified<Integer>> s = Query.of(x.unifies(1).or(x.unifies(2)))
+				.optimized(new Optimizer() { }).solve(x)) {
+			assertThat(s.count()).isEqualTo(2);
+		}
+	}
+
+	private static Trace.Tracer recorder(List<String> ports) {
+		return new Trace.Tracer() {
+			@Override
+			public void onCall(String label, Knowledge state) {
+				ports.add("Call " + label);
+			}
+
+			@Override
+			public void onExit(String label, Knowledge state) {
+				ports.add("Exit " + label);
+			}
+
+			@Override
+			public void onRedo(String label, Knowledge state) {
+				ports.add("Redo " + label);
+			}
+
+			@Override
+			public void onFail(String label, Knowledge state) {
+				ports.add("Fail " + label);
+			}
+		};
 	}
 
 	@Test
