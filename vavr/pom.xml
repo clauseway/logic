@@ -8,6 +8,23 @@
 	<artifactId>clauseway-vavr</artifactId>
 	<version>1.0.1</version>
 
+	<name>Clauseway Vavr (relocated)</name>
+	<description>io.vavr:vavr 1.0.1 relocated to org.clauseway.vavr for the Clauseway stack; no source changes.</description>
+	<url>https://clauseway.org</url>
+
+	<developers>
+		<developer>
+			<name>Tomasz Gac</name>
+			<email>tomasz.k.gac@gmail.com</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:https://github.com/tomasz-gac/logic.git</connection>
+		<developerConnection>scm:git:git@github.com:tomasz-gac/logic.git</developerConnection>
+		<url>https://github.com/tomasz-gac/logic</url>
+	</scm>
+
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
@@ -59,6 +76,8 @@
 								</filter>
 							</filters>
 							<createDependencyReducedPom>true</createDependencyReducedPom>
+							<createSourcesJar>true</createSourcesJar>
+							<shadeSourcesContent>true</shadeSourcesContent>
 						</configuration>
 					</execution>
 				</executions>
@@ -66,5 +85,53 @@
 		</plugins>
 	</build>
 
+
+	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-jar-plugin</artifactId>
+						<version>3.3.0</version>
+						<executions>
+							<execution>
+								<id>stub-javadoc</id>
+								<phase>package</phase>
+								<goals><goal>jar</goal></goals>
+								<configuration>
+									<classifier>javadoc</classifier>
+									<classesDirectory>${project.basedir}/src/javadoc-stub</classesDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>3.1.0</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals><goal>sign</goal></goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+						<version>0.6.0</version>
+						<extensions>true</extensions>
+						<configuration>
+							<publishingServerId>central</publishingServerId>
+							<autoPublish>false</autoPublish>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>
