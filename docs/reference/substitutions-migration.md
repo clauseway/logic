@@ -4,7 +4,7 @@
 `substitutions`, C on branch `decompose`) — the Substitutions class carries
 the consumer-derived operation set (interface promotion deferred to the first
 second implementation, per YAGNI), the unifier is typed over it with no
-Package entries at all (the eviction went further than planned: Package
+Knowledge entries at all (the eviction went further than planned: Knowledge
 itself moved to `goals`), and `decompose` is the one owner of structure
 (StructuralClassesTest pins the coarse classes; writing the pins surfaced and
 killed a 2024 asymmetry — empty left iterable unified with any non-empty
@@ -31,8 +31,8 @@ Three pressures, one migration:
    as `Prefix` (born valid), `Update` (notes can't leak), suspension ripeness
    (conditions can't read factors).
 2. **Real warts delete.** Disequality's trial unification builds
-   `Package.empty().withSubstitutions(s1)` wrappers purely to feed the
-   unifier's over-wide signature; occursCheck/walk take a whole `Package` to
+   `Knowledge.empty().withSubstitutions(s1)` wrappers purely to feed the
+   unifier's over-wide signature; occursCheck/walk take a whole `Knowledge` to
    read one map. All of that becomes direct calls on the view.
 3. **The structure question wants one owner.** `members` (read-only traversal)
    was derived from `unify`'s decomposition and immediately caught drift twice
@@ -51,14 +51,14 @@ whose operation set is read off the actual consumers (no speculative ops):
 | `<T> Term<T> walk(Term<T>)` | everyone |
 | `<T> Term<T> walkAll(Term<T>)` | ripeness, projection, reify path |
 | `boolean isGround(Term<?>)` | suspension conditions |
-| `Substitutions extend(LVar<?>, Term<?>)` | the unifier (today `Package.put`) |
+| `Substitutions extend(LVar<?>, Term<?>)` | the unifier (today `Knowledge.put`) |
 | bulk extend (`Prefix.appliedTo`) | the chokepoint |
 | `long size()` | reify's `_.N` numbering — a HIDDEN CONTRACT: renaming depends on it |
 | iteration over bindings | Neq's map-level verification |
 
 Contracts to pin BEFORE anything else changes:
 
-- **Equality is representation-independent.** `Package` is a `@Value` over the
+- **Equality is representation-independent.** `Knowledge` is a `@Value` over the
   map; two packages with the same bindings must stay equal regardless of
   backing. Pin with a test the moment a second implementation exists.
 - **`size()` = number of bindings**, because reified variable numbering
@@ -73,10 +73,10 @@ Contracts to pin BEFORE anything else changes:
 collecting Extender (unchanged). Callers:
 
 - `Constraints.unify`: `MiniKanren.unifyPrefix(s.substitution(), u, v)`.
-- Disequality trial unification: direct — the `Package.empty()` wrapper dance
+- Disequality trial unification: direct — the `Knowledge.empty()` wrapper dance
   deletes; `unifyConstraints` threads `Substitutions` values.
 - `EnforceConstraintsFD.unifyTerms`: same one-liner change.
-- `reifyS` stays `Package`-shaped only if it must (it uses `extend` + `size`;
+- `reifyS` stays `Knowledge`-shaped only if it must (it uses `extend` + `size`;
   it can move to the interface wholesale).
 
 The Extender interface moves with it. Everything constraint-aware still enters

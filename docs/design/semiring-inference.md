@@ -130,13 +130,13 @@ static <S> Goal weighted(S w, Goal g);
 ```
 
 **Threading mechanism — copy the DebugStore pattern exactly.** The debugger already threads
-a value through the immutable `Package` via a plain `Store` in the constraint-store map
-(`com.tgac.logic.debug.DebugStore`, riding `Package.getConstraints()`). Do the same:
+a value through the immutable `Knowledge` via a plain `Store` in the constraint-store map
+(`com.tgac.logic.debug.DebugStore`, riding `Knowledge.getConstraints()`). Do the same:
 - a `WeightStore<S>` holding the running ⊗-product for the current derivation, seeded to
   `semiring.one()`;
 - `factor(w)` reads it, `times(current, w)`, writes it back into a new package (persistent,
   so branches keep their own copy — this is why backtracking is free), and succeeds;
-- because `Package` is immutable, disjunction branches automatically carry independent
+- because `Knowledge` is immutable, disjunction branches automatically carry independent
   weights — do NOT try to share mutable weight state.
 
 `solve` under a semiring folds the solutions' weights with ⊕:
@@ -144,7 +144,7 @@ a value through the immutable `Package` via a plain `Store` in the constraint-st
 static <T, S> S solve(Unifiable<T> out, Semiring<S> semiring);
 // or, keeping answers: Stream<Tuple2<Reified<T>, S>>
 ```
-Seed a `WeightStore` (like `solve(out, tracer)` seeds a `DebugStore`), run the search, and
+Seed a `WeightStore` (like Query's traced slot seeds a `DebugStore`), run the search, and
 ⊕-fold the per-solution weights. `factor(0.5)` + `ProbabilitySemiring` gives the dice/mutex
 examples in §9. This is the whole of Phase 2 for **non-recursive** programs.
 
@@ -158,7 +158,7 @@ Refinements settled (July 2026), pinning where each operation lives:
   goals.
 - **⊗ is state threading.** No combinator call site ever multiplies:
   conjunction just runs both goals against the threaded package, and
-  `factor` is the only place `times` is called. Package immutability is
+  `factor` is the only place `times` is called. Knowledge immutability is
   what makes branch weights independent for free.
 - **⊕ is boundary merging.** `plus` fires only where alternatives MEET a
   boundary: `solve`'s terminal fold now, table cells at answer arrival
@@ -373,6 +373,6 @@ duplication appears after both exist. Do NOT design a unified driver up front.
 
 1. `Semiring<S>` + instances (boolean, counting, viterbi, tropical) — §2.
 2. Refactor `aggregate` onto it — §3. **Review before continuing.**
-3. `factor`/`weighted` + `solve(out, semiring)` for non-recursive programs — §4. Dice test.
+3. `factor` + `Query.weighted(ring)` for non-recursive programs — §4. Dice test.
 4. `SamplingSolver` for general probability — §5.
 5. (Research, separate go-aheads) semiring-tabling — §7; expectation semiring — §8.

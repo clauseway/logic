@@ -139,7 +139,7 @@ otherwise); the EMITTED programs face no such limit.
 Tabling needs three things from an operand: a KEY (the reified argument tuple —
 the variant check), an ANSWER SHAPE (what to reify and cache), and a CANONICAL
 ORDER for both. `Tabled<T>` gets all three by declaration. An opaque
-`Package -> Cont` closure provides none — its free variables live in lambda
+`Knowledge -> Cont` closure provides none — its free variables live in lambda
 environments the engine cannot see.
 
 **Inference is dead, not merely awkward.** Bottom-up free-variable propagation

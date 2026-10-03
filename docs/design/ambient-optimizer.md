@@ -5,7 +5,7 @@ directly, skipping a separate static phase: the tiers are configurations of
 this one machine (§6), so the cost argument constrains configurations, not
 the architecture. Build milestones: (1) store + solve seeding + root
 rewrite — SHIPPED; (2) the Goal.defer hook, zero-cost-when-absent —
-SHIPPED (and widened to the live Package, July 2026); (3) memos — pending
+SHIPPED (and widened to the live Knowledge, July 2026); (3) memos — pending
 SubsumptionMap. The pldb benchmark becomes a tuning input; the
 one remaining XOR (dynamic ordering vs deferred lookups) is decided later,
 inside this machine. Companion to `optimizer.md` (theory + pass catalog);
@@ -15,7 +15,7 @@ this doc rebuilds the architecture from first principles.**
 
 ## 1. What optimization is here
 
-A goal is a value: `Package → Cont<Package, Nothing>`. Combinators build
+A goal is a value: `Knowledge → Cont<Knowledge, Nothing>`. Combinators build
 TREES of goals (`Conjunction` holds its clause list, `Conde` its
 alternatives) before anything runs. Optimization = rewriting that tree into
 a semantically equal one that searches faster. "Semantically equal" is
@@ -51,12 +51,12 @@ every recursive combinator, every library, every user has to remember.
 ## 3. The ambient move
 
 The codebase already solved this exact problem once, for tracing. The
-tracer is not delivered by wrapping: `DebugStore` rides the `Package` (the
+tracer is not delivered by wrapping: `DebugStore` rides the `Knowledge` (the
 solver state), and `NamedGoal.apply` CHECKS for it — instrumenting when
 present, free when absent. Cross-cutting concern, delivered through state.
 
 The ambient optimizer is the same move: an **`OptimizerStore`** — a plain
-store on the Package (Table/DebugStore pattern) carrying the optimizer
+store on the Knowledge (Table/DebugStore pattern) carrying the optimizer
 pipeline. State flows everywhere execution goes, including through defer
 walls: when a defer forces its supplier, the store is ALREADY THERE, in
 the package the defer is being applied to. Nobody needs to wrap anything;
@@ -80,7 +80,7 @@ the optimizer is waiting on the far side of every wall.
    pattern, since the plan depends on the substitution only through which
    args are bound) and the positive ground-walk cache ("walks to ground"
    is upward-closed — substitutions only grow — so positive results never
-   invalidate; negative ones are never cached). Package persistence makes
+   invalidate; negative ones are never cached). Knowledge persistence makes
    all of it branch-correct for free: each branch owns its package, hence
    its cache.
 

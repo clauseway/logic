@@ -75,7 +75,7 @@ holding its content DIRECTLY, equality the content's own:
                                      // declares its watched surface
 
 The capability line this draws is the design's second product: a raw
-`Goal` can do anything to a `Package`; a `Posting` can only talk to
+`Goal` can do anything to a `Knowledge`; a `Posting` can only talk to
 the chokepoint (the imposition bodies are package-private — the safe
 front door is the only door). Postings compose and stay statements:
 `Posting.all` (conjunction is a statement — closed under ∧, doomed
@@ -86,7 +86,7 @@ presentation), `Posting.bind` as the delegating alias for
 
 The taxonomy lands here as `Bounded`: a posting succeeds at most
 once, so its order is never computed — 1 by construction — and
-`doomed(Package)` is the refutation verdict under partial knowledge,
+`doomed(Knowledge)` is the refutation verdict under partial knowledge,
 consumed by the doom pruning pass, never by pricing (a trust surface:
 store lookups, never trials; never claim doom later knowledge could
 lift — `Unification` derives its doom by running its own unification
@@ -103,7 +103,7 @@ is `¬(c₁ ∧ … ∧ cₙ)` over atomic constraint statements: one clause, th
 SAT-shaped fragment, nothing more.
 
 A statement literal **asserts residence after landing**:
-`Package.withStored` silently no-ops on an unregistered store and the
+`Knowledge.withStored` silently no-ops on an unregistered store and the
 drain examines the orphaned item without complaint — a dropped statement
 would read "unchanged", the irrecoverable direction (§4). The
 imposition composes activate with the check: the item's store class

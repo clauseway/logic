@@ -43,7 +43,7 @@ Constraint                      — the algebraic citizen, possibly aggregate
   watched              — the variable surface: the wake index, the read surface
   leq                  — entailment: is this constraint implied by that one
   meet                 — combine two constraints of the same family
-  normalize(Package)   — complete the meet against the package context
+  normalize(Knowledge)   — complete the meet against the package context
   rename               — rewrite names (namespace crossing, replay)
   split()              — decompose fully: Constraint → atoms
 
@@ -70,7 +70,7 @@ metaphor: the store IS the normalized meet of its atoms, and
 item-versus-store is only how far the meeting has proceeded.
 
 Both fast paths of §3 are OVERLOADS of core operations, not new names:
-`normalize(Prefix, Package)` is delta-normalization (the old revise,
+`normalize(Prefix, Knowledge)` is delta-normalization (the old revise,
 renamed so the agreement law lives in the signature), and
 `split(names)` is the two-way cut (Projectable's split, kept). One
 asymmetry, stated honestly: `split()` returns a collection of atoms,
@@ -85,7 +85,7 @@ Two of these are already shipped facts, not proposals.
 | current protocol | derivation | status |
 |---|---|---|
 | `stated(item, p)` | meet + normalize | SHIPPED — absorb replaced stated (July 2026, #71) |
-| `revise(prefix, p)` | `normalize(Prefix, Package)` — delta-normalization; `watched` says whose context moved | renamed into the overload; kept as a fast path (§3) |
+| `revise(prefix, p)` | `normalize(Prefix, Knowledge)` — delta-normalization; `watched` says whose context moved | renamed into the overload; kept as a fast path (§3) |
 | `enforce(x)` | split into search vocabulary, fork the atoms | FD labelling already has this shape (domain → value alternatives → fork) |
 | `reify(...)` | rename into the answer namespace + render payload | reify is marshal-to-display |
 | `split(names)` | split() ∘ partition ∘ meet | kept as a fast path (§3) |
@@ -117,7 +117,7 @@ So the type is two layers:
 
 | fast path | default | agreement law |
 |---|---|---|
-| `normalize(Prefix, Package)` | `normalize(Package)` wholesale | `normalize(prefix, S1) == normalize(S2)` where `S1 + prefix = S2` — the law IS the overload relationship |
+| `normalize(Prefix, Knowledge)` | `normalize(Knowledge)` wholesale | `normalize(prefix, S1) == normalize(S2)` where `S1 + prefix = S2` — the law IS the overload relationship |
 | `split(names)` | `split()` ∘ partition ∘ meet | meet of the halves ≡ the original up to normalize; each half touches only its side's names |
 | `verdict(constraint)` | meet on scratch (the trial) | agrees with the trial's outcome reading |
 
@@ -141,7 +141,7 @@ Three exclusions are load-bearing, not omissions:
 2. **Transport and observation stores are not Constraints.** `Table`
    stays a plain inert Store (a reacting table starves later stores —
    the old ruling); Debug/Profiler/Optimizer stores are luggage. The
-   Package becomes: Constraints, plus luggage.
+   Knowledge becomes: Constraints, plus luggage.
 3. **SemiringStore stays behind the capability wall.** No door touches
    it; that unreachability is what makes the weight machinery
    unconditionally correct. "Every constraint store" never includes it.
@@ -284,7 +284,7 @@ replacing the four), **verdict** (the read-only store×item deciding
 fast path), **agreement law** (an override's differential law against
 its derivation). The renames shrink the list: `split` and `normalize`
 are existing vocabulary extended by overloads; "revise" retires into
-`normalize(Prefix, Package)`; "restate" retires into prose (split +
+`normalize(Prefix, Knowledge)`; "restate" retires into prose (split +
 re-post = restatement — #122's pipeline keeps the word for the
 pipeline, not the operation).
 

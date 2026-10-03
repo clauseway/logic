@@ -212,11 +212,11 @@ combinator wraps its own body (the barrier binds outsiders, not the
 owner); the master applies once per variant, so plans are memoized by the
 table itself, per boundness pattern.
 
-## 4a. Ambient delivery: the optimizer rides the Package
+## 4a. Ambient delivery: the optimizer rides the Knowledge
 
 Tier 3's mechanism question — how does optimization reach bare defer
 unfoldings nobody wrapped? — has the same answer as tracing: a plain
-store on the Package (the DebugStore pattern). An `OptimizerStore`
+store on the Knowledge (the DebugStore pattern). An `OptimizerStore`
 travels with the state, so it is waiting on the far side of every defer
 wall when the body materializes. Wrapper vs store (the wrapper is the
 DEAD design, kept for contrast): `Optimized` was an
@@ -327,7 +327,7 @@ refactoring idiom ("enumerating ground values you post arithmetic on?
 write dom, not conde — mind the tabling wall"), completing the taxonomy;
 force-early is its inverse and needs a real cost model (width vs
 coupling — CP's variable-ordering problem; dumb threshold first,
-benchmark-gated) plus Package reading at rewrite time (it acts on store
+benchmark-gated) plus Knowledge reading at rewrite time (it acts on store
 state — the first landmine-adjacent pass). Both are set-semantics only
 (domains dedup where condes replay — dies under the semiring).
 
@@ -380,7 +380,7 @@ is missing, and once reuse is automatic the sort may order freely — the
 asymmetric-fence alternative (sortable but uncrossable) was considered
 and dropped as moot. Mechanism note: completion is a
 runtime event and the Table rides the package, so completed-entry
-re-pricing is ambient-tier and reads the PACKAGE — the answers(Package)
+re-pricing is ambient-tier and reads the PACKAGE — the answers(Knowledge)
 widening SHIPPED (July 2026) with completed-entry pricing wired end to end;
 completion detection (table-completion.md) flips the flag in real solves.
 

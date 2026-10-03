@@ -20,8 +20,8 @@ rating pass can stop at any section boundary and still be useful.
 
 ## 1. Core engine
 
-- [x] **Goal** — a function `Package → Cont<Package, Nothing>`; success calls the continuation, failure stays silent. *(CLAUDE.md)*
-- [x] **Package** — the immutable solver state: substitutions + stores; branching is free because each branch keeps its own. *(CLAUDE.md)*
+- [x] **Goal** — a function `Knowledge → Cont<Knowledge, Nothing>`; success calls the continuation, failure stays silent. *(CLAUDE.md)*
+- [x] **Knowledge** — the immutable solver state: substitutions + stores, one per derivation; branching is free because each branch keeps its own. Retires *Package* (the solving arc's rename: the artifact named for what it is). *(solving.md §1)*
 - [x] **Cont** — the stack-safe continuation monad goals are built from. *(functional README)*
 - [x] **Term / Unifiable / Reified** — structural root / solver input / solver output; `instantiate` is the only Reified→Unifiable bridge. *(CLAUDE.md)*
 - [x] **LVar / LVal** — logic variable / wrapped value. *(unification/)*
@@ -101,7 +101,7 @@ rating pass can stop at any section boundary and still be useful.
 ## 5. Tabling
 
 - [x] **Table / TableEntry** — the per-solve call→entry map / one call's notebook: its answer cell and its production ledger. *(tabling/)*
-- [~] **Call** — the cache key: relation identity + reified args + residues — the call's REGION, not just its pattern; keys differ ⟹ entries differ, and reuse is one-directional (wide serves narrow, never the reverse — the cache is a function of the region the master ran from). *(tabling/)*
+- [~] **Call** — the cache key: relation identity + reified args + residues — the call's REGION, not just its pattern; keys differ ⟹ entries differ, and reuse is one-directional (wide serves narrow, never the reverse — the cache is a function of the region the master ran from). *(solving/)*
 - [x] **anonymous master** — the body runs as the entry's workforce, belonging to no caller; selected by the produce CAS. *(table-completion)*
 - [x] **reader / consumer** — a caller reading the cell by cursor; parks at the channel when caught up. *(tabling/)*
 - [x] **answer cell** — the entry's channel value: one JoinMap from answer terms to ring values. *(condition.md §5)*
@@ -153,7 +153,7 @@ rating pass can stop at any section boundary and still be useful.
 - [~] **toll gate** — a lifted goal crosses the tabling barrier as DATA through the crossings (into the key or caller-private); filters migrate cleanly, binders widen keys soundly-but-priced. *(condition.md §8.3)*
 - [~] **the Projectable equivalence** — resident-in-a-store and riding-as-a-value are one object: the crossings are lossless conversion operators (no retraction; relocate the imposition point instead). *(condition.md §8.3)*
 - [x] **nogood** ⋯import — the record: "NOT all these literals simultaneously" (CP-SAT: Stallman & Sussman's dependency-directed record, generalized); Neq's record shape, store-wide. Retires *note / escape / four moves*. *(nogood-store §1)*
-- [x] **Posting (resolve | activate | absorb)** — knowledge injection as a Goal, constructed only by Propagation's doors: apply imposes through the chokepoint, order exactly 1 (a count — refutation never prices; the verdict has its own seat), closed under ∧. A Goal can do anything to a Package; a Posting only posts. Retires *Statement* and *Literal* as type names; "literal" survives as the role word. *(nogood-store §2, constraint-kernel §2)*
+- [x] **Posting (resolve | activate | absorb)** — knowledge injection as a Goal, constructed only by Propagation's doors: apply imposes through the chokepoint, order exactly 1 (a count — refutation never prices; the verdict has its own seat), closed under ∧. A Goal can do anything to a Knowledge; a Posting only posts. Retires *Statement* and *Literal* as type names; "literal" survives as the role word. *(nogood-store §2, constraint-kernel §2)*
 - [x] **NogoodConstraints** — the store: nogoods held conjunctively, union meet, normalize = re-verification against the settled state. Retires *NoteStore\<V\>* (the cargo-typed kernel this design superseded); *polarity* retired with it — the store is negative-only, composition replaces polarity mixing. *(nogood-store §§1,6)*
 - [~] **scratch-copy check (excursion)** — impose a nogood's literals sequentially on a scratch package and read each three ways: fails = refuted/discard, unchanged = entailed/crossed off, new knowledge = still owed. *(nogood-store §§1,3)*
 - [~] **agreement move (lift)** — what ALL surviving alternatives agree on holds now; needs an opt-in join; hull joins sound; the deduction forking can never make. The disjunction store's future lift (union-entailment's dual). *(nogood-store §6)*
@@ -176,7 +176,7 @@ rating pass can stop at any section boundary and still be useful.
 
 - [x] **AnswerSource** — the sync read seam: `answers(Call) → (Reified, Condition)*` inline, plus sync `estimate`/`id`; population: Database, SqlFetch, CachingAnswerSource. Retires *FactSource*. *(table-as-the-source)*
 - [x] **AnswerProducer** — the async kind and the BOUNDARY contract: `produce(Call, Emitter)` — the produce half of a table entry, probe in, (term, Condition) stream out, seal = end-of-stream; local population: GoalProducer, SyncLift. *(table-as-the-source)*
-- [x] **residence** — the solve's ONE table, planted at the solve root (`Goal.solve` seeds `Table.empty()`): everything tabled lands there keyed by (relation value, argument pattern); pldb owns no tables, posted rules extract the residence at wake. *(table-as-the-source)*
+- [x] **residence** — the solve's ONE table, planted at the solve root (Query's table slot, `Table.empty()` by default): everything tabled lands there keyed by (relation value, argument pattern); pldb owns no tables, posted rules extract the residence at wake. *(table-as-the-source)*
 - [x] **Literal** — a relation applied to arguments, the ONE public pldb type: how it answers (source, producer, rule) is a `Reading` chosen by the builder terminal, never visible above it; bare in a conjunction it reads, under `exclude`/`posted()` it imposes. *(pldb relations/)*
 - [x] **GoalProducer** — the one produce bridge: a rule driven into an INJECTED table — probe restated onto captured heads, `Tabling.call` on a clean package, deliveries imaged back; residence is the injector's decision. *(table-as-the-source)*
 - [x] **SyncLift** — a source worn as a producer: enumeration inline inside whoever drives the produce, the cost the sync kind always had. *(pldb)*
@@ -219,7 +219,18 @@ rating pass can stop at any section boundary and still be useful.
 - [x] **write skew** ⋯import — the snapshot-isolation anomaly: two transactions each write what the other READ, no row collides, the combined state violates a guard both checked; demonstrated by the deterministic double-checkout receipts, refused by both serialization kinds. *(transaction; Berenson et al.)*
 - [x] **premise** — a client's earlier pinned reads carried into a later commit: regions the deciding solve read in ANOTHER request, certified beside the committing transaction's own footprint — either world moving refuses the write. *(transaction; Simulated.requiring)*
 
-## 12. Method
+## 12. The solving front door (the September arc)
+
+- [x] **solving** — the package with two strata: the question/answer vocabulary (Call, Answer, Condition, Residues, JoinMap, Subsumption — never imports upward) and the faces (Query, Selection, Row — above everything); the package-granularity cycle with tabling/weight is accepted, the discipline lives at class level. *(solving.md §7)*
+- [x] **Query** — the front door: a goal plus the slots that seed its root Knowledge; `run()` the Cont primitive every other face consumes, `stream()` the pull harvest, `solve(out)` the classic reading (residues rendered into the term), `select` the row pipeline. *(solving.md §§1–2)*
+- [x] **the slot law** — defaults FILL ABSENT FAMILIES ONLY: a `from` root keeps every store it carries, an explicit value meeting an occupied family refuses loudly at build; forgetting a store and silently doubling one are both unrepresentable. `slot(Packaged)` is the open passenger door — open values, closed slots. *(solving.md §2)*
+- [x] **Selection** — a select with its reading still open, the user's two switches: extraction (enforced default / raw) and multiplicity (distinct default — images fold in a JoinMap, conditions ⊕ — / all). *(solving.md §4)*
+- [x] **Row** — one solution's cells read by the variable itself: `get(Term<T>) → Reified<T>`, a wide cell is its Any (never smoothed to an empty), the derivation's Condition rides, `answer()` is the seam artifact whole. *(solving.md §5)*
+- [x] **Answer** — Call's dual: (token `R`, reified image, Condition) — a call asks under ONE region, an answer holds under a DNF; the token doubles as the recovery schema (pldb rows are `Answer<Relation>`); `unconditional()` is the explicit guard-drop. *(solving.md §6)*
+- [x] **enforced / capture** — the two extractions: `Constraints.enforced` commits the stores about the anchor (labelling forks, suspensions refuse) before reading — reify's own stage, alone; `Answer.capture` takes the RAW region a derivation denotes — the produce seam's operation. A user face must enforce or wide answers smuggle un-enforced knowledge. *(solving.md §3)*
+- [x] **harvest** — the one Cont→Stream machinery: lazy, one element per tryAdvance, closing the stream closes the driver. *(solving.md §2)*
+
+## 13. Method
 
 - [x] **comprehension veto** — "if I don't get it, it's not designed properly"; explanation is a proof obligation and the code changes until it can be given. *(method.md)*
 - [x] **adversarial deflation** — every proposal attacked before it ships; downgrades are wins. *(method.md)*

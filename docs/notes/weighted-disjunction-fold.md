@@ -120,7 +120,7 @@ SemiringStore is not a Store; Absorption holds Absorbable, which
 SemiringStore is not either. A runtime guard in any cannot even be
 written, let alone reached. The crossing therefore cannot arrive
 silently: it must WIDEN A TYPE (SemiringStore becoming a Store, or
-weight going first-class in Package), and the FIRST ACT of whoever
+weight going first-class in Knowledge), and the FIRST ACT of whoever
 widens it is the runtime guard in the disjunction door — refuse
 weight-carrying alternatives until this note's fold ships. That
 obligation transfers to the crossing's builder by this sentence.

@@ -25,7 +25,7 @@
      constraint-free program hits it) and pin it with a perf guard (#109's
      step counts).
   3. Decide residence separately from capability: Substitutions can
-     IMPLEMENT ConstraintStore while remaining the Package field every
+     IMPLEMENT ConstraintStore while remaining the Knowledge field every
      `revise(prefix, state)` reads — capability without tile-ization. Full
      residence (into the store map) reworks `state.substitution()` readers
      and the `withSubstitutions` landmine; it is not required for any buy

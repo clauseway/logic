@@ -29,7 +29,7 @@ The engine runs one monotone-fixpoint machine in two directions:
   the fixpoint is "no new answers this round". The ascending thing is the
   TABLE, not the search — search is the labor that feeds the ascent.
 
-They meet in the middle at the `Package`. This doc is about what happens when
+They meet in the middle at the `Knowledge`. This doc is about what happens when
 a tabled call executes under constraint knowledge, or produces answers that
 carry it.
 
@@ -97,7 +97,7 @@ become REGIONS — a term plus the descending knowledge around it.
 ## 4. The key insight: the order decomposes per store
 
 Everything hard above reduces to one operation: ENTAILMENT — `region A ⊑
-region B`. And the `Package` being a product lattice means the order is
+region B`. And the `Knowledge` being a product lattice means the order is
 POINTWISE: A entails B iff every factor of A entails its counterpart in B.
 So no cross-domain vocabulary is needed. Comparison is intra-store business;
 the driver-side fold ANDs opaque per-store verdicts — the same custody

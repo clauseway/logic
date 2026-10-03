@@ -466,7 +466,7 @@ live constraint data ("the world is in one of these regions"), so a
 disjunction of constraints propagates instead of forking the search.
 Its three moves collapse into ONE operation at two grains (the human's
 observation, August 2026): an EXCURSION — speculatively absorb a conjunct
-into the live package and observe. The persistent Package makes the
+into the live package and observe. The persistent Knowledge makes the
 speculation free (a scratch absorb is an absorb on a derived package you
 drop — no undo, the same reason backtracking costs nothing), and every
 piece pre-exists:
@@ -805,7 +805,7 @@ IS the finality certificate. Three pieces:
    is a mode marker riding the sub-solve's packages) refuses at every
    door outside knowledge has: the BINDING seam (`Propagation.resolve`,
    ahead of both the agenda and the pure fast path — prefix keys and
-   value leaves), the STATEMENT seam (`Package.withStored`, the one door
+   value leaves), the STATEMENT seam (`Knowledge.withStored`, the one door
    `activate` and Disequality's direct park both pass; `Stored.terms()`
    names what an item speaks about), and the SUSPENSION seam
    (`Propagation.suspend`, BEFORE the ripeness test — watched is the

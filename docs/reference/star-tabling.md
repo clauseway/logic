@@ -105,7 +105,7 @@ parked consumers; boundedness makes the ascent stationary, so it converges and
 answers stream out eagerly. Values and control flow together.
 
 The closed path cannot do any of that, and the reason is the opaque
-continuation. A continuation is `Package -> Cont`; running it may recurse back
+continuation. A continuation is `Knowledge -> Cont`; running it may recurse back
 into tabling OR leave to `solve`, and you cannot tell which. In the idempotent
 case you never need to — you run everything and values flow, and partial values
 are sound. In the closed case the escaped value is a FRAGMENT (the acyclic part;

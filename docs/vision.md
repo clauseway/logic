@@ -98,7 +98,7 @@ descends), the accumulating fixpoint (answers ascend), and the scheduler
 that prices both and shuffles branch↔data in five moves (sort, domainify —
 manual idiom only, force, park/wake, transfer). Every feature is an
 annotation (`tabled`, `dom`, `Barrier`, `Bounded`), a store riding the
-`Package` (weights, reasons, plans, the optimizer itself), or a plug handed
+`Knowledge` (weights, reasons, plans, the optimizer itself), or a plug handed
 to solve. The kernel never changes. Folds are declared, never inferred; the
 user licenses, the scheduler schedules.
 
@@ -124,10 +124,10 @@ reserved and benchmark-gated: representation swaps, best-first agendas
 Parallel search is historically hard because classic solvers share one
 mutable binding store and undo by trail (Prolog's OR-parallelism — Aurora,
 Muse — died on this). This engine paid the persistence tax up front: every
-branch owns an immutable Package sharing structure with its siblings, so
+branch owns an immutable Knowledge sharing structure with its siblings, so
 OR-PARALLELISM IS STRUCTURALLY FREE — no contention, no trail, answer set
 schedule-independent by confluence, schedulers already pluggable drivers
-(ForkJoin and solveParallel ship; the equivalence suite pins that all
+(ForkJoin ships, spelled Query.on; the equivalence suite pins that all
 drivers agree). The sequential verdict ("10–100× behind tuned imperative")
 divides by the core count, with no configuration, on exactly the workloads
 where the tax hurt — branchy search — and JVM servers with idle cores are
@@ -418,7 +418,7 @@ interesting rules to feed.
 law-kit/coverage-gate architecture in `functional` with the `functional-laws`
 module; capability types `IdempotentSemiring`/`ClosedSemiring`/
 `SuperiorSemiring` replacing the predicate defaults; `aggregate` on Monoid
-witnesses; the optimizer on `Semirings.SATURATING`; the `answers(Package)`
+witnesses; the optimizer on `Semirings.SATURATING`; the `answers(Knowledge)`
 widening with store-sighted post pricing and completed-entry pricing.
 LANDED BEYOND PLAN, same period: the full TABLE COMPLETION arc —
 `table-completion.md` and `group-seal.md`: the EnclosingCall coat (since
@@ -451,7 +451,7 @@ generic primitive). Plus the distribution design corpus, goals-as-data.md.)**
    `aggregate` refactored onto `Semiring<S>` (`semiring-inference.md`
    §2–3); five capabilities queue behind it: aggregation, cost
    arithmetic, DP, provenance, failure explanations.
-5. `answers(Package)` widening — three customers (force-early, live
+5. `answers(Knowledge)` widening — three customers (force-early, live
    labelling, completed-entry re-pricing); ends its speculative status.
 
 **Phase 2 — memo and reuse (HALF-SHIPPED July 2026)**

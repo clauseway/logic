@@ -135,7 +135,7 @@ review checklist, not code:
 - Non-idempotent semirings (counting, probability) need a **star/closure or convergence
   story** for cyclic programs — the same "does the fixpoint exist?" question, in the other
   direction.
-- Both need cheap **change-detection**; the persistent `Package` (reference equality on
+- Both need cheap **change-detection**; the persistent `Knowledge` (reference equality on
   immutable sub-maps) is the tool for it in both.
 - One vocabulary — monotone operator, complete lattice, least/greatest fixpoint, worklist —
   lets one reviewer reason about both subsystems.
@@ -168,7 +168,7 @@ several of this note's predictions to observations — recorded here so the next
 we unify?" conversation starts where this one ended.
 
 - **"Only the dumb loop is common" is now inspectable fact.** The agenda drain is a
-  synchronous, Package-local, confluent loop over cheap operators (one item per deferred
+  synchronous, Knowledge-local, confluent loop over cheap operators (one item per deferred
   step); tabling is a cross-branch coordination protocol woven through parked
   continuations, where the ascending machine's worklist IS the search scheduler's frame
   queue. They share a mental model and zero lines. An extraction today would delete no

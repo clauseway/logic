@@ -19,11 +19,11 @@ chokepoint's three doors — resolve, activate, absorb — each walk the
 content they admit (a prefix walks the affected residents; an entering
 atom or theory walks at the door), so the resident theory is **always
 walked**: its atoms already reflect every binding this branch has made.
-Once that invariant holds, `normalize` stops needing a Package. What it
+Once that invariant holds, `normalize` stops needing a Knowledge. What it
 needs is the **changed names** (which slots the door touched — the
 re-examination frontier, promoted from optimization hint to parameter)
 and the **one question a store may ask the rest of the world** — the
-Probe. Everything else the Package used to smuggle in has a better home:
+Probe. Everything else the Knowledge used to smuggle in has a better home:
 walking happened at the door, collapses leave as data for the chokepoint
 to mint, and quiescence is the door's guarantee, not the store's
 discovery.
@@ -139,9 +139,9 @@ cascade are the prune; collapse minting leaves as data.
 | `meet(S)`, `leq(S)`, `combine` | die — tabling compares theories; algebra lives in Theory only |
 | `contains(Atom)` | dies into theory reads |
 | Factor `split(vars)` | dies — theory-side |
-| `normalize(Package)` | rename(full walk) + normalize(all names, probe) |
-| `normalize(Prefix, Package)` | rename(prefix-as-renaming) + normalize(prefix names, probe) |
-| `stated(Atom, Package)` | dies into the activate pipeline |
+| `normalize(Knowledge)` | rename(full walk) + normalize(all names, probe) |
+| `normalize(Prefix, Knowledge)` | rename(prefix-as-renaming) + normalize(prefix names, probe) |
+| `stated(Atom, Knowledge)` | dies into the activate pipeline |
 | `meet(Atom)` | absorbed into ingestion |
 | Verification's settle call | moves to the door |
 | update's Prefix minting | moves to the chokepoint |
@@ -151,7 +151,7 @@ cascade are the prune; collapse minting leaves as data.
 1. **Quiescence is the door's obligation.** A probe is settled by
    construction; normalize is never invoked mid-agenda. This is where
    "state-free" earns its asterisk.
-2. **Propagator bodies narrow** from `(terms, Package)` to reading their
+2. **Propagator bodies narrow** from `(terms, Knowledge)` to reading their
    own walked theory, plus the probe should a body ever genuinely need a
    sibling (none does today). A real contract change, executed at G.
 3. **Suspensions stay the driver's citizens** — outside this shape; the

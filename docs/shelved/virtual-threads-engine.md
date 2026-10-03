@@ -9,7 +9,7 @@ change to the current engine. The current engine is Java 8, trampolined, and wor
 
 ## 1. The idea
 
-The current engine is CPS + a trampolined free structure: `Goal = Package -> Cont<Package,
+The current engine is CPS + a trampolined free structure: `Goal = Knowledge -> Cont<Knowledge,
 Nothing>`, driven by schedulers over `Frame`. The trampoline exists to get **stack safety**
 (deep recursion without `StackOverflowError`) and **suspension** (parking) without threads.
 
@@ -41,9 +41,9 @@ real debugger," which the trampolined engine can never give (its stack is interp
 
 ## 3. Execution model (how it actually works)
 
-Direct style with blocking channels; the immutable `Package` is what makes it clean.
+Direct style with blocking channels; the immutable `Knowledge` is what makes it clean.
 
-- A goal, given a `Package`, **produces** solutions by pushing packages onto an output
+- A goal, given a `Knowledge`, **produces** solutions by pushing packages onto an output
   channel (a bounded blocking queue). Success = push the current package; failure = push
   nothing.
 - **Conjunction** `a ∧ b`: for each package `a` pushes, run `b` on it and forward `b`'s
@@ -53,9 +53,9 @@ Direct style with blocking channels; the immutable `Package` is what makes it cl
 - **Recursion within a branch is ordinary method calls** — that is what puts real frames on
   the VT's stack and makes it debuggable. A deep `append` recurses on the VT's growable stack;
   no trampoline needed.
-- **Backtracking is free** because `Package` is immutable: each branch carries its own package,
+- **Backtracking is free** because `Knowledge` is immutable: each branch carries its own package,
   so "try another branch" is just exploring another package — there is no trail to undo. (Keep
-  the persistent `Package`; do NOT introduce mutable state to "optimise" — it would destroy
+  the persistent `Knowledge`; do NOT introduce mutable state to "optimise" — it would destroy
   this property and the parallelism.)
 
 Mental model: it's the classic "logic streams," but the immature-stream *thunks* are replaced
@@ -102,7 +102,7 @@ Secondary costs:
   now expressed with threads).
 - **Cut** — `StructuredTaskScope`; cut cancels the scope. If you stay on Java 8 instead, cut is
   separate, harder work in the CPS engine.
-- **Constraints / semirings** — orthogonal; they live in the `Package` and compose the same way.
+- **Constraints / semirings** — orthogonal; they live in the `Knowledge` and compose the same way.
 
 ---
 
@@ -132,7 +132,7 @@ Do NOT start by porting the current engine. Do NOT let this touch Java-8 `logic`
   no trampoline in the code.
 - **Native debugging:** an IDE breakpoint inside a recursive relation shows the real recursive
   call stack, not interpreter frames.
-- **No mutable `Package`:** backtracking works purely by exploring alternative packages.
+- **No mutable `Knowledge`:** backtracking works purely by exploring alternative packages.
 
 ---
 

@@ -19,7 +19,7 @@ the still-live companions: `fixpoint-machine.md` (the two-fixpoint model),
 
 ## 1. State: the package is a product
 
-A `Package` is the immutable solver state, a product of factors:
+A `Knowledge` is the immutable solver state, a product of factors:
 
 - **`Substitutions`** — the SHARED factor: the monotonically growing log of
   bindings. It has a read-only view type (`unification.Substitutions`) with no
@@ -62,12 +62,12 @@ Propagation.suspend(watched, ripe, body)       // run body once ripe
 ```
 
 `Posting` is the one public imposition API and the kernel's capability
-line: a raw `Goal` can do anything to a `Package`; a `Posting` can only
+line: a raw `Goal` can do anything to a `Knowledge`; a `Posting` can only
 talk to the chokepoint. The same value is a conjunct in a program, a
 literal in a nogood, and a store front door's return type (`dom`, `leq`,
 `addo`, `x.unifies` — `Unification` is `resolve`'s single-unification face:
 mint the prefix, resolve it). Postings are `Bounded` by taxonomy —
-order 1 by construction, `doomed(Package)` the refutation verdict
+order 1 by construction, `doomed(Knowledge)` the refutation verdict
 consumed by the doom pruning pass — compose
 under ∧ (`Posting.all`), and survive naming (`named` keeps the face,
 labels outside identity).
@@ -177,8 +177,8 @@ swap the whole pair, factor included (today's factors happen to be
 stateless singletons; that is a fact, not a requirement):
 
 ```java
-Fiber<Revision> normalize(Theory<S>, Prefix, Package);   // bindings arrived — the delta trigger
-Fiber<Revision> normalize(Theory<S>, LinkedHashSet<Atom<S>>, Package);
+Fiber<Revision> normalize(Theory<S>, Prefix, Knowledge);   // bindings arrived — the delta trigger
+Fiber<Revision> normalize(Theory<S>, LinkedHashSet<Atom<S>>, Knowledge);
                                     // knowledge arrived — the focused trigger
 // plus lifecycle: enforce (commit before reify), reify (render residue)
 ```
@@ -251,7 +251,7 @@ resident family crosses, because every atom renames.
   capture and is retired.
 - **`Verdict`** — the body's lifecycle ruling: `fail | keep | subsumed |
   update(f)`. `keep` is the default-safe case (forgetting to re-park is
-  unwritable). `update`'s `f : (Package, Store) → Update` is applied by the
+  unwritable). `update`'s `f : (Knowledge, Store) → Update` is applied by the
   OWNING store to its own factor.
 - **`Update`** — the intra-store step algebra: `fail | unchanged |
   applied(factor) + withInferred + withReexamine + withSuspend-shaped runs`.

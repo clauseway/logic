@@ -34,7 +34,7 @@
 ## The claim
 
 The engine has one recurring boundary problem wearing four coats:
-compressed knowledge leaving a live Package must be re-expressed for
+compressed knowledge leaving a live Knowledge must be re-expressed for
 its READER. The unification (the human's, August 2026): stores speak
 Posting — the chokepoint's closed statement vocabulary — and every
 reader consumes the language, never the store:
@@ -46,7 +46,7 @@ reader consumes the language, never the store:
 | external query engine | FactSource pushdown | compiled predicates | unbuilt |
 | engine, across time | persistence (#75) | marshalled postings | unbuilt |
 
-Tabling and solve produce the SAME object — answer sets as Package
+Tabling and solve produce the SAME object — answer sets as Knowledge
 images per call pattern — and differ only in boundary policy per
 reader: tabling transcribes (stays compressed), solve exits (expands
 by enforce, expresses by reify). A FactSource is the input dual — a

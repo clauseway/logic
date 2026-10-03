@@ -8,7 +8,7 @@
   projections were empty by construction, and whose membership needed an
   exclusion filter at every dispatch site
 - **imports**: stores are branches as data (glossary), the two doors,
-  Package product
+  Knowledge product
 - **obligations**: none — this is a closure record. It re-grounds the July
   floor/tile ruling as a statement about what constraints ARE, not about
   interface history.

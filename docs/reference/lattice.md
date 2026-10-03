@@ -67,7 +67,7 @@ per-factor; the product order under-approximates semantic entailment
 | Residues (TCLP) | per-store ⊑ | shrink | SHIPPED as `Residues` — the conjunct as a meet-semilattice with top, leq = containment reversing accumulation (condition.md §3); = `Domain` for FD, by construction |
 | `Condition` | region-DNF, ⊕ = union in absorption normal form | GROWS | SHIPPED: the constraint ring — bounded (1 ⊕ a = 1 IS absorption), ⊗ = cross-meet; subsumption dedup and delivery finality are its laws (condition.md §§4, 6) |
 | `FiniteDomainConstraints` | pointwise domain meet × propagator-set ∩ | SHRINKS | SHIPPED: the store as a product order, canonical ⊥; the cascade's termination measure |
-| `Package` | product of the above | mixed | pointwise entailment; the accepted under-approximation |
+| `Knowledge` | product of the above | mixed | pointwise entailment; the accepted under-approximation |
 | Neq record sets | record implication (syntactic superset as the sound approximation) | GROWS | ordered ONLY — no useful measure, no split, infinite antichains: tier 1 of the ladder and correctly nothing more |
 
 **The non-example, kept deliberately**: the optimizer's rewrite passes do
@@ -485,7 +485,7 @@ semirings ARE lattices.
 Not future work: the witness API already carries the taxonomy — `Semiring<S>`'s
 capability SUBINTERFACES (`IdempotentSemiring`/`BoundedSemiring`/`ClosedSemiring`/
 `SuperiorSemiring`) ARE the declarations, and the law kits VERIFY each
-implementor. When `solve(out, semiring)` arrives
+implementor. Now that `Query.weighted(ring)` has arrived
 (semiring-inference.md), the engine derives its feature gates from the
 plug's checked capabilities: contains-check vs weighted cell in addAnswer,
 condu legal vs rejected loudly, dedup on or off — every gate justified by
@@ -561,7 +561,7 @@ usable if it stays true while the real run proceeds — it must move one-way
 or it lies (the direction principle, §5); a barrier is speculation IN
 PROGRESS — a mid-fill table is a preview that cannot be read yet, so it
 prices ∞ and holds position; and the optimizer is entitled to read stores
-(the `answers(Package)` widening) because store data is congealed
+(the `answers(Knowledge)` widening) because store data is congealed
 speculation — a domain's width is the preview of an enumeration, exactly
 the optimizer's diet. At a disjunction the optimizer's choices are then
 three verbs, all priceable in its own arithmetic: SEARCH IT (fork, the

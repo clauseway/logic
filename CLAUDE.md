@@ -11,7 +11,7 @@ tests.
 1. **TDD.** Write a failing test first, watch it fail, then make it pass. For a bug, first
    write a test that reproduces it.
 2. **The test suite is your safety net.** `mvn test` must end in `BUILD SUCCESS`. Never
-   commit or merge with a red suite. Count today: ~640 tests. If the count drops, you
+   commit or merge with a red suite. Count today: ~870 tests. If the count drops, you
    deleted or emptied a test — don't.
 3. **Test output must be pristine.** No `System.out.println` in tests or in `src/main`.
    Assert results; don't print them. (One intentional exception is documented below.)
@@ -58,9 +58,9 @@ Small, local, well-tested changes elsewhere don't need to ask.
 
 ## Architecture in one screen
 
-- A **goal** is `Package -> Cont<Package, Nothing>` (CPS). Success = calling the
+- A **goal** is `Knowledge -> Cont<Knowledge, Nothing>` (CPS). Success = calling the
   continuation; failure = staying silent. `Goal` is the central interface (`goals/Goal.java`).
-- A **`Package`** (`goals/Package.java`) is the solver state:
+- A **`Knowledge`** (`goals/Knowledge.java`) is the solver state:
   `substitutions (HashMap<LVar,Term>)` + `constraints (LinkedHashMap<Class,Store>)`. It is
   **immutable/persistent** — this is why backtracking is free (each branch keeps its own).
 - **`Term` / `Unifiable` / `Reified`** (`unification/`): `Term` is the structural root;
@@ -94,13 +94,22 @@ Small, local, well-tested changes elsewhere don't need to ask.
   into the run lane. `Projection`'s goals are a facade over
   `Propagation.suspend`.
 
+- **The front door** (`solving/`): `Query.of(goal)` + slots (`from`/`tabled`/`on`/
+  `weighted`/`traced`/`profiled`/`optimized`/`slot(Packaged)`) seeds the root — defaults
+  FILL ABSENT FAMILIES ONLY, explicit-on-occupied refuses. `run()` is the Cont primitive
+  every face consumes; `solve(out)` the classic reified reading; `select(vars).rows()`
+  the conditional row pipeline (Selection: enforced/raw × distinct/all; Row: typed keyed
+  get). `Goal` has NO solve methods. Engine internals (tabling) never ride the door —
+  they consume solving's vocabulary (`Call`/`Answer`/`Condition`/`Residues`/`capture`).
+  Details: `docs/reference/solving.md`.
+
 Key **seams** (the places behaviour is hooked):
 - `goals/NamedGoal` — the tracing hook. A named goal reports box-model ports when a tracer
   is seeded. Zero cost otherwise.
 - `constraints/Propagation` — the chokepoint (`resolve`/`activate`/`absorb` —
   the three doors, each a `Posting` constructor), the agenda drain, and the
   revision router: where constraint stores are composed. `Posting` is the
-  one public imposition API: a raw `Goal` can do anything to a `Package`, a
+  one public imposition API: a raw `Goal` can do anything to a `Knowledge`, a
   `Posting` can only talk to the chokepoint.
 - `functional`'s `FiberStep` — the single step interpreter all schedulers share.
 
@@ -123,11 +132,12 @@ Key **seams** (the places behaviour is hooked):
   Constraint bodies wake on narrowing too — they must tolerate any mix of wide/ground
   args (see the mulIntervals sign-guard lesson).
   Details: `docs/reference/constraint-kernel.md`.
-- **`Package.withSubstitutions` REPLACES the substitution map.** In constraint-aware code
+- **`Knowledge.withSubstitutions` REPLACES the substitution map.** In constraint-aware code
   never touch it directly — obtain a `Prefix` and `resolve` it.
-- **Tracing runs depth-first.** `solve(out, tracer)` uses `DepthFirstScheduler` so the trace
-  reads in Prolog order. The default `solve(out)` is fair breadth-first. Don't "fix" a trace
-  by changing the default scheduler.
+- **Tracing runs depth-first.** `traced()` fills an UNSET driver slot with
+  `DepthFirstScheduler` so the trace reads in Prolog order; an explicit `on()` wins and
+  interleaves. The plain default is fair breadth-first. Don't "fix" a trace by changing
+  the default scheduler.
 - **Sibling-disjunct `Call` ports fire together up front.** `Conde` materialises all fork
   options eagerly (apply-time, not step-time), so both branches announce `Call` before either
   body runs. This is cosmetic and not a scheduling bug — don't chase it.
@@ -139,10 +149,9 @@ Key **seams** (the places behaviour is hooked):
 ## Debugging a logic program
 
 ```java
-goal.trace(out)                          // full indented Prolog-order box-model trace
-goal.solve(out, Trace.printing())        // same, explicit
-goal.solve(out, Trace.spy("appendo"))    // only boxes whose label contains "appendo"
-goal.solve(out, Trace.hiding("recursive call"))
+Query.of(goal).traced(Trace.printing()).solve(out)   // indented Prolog-order box-model trace
+Query.of(goal).traced(Trace.spy("appendo")).solve(out)      // only boxes labeled "appendo"
+Query.of(goal).traced(Trace.hiding("recursive call")).solve(out)
 ```
 Ports are Call / Exit / Redo / Fail. Labels are rendered against the live state, so
 arguments show their current (deep-walked) values. See `debug/Trace.java`, `debug/DebugStore.java`.
@@ -181,6 +190,10 @@ arguments show their current (deep-walked) values. See `debug/Trace.java`, `debu
 - `docs/reference/lattice.md` — the engine's one algebra: lattice/semiring theory,
   instance inventory, consumer map, capability ladder, the two freedoms. Read
   before the optimizer/TCLP docs — they lean on its vocabulary.
+- `docs/reference/solving.md` — AS BUILT: the front door — Query's slot
+  discipline, the two extractions (enforced/capture), Selection's readings,
+  Row, the Answer/Call duals, who rides the door and who must not. Read
+  before touching `solving/` faces or adding a capability.
 - `docs/reference/condition.md` — AS BUILT: the constraint ring — `Residues`
   (⊗-monoid, the namespace crossings), `Condition` (region DNF, subsumption =
   ⊕'s absorption), the one `JoinMap` cell, finality = reaching 1 decides
