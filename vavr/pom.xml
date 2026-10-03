@@ -20,9 +20,9 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:https://github.com/tomasz-gac/logic.git</connection>
-		<developerConnection>scm:git:git@github.com:tomasz-gac/logic.git</developerConnection>
-		<url>https://github.com/tomasz-gac/logic</url>
+		<connection>scm:git:https://github.com/clauseway/logic.git</connection>
+		<developerConnection>scm:git:git@github.com:clauseway/logic.git</developerConnection>
+		<url>https://github.com/clauseway/logic</url>
 	</scm>
 
 	<licenses>

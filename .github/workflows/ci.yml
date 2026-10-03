@@ -18,7 +18,7 @@ jobs:
           cache: maven
       - name: Build functional (matching branch, else its default)
         run: |
-          git clone https://github.com/tomasz-gac/functional.git "$HOME/functional"
+          git clone https://github.com/clauseway/functional.git "$HOME/functional"
           git -C "$HOME/functional" checkout "$GITHUB_REF_NAME" || true
           mvn -B -ntp install -DskipTests -f "$HOME/functional/pom.xml"
       - name: Build clauseway-vavr
