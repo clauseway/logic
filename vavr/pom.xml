@@ -45,6 +45,11 @@
 			<artifactId>vavr</artifactId>
 			<version>1.0.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jspecify</groupId>
+			<artifactId>jspecify</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -60,6 +65,11 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
+							<artifactSet>
+								<excludes>
+									<exclude>org.jspecify:jspecify</exclude>
+								</excludes>
+							</artifactSet>
 							<relocations>
 								<relocation>
 									<pattern>io.vavr</pattern>
@@ -73,12 +83,6 @@
 										<exclude>module-info.class</exclude>
 										<exclude>META-INF/versions/**</exclude>
 										<exclude>META-INF/maven/**</exclude>
-									</excludes>
-								</filter>
-								<filter>
-									<artifact>org.jspecify:jspecify</artifact>
-									<excludes>
-										<exclude>META-INF/versions/**</exclude>
 									</excludes>
 								</filter>
 							</filters>
