@@ -6,7 +6,7 @@
 
 	<groupId>org.clauseway</groupId>
 	<artifactId>logic</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.1.0</version>
 
 	<name>Clauseway Logic</name>
 	<description>A relational programming engine for Java 8: miniKanren with constraints, nogoods, tabling, weighted inference and a composable query front door.</description>
@@ -48,28 +48,28 @@
 		<dependency>
 			<groupId>org.clauseway</groupId>
 			<artifactId>functional-types</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<version>0.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.clauseway</groupId>
 			<artifactId>functional-algebra</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<version>0.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.clauseway</groupId>
 			<artifactId>functional-runtime</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<version>0.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.clauseway</groupId>
 			<artifactId>functional-laws</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<version>0.1.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.clauseway</groupId>
 			<artifactId>functional-algebra-laws</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<version>0.1.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
