@@ -10,6 +10,7 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 
 import org.clauseway.vavr.collection.LinkedHashSet;
 import org.clauseway.vavr.collection.List;
+import java.util.Optional;
 import org.clauseway.vavr.control.Option;
 import java.util.Collections;
 import java.util.Random;
@@ -69,9 +70,9 @@ public class NormalizeAgreementLawsTest {
 			if (!minted.isDefined()) {
 				continue;
 			}
-			Option<Tuple2<Substitutions, Prefix>> examined =
-					p.substitution().extended(minted.get());
-			if (!examined.isDefined() || examined.get()._2.isEmpty()) {
+			Optional<Tuple2<Substitutions, Prefix>> examined =
+					p.substitution().extended(minted.get()).ground();
+			if (!examined.isPresent() || examined.get()._2.isEmpty()) {
 				continue;
 			}
 			Prefix kept = examined.get()._2;

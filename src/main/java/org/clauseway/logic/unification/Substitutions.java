@@ -5,9 +5,9 @@ package org.clauseway.logic.unification;
 
 import java.util.Optional;
 import org.clauseway.functional.algebra.Semilattice;
+import org.clauseway.functional.fibers.MFiber;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.functional.tuples.Tuple2;
-import org.clauseway.vavr.control.Option;
 import java.util.ArrayDeque;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -189,7 +189,7 @@ public interface Substitutions extends Semilattice<Substitutions> {
 	 * factor and the KEPT delta the driver fans out to the other stores
 	 * (empty kept = nothing new, a no-op arrival).
 	 */
-	default Option<Tuple2<Substitutions, Prefix>> extended(Prefix delta) {
+	default MFiber<Tuple2<Substitutions, Prefix>> extended(Prefix delta) {
 		return delta.revalidate(this)
 				.map(kept -> Tuple.of(kept.isEmpty() ? this : kept.appliedTo(this), kept));
 	}

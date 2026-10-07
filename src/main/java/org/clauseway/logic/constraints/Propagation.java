@@ -442,7 +442,7 @@ public final class Propagation {
 			@Override
 			@SuppressWarnings({"unchecked", "rawtypes"})
 			Goal apply() {
-				return s -> s.substitution().extended(prefix)
+				return s -> Cont.defer(() -> s.substitution().extended(prefix)
 						.<Cont<Knowledge, Nothing>> map(examined -> {
 							Prefix kept = examined._2;
 							if (kept.isEmpty()) {
@@ -457,7 +457,7 @@ public final class Propagation {
 									.and(ripen(kept))
 									.apply(extended);
 						})
-						.getOrElse(() -> Cont.complete(Nothing.nothing()));
+						.getOrElse(() -> Cont.complete(Nothing.nothing())));
 			}
 
 			@Override
