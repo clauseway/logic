@@ -15,6 +15,15 @@ import org.clauseway.vavr.collection.Array;
 import java.util.Arrays;
 import java.util.Comparator;
 
+/**
+ * The propagator for {@code less <= more} under a {@link Comparator}, posted
+ * through {@link org.clauseway.logic.finitedomain.FiniteDomain#leq}. When both
+ * terms are ground the comparison decides the verdict outright; otherwise the
+ * domain of {@code less} is cut to at most the upper bound of {@code more} and
+ * the domain of {@code more} to at least the lower bound of {@code less}, failing
+ * if either becomes empty. {@link #doomed} reports a ground pair that violates
+ * the order.
+ */
 public final class Leq extends Propagator<FiniteDomainConstraints> {
 
 	private final Comparator<Object> order;

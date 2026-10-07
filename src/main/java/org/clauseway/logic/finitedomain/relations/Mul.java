@@ -27,6 +27,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
+/**
+ * The propagator for {@code a * b = rhs}, posted through
+ * {@link org.clauseway.logic.finitedomain.FiniteDomain#multo}. Multiplication
+ * comes from the {@link Multiplicative} capability, the order from a
+ * {@link Comparator}, and an optional {@link Discrete} step rounds minted
+ * bounds. Three ground positions verify the product exactly; two ground
+ * positions compute the third (the product directly, a factor through the
+ * exact inverse, which fails when it does not divide); when all three are wide
+ * the interval bounds of each position are narrowed against the products or
+ * quotients of the other two.
+ */
 public final class Mul extends Propagator<FiniteDomainConstraints> {
 
 	private final Multiplicative<Object> multiplicative;

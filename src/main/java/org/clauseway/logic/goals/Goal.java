@@ -27,7 +27,7 @@ import java.util.function.Supplier;
  *
  * This interface provides factory methods for common goals (e.g., {@link #success()}, {@link #failure()}),
  * and combinators (e.g., {@link #and(Goal...)}, {@link #or(Goal...)});
- * {@link org.clauseway.logic.solving.Query} is the door that executes a goal and retrieves its solutions.
+ * {@link org.clauseway.logic.solving.Query} executes a goal and retrieves its solutions.
  * </pre>
  *
  * @author TGa
@@ -102,13 +102,13 @@ public interface Goal extends Function<Knowledge, Cont<Knowledge, Nothing>> {
 
 	/**
 	 * Creates a new goal that chains this goal with subsequent {@code goals} using a
-	 * "first-match" or "committed-choice" strategy, as provided by {@link Condu#orElseFirst(Goal...)}.
+	 * "first-match" or "committed-choice" strategy, as provided by {@link Conda#orElseFirst(Goal...)}.
 	 * <pre>
 	 * It attempts goals in sequence, and the behavior regarding commitment to the first
 	 * successful path is determined by the {@code Conda} implementation's {@code orElseFirst} method.
 	 * </pre>
 	 *
-	 * @param goals Alternative goals to try, subject to the "orElseFirst" semantics of {@link Condu}.
+	 * @param goals Alternative goals to try, subject to the "orElseFirst" semantics of {@link Conda}.
 	 * @return A new {@link Goal} based on {@link Conda#orElseFirst(Goal...)}.
 	 * @see Conda#orElseFirst(Goal...)
 	 * @see #conda(Goal...)

@@ -23,7 +23,7 @@ public class Projection {
 	/**
 	 * Parks a suspension: wait until {@code x} is deep-ground, then run
 	 * {@code f} with the walked value (docs/reference/constraint-kernel.md). The body
-	 * splices through the run lane after the pass that grounded {@code x}
+	 * runs after the propagation pass that grounded {@code x}
 	 * quiesces — or runs inline when {@code x} is already ground here.
 	 */
 	public static <T> Goal project(Unifiable<T> x, Function<T, Goal> f) {

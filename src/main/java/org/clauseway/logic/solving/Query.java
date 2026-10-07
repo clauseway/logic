@@ -44,7 +44,7 @@ import lombok.Value;
 import lombok.With;
 
 /**
- * The front door of a solve: a goal, a root {@link Knowledge}, and the
+ * The entry point of a solve: a goal, a root {@link Knowledge}, and the
  * slots that seed it. The result of solving is the knowledge the goal
  * implies — one {@link Knowledge} per derivation, duplicates and all (the
  * derivation view; folds are a downstream choice).
@@ -55,7 +55,7 @@ import lombok.With;
  * loudly at build — forgetting a store and silently doubling one are both
  * unrepresentable.
  *
- * <p>{@link #run} is the primitive face: a {@link Cont} the caller applies
+ * <p>{@link #run} is the primitive: a {@link Cont} the caller applies
  * and drives with a scheduler of its own — engine-internal consumers stay
  * in the fiber world. {@link #stream} is the pull harvest for the world
  * boundary: lazy, one element per advance, close the stream to close the
@@ -74,7 +74,7 @@ public final class Query {
 	private final Optimizer optimizer;
 	private final List<Slot> slots;
 
-	/** One store to plant at the root, remembering which door injected it. */
+	/** One store to plant at the root, remembering which slot method injected it. */
 	@Value
 	private static class Slot {
 		Packaged store;
@@ -102,7 +102,7 @@ public final class Query {
 
 	/**
 	 * The generic slot: plant any store at the root. Fill-absent like every
-	 * named door — a slot meeting its own family (in the root or in another
+	 * named slot — a slot meeting its own family (in the root or in another
 	 * slot) refuses at build.
 	 */
 	public Query slot(Packaged store) {
@@ -132,7 +132,7 @@ public final class Query {
 	/**
 	 * The optimizer slot: the root tree is rewritten once against the
 	 * initial substitution (the static tier), and an {@link OptimizerStore}
-	 * rides the root so each recursion layer is rewritten as it unfolds at
+	 * is planted at the root so each recursion layer is rewritten as it unfolds at
 	 * the {@code defer} hook.
 	 */
 	public Query optimized(Optimizer optimizer) {

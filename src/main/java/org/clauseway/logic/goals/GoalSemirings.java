@@ -21,7 +21,7 @@ public final class GoalSemirings {
 
 	/**
 	 * Goals up to answer MULTISET equality: every derivation contributes its
-	 * answer once. The quotient counting rides — a rewrite lawful here
+	 * answer once. The quotient keeps the counts — a rewrite lawful here
 	 * preserves how many ways each answer arises. Not idempotent:
 	 * {@code g.or(g)} doubles every derivation.
 	 */

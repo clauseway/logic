@@ -13,7 +13,7 @@ import java.util.function.Predicate;
  * {@code (watched, ripe, body)}: the driver re-examines the suspension when a
  * watched chain binds; when {@code ripe} holds, the body joins the run lane and
  * the suspension is gone — fired once, forever. A store may emit one via
- * {@code Revision.withSuspend}; the degenerate form (no watched terms, always
+ * {@code Revision.Updated.withSuspend}; the degenerate form (no watched terms, always
  * ripe) is an immediate run.
  *
  * <p><b>The ripeness contract.</b> {@code ripe} receives the {@link

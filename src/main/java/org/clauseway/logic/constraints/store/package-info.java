@@ -5,8 +5,9 @@
  * (docs/reference/constraint-kernel.md). A {@link
  * org.clauseway.logic.constraints.store.Factor} is one constraint domain's
  * factor of the package (finite domains, disequality), living for the whole
- * derivation. Two triggers — {@code revise} (bindings arrived: custody, your
- * own watchers, your own cascade) and {@code stated} (your item was stated;
+ * derivation. Two triggers — {@code normalize(theory, prefix, state)}
+ * (bindings arrived: custody, your own watchers, your own cascade) and
+ * {@code normalize(theory, focus, state)} (atoms arrived at your theory;
  * dispatched to the owner) — answer a {@code Fiber} of {@link
  * org.clauseway.logic.constraints.store.Revision}: at most the store's own replaced
  * factor, plus consequences in the driver's vocabulary — inferred

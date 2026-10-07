@@ -43,7 +43,7 @@ public interface Bounded {
 	 * Wrap a goal with a SELF-PRICING order: the goal's own substitution-level
 	 * decision fragment, run at pricing time (failure found there is failure
 	 * forever — monotone). Must stay O(walk)-class; store-level trials belong
-	 * to the probe pass, not pricing.
+	 * to {@link DoomPruner}, not pricing.
 	 */
 	static Goal of(ToLongFunction<Substitutions> order, Goal goal) {
 		return BoundedGoal.of(p -> order.applyAsLong(p.substitution()), goal);

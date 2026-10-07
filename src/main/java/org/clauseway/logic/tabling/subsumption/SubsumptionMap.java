@@ -26,7 +26,7 @@ import java.util.Optional;
  * sealed-subsumer lookup today, the optimizer's plan reuse later.
  *
  * <p>A stored pattern serializes to its preorder {@link Edge} path over one
- * persistent trie ({@link Trie}); alpha-equal patterns are one key
+ * persistent trie ({@code Trie}); alpha-equal patterns are one key
  * (reified equality — last put wins). The QUERY is never serialized: the walk
  * carries a worklist of query subterms, so a stored {@link Edge.Any}
  * swallows one whole subterm by popping it, an {@link Edge.Atom} matches the

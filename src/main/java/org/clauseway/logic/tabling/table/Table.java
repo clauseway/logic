@@ -29,7 +29,7 @@ import java.util.function.Function;
  * single solve: {@link org.clauseway.logic.solving.Query#root() Query.root()} seeds a fresh one into the root package's
  * store map, and all packages derived during the search share it.
  *
- * <p>The table carries the solve's {@link TablingMode}: {@link Streaming} for
+ * <p>The table carries the solve's {@link TablingMode}: {@code Streaming} for
  * plain and bounded-weighted tabling (fold each answer's value and hand it out
  * now), the weight package's closed mode for star tabling (explore for
  * structure, solve at seal). The shared master / consumer / park / completion

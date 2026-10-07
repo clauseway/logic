@@ -70,7 +70,7 @@ public class Logic {
 				.named(s -> "len(" + formatLList(s, lhs) + ") = len(" + formatLList(s, rhs) + ")");
 	}
 
-	/** {@code out} is {@code ls} with the first {@code x} removed; later elements differ from {@code x}. */
+	/** {@code out} is {@code ls} with the first {@code x} removed; the elements before it differ from {@code x}. */
 	public static <T> Goal rembero(Unifiable<LList<T>> ls, Unifiable<T> x, Unifiable<LList<T>> out) {
 		return Matche.matche(ls, Matche.llist(() -> unify(out, LList.empty())))
 				.or(Matche.matche(ls, Matche.llist((a, d) ->

@@ -144,7 +144,7 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 	/**
 	 * Posting-position imposition as the chokepoint's own statement: an
 	 * {@link Imposition} item through the statement entry, consumed by this
-	 * store's {@code stated} — the routing lives with the store, not at the
+	 * store's focused {@code normalize} — the routing lives with the store, not at the
 	 * call site. Doomed under partial knowledge exactly when the value cannot
 	 * stand against the live state: a ground target the value refuses, or a
 	 * live entry it meets to bottom.

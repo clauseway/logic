@@ -24,8 +24,7 @@ import org.clauseway.logic.unification.terms.Term;
  * A read-only view of the substitution — the shared factor of the package
  * product — with no route to any store. Code typed against this view is structurally
  * scoped to shared knowledge: it cannot depend on domains, records or any other
- * private factor (the constraint-kernel.md {@code Substitutions}
- * sketch, finally realized where it has a job).
+ * private factor (docs/reference/constraint-kernel.md).
  *
  * <p>The primitive core is four operations — {@link #binding}, {@link #extend},
  * {@link #size}, {@link #bindings} — and everything else is derived, so a
@@ -163,9 +162,9 @@ public interface Substitutions extends Semilattice<Substitutions> {
 	}
 
 	/**
-	 * The join made total by ABSENCE: {@code none} is ⊤ (the clash), represented
+	 * The join made total by ABSENCE: an empty Optional is ⊤ (the clash), represented
 	 * the way the CPS engine represents all failure — as absence, not a value.
-	 * This is the ⊤-aware form; {@code none} is the top singleton.
+	 * This is the ⊤-aware form; the empty Optional is the top singleton.
 	 */
 	@SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
 	default Optional<Substitutions> tryJoin(Substitutions other) {

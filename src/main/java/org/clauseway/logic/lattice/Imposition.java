@@ -21,7 +21,7 @@ import lombok.Value;
 
 /**
  * "{@code target ⊂ value}" as an item: stated through the chokepoint, the
- * owning {@link LatticeFactor} consumes it in its {@code stated} trigger —
+ * owning {@link LatticeFactor} consumes it in its focused {@code normalize} trigger —
  * update's verification/collapse/narrowing routing, inside the store's
  * method. The item itself never persists: the values map is the knowledge,
  * so {@code prepend} deliberately ignores it.

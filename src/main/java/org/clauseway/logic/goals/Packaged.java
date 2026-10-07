@@ -10,7 +10,7 @@ import org.clauseway.logic.tabling.table.Table;
  * search, keyed by its concrete class, persistent so each branch keeps its own.
  * This is what {@link org.clauseway.logic.debug.DebugStore the tracer},
  * {@link Table the table}, the optimizer and the
- * mode markers all actually need — riding the package, not participating
+ * mode markers all actually need — carried in the package, not participating
  * in constraint solving. {@link org.clauseway.logic.constraints.store.Factor} is
  * the specialization that does take part in it.
  */

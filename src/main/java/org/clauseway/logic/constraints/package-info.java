@@ -14,7 +14,7 @@
  * store computes its answer (FD's propagators, disequality's record
  * verification) is machinery the driver never sees, owned by each domain's
  * package. Concrete stores live with their domains ({@code finitedomain},
- * {@code separate}); {@code projection} is a facade over kernel suspensions.
+ * {@code nogoods}); {@code projection} is a facade over kernel suspensions.
  * Design: docs/reference/constraint-kernel.md.
  */
 package org.clauseway.logic.constraints;

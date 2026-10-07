@@ -21,7 +21,7 @@ import org.clauseway.vavr.collection.Vector;
  * why ground answers stream and conditional answers wait for their seal.
  *
  * <p>Equality is the SET of conjuncts — a DNF is knowledge, not arrival
- * order. The operational ⊗ rides the package ({@link Residues#restate} +
+ * order. The operational ⊗ runs through the package ({@link Residues#restate} +
  * propagation); {@link #and} is that same conjunction as a value, for the
  * algebra and its laws.
  */

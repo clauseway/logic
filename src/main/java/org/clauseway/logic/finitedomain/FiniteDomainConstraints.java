@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * component lattice {@link Domain} (meet = intersect), verification is
  * membership, a {@link Singleton} collapses to an inferred binding, and the
  * termination guard is exact domain equality — finite descent. Labelling
- * ({@link EnforceConstraintsFD}) is this store's {@code enforce}.
+ * ({@code EnforceConstraintsFD}) is this store's {@code enforce}.
  */
 public class FiniteDomainConstraints extends LatticeFactor<Domain<Object>, FiniteDomainConstraints> {
 

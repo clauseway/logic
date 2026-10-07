@@ -37,8 +37,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
- * Data and its only interpreter in one class: the {@code Agenda} worklist — what
- * the old recursion kept as suspended frames — and the engine that drains it
+ * Data and its only interpreter in one class: the {@code Agenda} worklist — the
+ * pending work of the propagation fixpoint — and the engine that drains it
  * (docs/reference/constraint-kernel.md, Steps 2.5 and 3.5).
  */
 public final class Propagation {
@@ -61,14 +61,15 @@ public final class Propagation {
 	 * revalidates the prefix against the live package (open variables bind their
 	 * walked representatives, agreeing pairs drop, contradicting pairs fail the
 	 * branch), extends the substitution once, folds every {@link Factor}'s
-	 * {@code revise} revision, then queues a Wake per bound variable — woken
-	 * propagators' verdicts feed further items, and that queue-until-empty loop is the
+	 * {@code normalize} revision (each store walks its own watchers of the bound
+	 * variables), then ripens suspensions — the consequences the revisions carry
+	 * feed further items, and that queue-until-empty loop is the
 	 * propagation fixpoint, one item per deferred step.
 	 *
 	 * <p>Contract for callers: never extend substitutions directly — obtain a
 	 * {@link Prefix} (from {@code MiniKanren.unifyPrefix} or
 	 * {@code Prefix.binding}) and resolve it. The routing serves two coequal
-	 * purposes: the veto — any store's {@code revise} may fail the branch before
+	 * purposes: the veto — any store's {@code normalize} may fail the branch before
 	 * the binding stands — and the wake — this call is the only place the other
 	 * stores hear of the binding at all (watchers fire, suspensions ripen). A
 	 * bypass therefore does not fail loudly; it leaves every other store's
@@ -139,7 +140,7 @@ public final class Propagation {
 
 	/**
 	 * The bulk statement entry — the trigger family's third row: a whole
-	 * FACTOR arrives. Meets {@code factor} into its resident store
+	 * THEORY arrives. Meets {@code theory} into its resident store
 	 * (registering it when absent) and queues the store's
 	 * {@link Factor#normalize re-normalization}: verification of
 	 * what the meet brought in, first examinations, the internal fixpoint —
@@ -402,7 +403,7 @@ public final class Propagation {
 	}
 
 	/**
-	 * The explicit propagation worklist — pending Bind/Wake items plus the run
+	 * The explicit propagation worklist — pending Bind/Met items plus the run
 	 * lane, riding the package during a drain; its presence marks "drain in
 	 * flight". Two item kinds drain FIFO, one per deferred step; collected run
 	 * goals splice only after the items are exhausted and the agenda is removed.

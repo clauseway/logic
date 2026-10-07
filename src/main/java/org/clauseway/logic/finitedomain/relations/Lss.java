@@ -15,6 +15,15 @@ import org.clauseway.vavr.collection.Array;
 import java.util.Arrays;
 import java.util.Comparator;
 
+/**
+ * The propagator for {@code less < more} under a {@link Comparator}, posted
+ * through {@link org.clauseway.logic.finitedomain.FiniteDomain#lss} (and
+ * {@code gtr}, with the arguments swapped). When both terms are ground the
+ * comparison decides the verdict outright; otherwise each side's domain is cut
+ * against the other side's bound with that bound opened, so the shared
+ * endpoint is excluded, failing if either domain becomes empty.
+ * {@link #doomed} reports a ground pair that violates the strict order.
+ */
 public final class Lss extends Propagator<FiniteDomainConstraints> {
 
 	private final Comparator<Object> order;

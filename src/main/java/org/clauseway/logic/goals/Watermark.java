@@ -18,7 +18,7 @@ import java.util.stream.StreamSupport;
 import lombok.Value;
 
 /**
- * A mode marker riding the {@link Knowledge} of a closed sub-solve. A closed
+ * A mode marker carried in the {@link Knowledge} of a closed sub-solve. A closed
  * aggregate's sub-goal is a self-contained program: it may consume ground
  * values from the surrounding search (the walk dissolves a bound variable
  * into its value before any check sees it), but a variable born BEFORE the

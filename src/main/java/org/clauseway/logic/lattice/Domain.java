@@ -10,7 +10,7 @@ import org.clauseway.vavr.control.Option;
 
 /**
  * What a {@link LatticeFactor} requires of its per-name values — the capability
- * record of docs/design/lattice-store.md Â§2, carried by the value itself. The
+ * record of docs/design/lattice-store.md §2, carried by the value itself. The
  * record is the ADMISSION TEST: it sorts every candidate domain in one glance
  * (finite sets: everything; reals: no exact stabilization; labels: pure meet)
  * and it is where an instance's hazards are declared rather than discovered.

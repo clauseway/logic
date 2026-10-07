@@ -297,7 +297,7 @@ public class MiniKanren {
 
 	/**
 	 * The term's structural members — the same decomposition the unifier and
-	 * walkAll recognize (collections, tuples, LList, LTree) — read-only: no
+	 * walkAll recognize (tuples, LList, LTree) — read-only: no
 	 * rebuild, no collector needed. Empty when the term is not structural.
 	 */
 	public static Optional<Iterable<Term<?>>> members(Term<?> v) {
@@ -305,7 +305,7 @@ public class MiniKanren {
 	}
 
 	/**
-	 * Rebuild the structure of a term (collection, LList, LTree or tuple)
+	 * Rebuild the structure of a term (tuple, LList or LTree)
 	 * with each component passed through the mapper. Empty when the term
 	 * is not structural.
 	 */

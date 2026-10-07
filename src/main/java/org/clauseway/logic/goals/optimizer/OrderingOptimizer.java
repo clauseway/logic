@@ -20,9 +20,9 @@ import lombok.Value;
  * §3): sort each segment by order, ascending; ∞ last; barriers hold position.
  * Leaves declare via {@link Bounded}; combinators derive (saturating × over
  * conjunction, + over disjunction); everything unrecognised is ∞ — a barrier.
- * Pricing rides the rebuild: the private recursion returns (goal, order)
+ * Pricing happens during the rebuild: the private recursion returns (goal, order)
  * pairs, so each node is priced exactly once and the pairs die with the walk.
- * The substitution is pass state — empty at the root rewrite, live at the
+ * The package is pass state — empty at the root rewrite, live at the
  * defer hook — so the pass is half-blind: sighted at layer boundaries, blind
  * to midway bindings within a layer.
  */

@@ -52,7 +52,7 @@ public final class Prefix {
 	 * the same value is dropped; one bound to a DIFFERENT value is a contradiction
 	 * — none. (a disequality trial reads the same trichotomy with the
 	 * opposite polarity, over structural re-unification rather than equality — see
-	 * the Step 3 consolidation note in the capability doc.)
+	 * {@link org.clauseway.logic.constraints.Trial}.)
 	 */
 	public Option<Prefix> revalidate(Substitutions s) {
 		HashMap<LVar<?>, Term<?>> kept = HashMap.empty();

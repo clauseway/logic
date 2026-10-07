@@ -19,6 +19,14 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * The propagator for {@code l != r} over finite domains, posted through
+ * {@link org.clauseway.logic.finitedomain.FiniteDomain#separate}. Two singleton
+ * domains holding the same value fail; disjoint domains make the atom subsumed;
+ * when exactly one side is a point, that value is removed from the other side's
+ * domain; otherwise the atom is kept and waits for narrowing. {@link #doomed}
+ * reports two terms that walk to the same ground value.
+ */
 public final class Separate extends Propagator<FiniteDomainConstraints> {
 
 	private final Comparator<Object> order;

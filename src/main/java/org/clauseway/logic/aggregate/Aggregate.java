@@ -126,7 +126,7 @@ public class Aggregate {
 	/**
 	 * The closed-aggregate frame: at apply, draw the watermark, mint the
 	 * template above it, build the body's goal, and run it with the mark
-	 * riding its packages. The mark never leaves the sub-solve — answers
+	 * stored in its packages. The mark never leaves the sub-solve — answers
 	 * are copied.
 	 */
 	private static <T> Goal closedAggregate(

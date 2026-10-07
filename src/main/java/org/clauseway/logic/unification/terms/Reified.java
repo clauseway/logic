@@ -15,7 +15,7 @@ public interface Reified<T> extends Term<T> {
 
 	/**
 	 * A ground answer denotes exactly one value: no free name anywhere in the
-	 * term and no residual constraints riding it. Carriers that express
+	 * term and no residual constraints attached to it. Carriers that express
 	 * infinities override this to say so.
 	 */
 	default boolean isGround() {

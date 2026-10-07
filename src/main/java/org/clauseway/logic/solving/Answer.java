@@ -32,7 +32,7 @@ public class Answer<R> {
 	 * The guard dropped: asserts UNCONDITIONALLY what was derived under a
 	 * condition — a deliberate strengthening of the claim, owned entirely
 	 * by the caller, never performed silently. The explicit bridge from a
-	 * caveated read to strict write doors.
+	 * caveated read to a strict write.
 	 */
 	public Answer<R> unconditional() {
 		return new Answer<>(relation, reified, Condition.ONE);
@@ -48,7 +48,7 @@ public class Answer<R> {
 	 * first (Constraints.enforced) or wide answers smuggle un-enforced
 	 * knowledge into their conditions. REFUSES under pending suspensions:
 	 * a parked suspension is a condition the answer still owes, and the
-	 * owed condition cannot ride the answer.
+	 * owed condition cannot be carried by the answer.
 	 */
 	public static <R> Fiber<Answer<R>> capture(R token, Knowledge answer, Unifiable<?> anchor) {
 		if (Propagation.suspensionsPending(answer)) {

@@ -41,10 +41,10 @@ import lombok.Value;
  * stores it aggregates.
  *
  * <p>The NAMESPACE CROSSINGS live beside the algebra: a conjunct enters
- * from a package by {@link #ofRelevant} (call side, the key citizen) or
- * {@link #ofAll} (answer side, walking + slot canonicalization), and
+ * from a package by {@link #about} (call side, the key citizen) or
+ * {@link #all} (answer side, walking + slot canonicalization), and
  * leaves by {@link #restate} — imposing itself under a renaming, each
- * theory riding {@code Posting.absorb} wholesale.
+ * theory posted through {@code Propagation.absorb} wholesale.
  */
 @Value
 public class Residues implements Semilattice<Residues>, PartialOrder<Residues> {
@@ -121,7 +121,7 @@ public class Residues implements Semilattice<Residues>, PartialOrder<Residues> {
 
 	/**
 	 * IN, complete: EVERYTHING {@code world} knows, anchored at the anchor —
-	 * anchored names become slots, every other name rides whole as an
+	 * anchored names become slots, every other name is carried whole as an
 	 * existential witness. The polarity against {@link #about}: keys may
 	 * widen (consumption filters), answers may not drop (an answer is a
 	 * claim, and the stores are not closed under ∃-elimination).
@@ -185,7 +185,7 @@ public class Residues implements Semilattice<Residues>, PartialOrder<Residues> {
 	 * path is a factor that normalizes to empty), then slot-canonicalized:
 	 * live slot vars go to their anys, so residues from SEPARATE
 	 * derivations compare in ONE basis (dedup, key equality); body locals
-	 * keep their names — the existential witnesses ride whole,
+	 * keep their names — the existential witnesses are carried whole,
 	 * conservatively incomparable across answers. Non-projectable live
 	 * knowledge refuses loudly.
 	 */
@@ -239,7 +239,7 @@ public class Residues implements Semilattice<Residues>, PartialOrder<Residues> {
 	 * live call vars ({@code Renaming.restating}); answer delivery renames it
 	 * onto the instantiation's fresh vars ({@code Renaming.minting}, unseeded
 	 * locals minting — the existential). Posting stays the driver's: each
-	 * factor rides {@code Posting.absorb}.
+	 * factor is posted through {@code Propagation.absorb}.
 	 */
 	public Goal restate(Renaming renaming) {
 		Goal restated = Goal.success();

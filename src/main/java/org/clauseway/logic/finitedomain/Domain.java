@@ -15,8 +15,8 @@ import lombok.EqualsAndHashCode;
 /**
  * The prototype lattice instance (lattice.md §2): meet = intersect, ⊥ = the
  * wiped domain, entailment derived from the meet — the equal-domain
- * termination guard has been computing {@code leq} since before it had the
- * name. Laws pinned by AlgebraicLawCoverageTest across all subclasses.
+ * termination guard is {@code leq} computed on the value sets. Laws
+ * pinned by AlgebraicLawCoverageTest across all subclasses.
  * The capability record ({@code lattice.Domain}) answers membership by
  * {@link #contains} and collapse by the {@link Singleton} case; stabilization
  * keeps the default exact equality — finite descent.

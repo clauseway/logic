@@ -15,9 +15,9 @@ import java.util.function.Supplier;
  * The closed set of store revisions — AC-3's REVISE, returned as a value
  * (docs/reference/constraint-kernel.md). A revision may only replace
  * the store's OWN factor; everything that crosses store boundaries rides the
- * payloads, expressed in the driver's two-word vocabulary: {@link Prefix}
- * (bindings grow) and narrowed {@link Term}s (re-examine watchers), plus run goals
- * for the post-quiescence splice. Touching the substitutions or another store's
+ * payloads, expressed in the driver's two-word vocabulary: inferred {@link Prefix}es
+ * (bindings grow) and {@link Suspension}s (search effects; the degenerate
+ * always-ripe form is a run goal spliced after quiescence). Touching the substitutions or another store's
  * entry is not expressible. Java 8 has no sealed types; the set is closed by the
  * private constructor.
  */

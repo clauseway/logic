@@ -17,7 +17,7 @@ import lombok.Value;
  * plain equality decide variance — under EQUAL residues: each projecting
  * store's knowledge about the call's free vars (positional, slot i = the
  * i-th any in first-occurrence order), keyed by store class. A
- * constraint-free call has no residues, so pre-TCLP keys are unchanged.
+ * constraint-free call has no residues ({@link Residues#TRUE}).
  */
 @Value
 public class Call<R> {

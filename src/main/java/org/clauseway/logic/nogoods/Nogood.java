@@ -31,7 +31,7 @@ import lombok.Value;
  * nogood atom and {@link #combine} (the declared {@link Semilattice}
  * capability) is conjunct union — same-surface knowledge accumulates in
  * place. A conjunct's jointness and literal granularity live in the posting
- * itself ({@link Posting#all} for {@code ¬(l₁ ∧ … ∧ lₙ)}). The factor holds
+ * itself ({@code Posting.all} for {@code ¬(l₁ ∧ … ∧ lₙ)}). The factor holds
  * SINGLE-conjunct residents (its digested form — {@code meet(Atom)}
  * flattens); multi-conjunct atoms live in plan space.
  */

@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * earlier or atomically with it (a sleeper ring group-seals, and the group is
  * fully MARKED before any member is announced). The group's first
  * sealed-woken reader therefore solves the closure
- * ({@link StarTabling#solveGroup}) and records each member's values; every
+ * ({@code StarTabling.solveGroup}) and records each member's values; every
  * later reader wakes by itself and replays against them.
  *
  * <p>EMIT replays reader chains. During explore every consumer delivery is a
