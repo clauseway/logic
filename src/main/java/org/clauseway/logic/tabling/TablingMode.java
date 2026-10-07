@@ -27,7 +27,7 @@ import org.clauseway.functional.tuples.Tuple2;
  * EMIT      caughtUp              a straggler arrived after the seal
  * </pre>
  *
- * The CELL is one {@link JoinMap} for every mode: term → value in the mode's
+ * The CELL is one {@link org.clauseway.logic.solving.JoinMap JoinMap} for every mode: term → value in the mode's
  * {@link #cellSemiring}, and delivery timing is the VALUES' OWN FINALITY —
  * a value at ⊕'s top ({@code 1 ⊕ a = 1}, bounded) is final on arrival and
  * streams, anything below is provisional until the seal. {@code Streaming}

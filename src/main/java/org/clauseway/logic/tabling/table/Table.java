@@ -7,7 +7,6 @@ import org.clauseway.logic.solving.Call;
 import org.clauseway.functional.algebra.BoundedSemiring;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
-import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.logic.tabling.Tabling;
@@ -27,7 +26,7 @@ import java.util.function.Function;
  *
  * Each unique call (identified by goal name and reified arguments) gets its
  * own {@link TableEntry} where answers are cached. The table is scoped to a
- * single solve: {@link Goal#solve} seeds a fresh one into the root package's
+ * single solve: {@link org.clauseway.logic.solving.Query#root() Query.root()} seeds a fresh one into the root package's
  * store map, and all packages derived during the search share it.
  *
  * <p>The table carries the solve's {@link TablingMode}: {@link Streaming} for

@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
  * Neq's verification with literals for pairs and the scratch for the trial —
  * the same signatures, contract for contract: {@link #verify} is
  * verifyAndSimplify (none = a nogood is violated, the branch fails; the kept
- * list holds the survivors, discarded nogoods simply absent), {@link #trial} is
+ * list holds the survivors, discarded nogoods simply absent), {@link Trial#now} is
  * unifyConstraints (none = the nogood is subsumed fully, discard; empty = every
  * literal already holds, violated; survivors = the simplified nogood's
  * literals). The store slice maps verify onto {@link

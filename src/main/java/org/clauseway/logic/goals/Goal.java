@@ -26,8 +26,8 @@ import java.util.function.Supplier;
  * that satisfy the logical conditions.
  *
  * This interface provides factory methods for common goals (e.g., {@link #success()}, {@link #failure()}),
- * combinators (e.g., {@link #and(Goal...)}, {@link #or(Goal...)}), and methods to execute
- * the goal and retrieve solutions (e.g., {@link #solve(Unifiable)}).
+ * and combinators (e.g., {@link #and(Goal...)}, {@link #or(Goal...)});
+ * {@link org.clauseway.logic.solving.Query} is the door that executes a goal and retrieves its solutions.
  * </pre>
  *
  * @author TGa

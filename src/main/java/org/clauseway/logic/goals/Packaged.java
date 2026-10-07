@@ -11,8 +11,8 @@ import org.clauseway.logic.tabling.table.Table;
  * This is what {@link org.clauseway.logic.debug.DebugStore the tracer},
  * {@link Table the table}, the optimizer and the
  * mode markers all actually need — riding the package, not participating
- * in constraint solving. {@link Store} is the specialization that additionally
- * holds {@link Stored} records.
+ * in constraint solving. {@link org.clauseway.logic.constraints.store.Factor} is
+ * the specialization that does take part in it.
  */
 public interface Packaged {
 }

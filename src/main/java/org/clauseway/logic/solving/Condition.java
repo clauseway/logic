@@ -5,7 +5,6 @@ package org.clauseway.logic.solving;
 
 import org.clauseway.functional.algebra.BoundedSemiring;
 import org.clauseway.functional.algebra.Semilattice;
-import org.clauseway.logic.constraints.store.Factor;
 import org.clauseway.vavr.collection.HashSet;
 import org.clauseway.vavr.collection.Vector;
 
@@ -16,7 +15,7 @@ import org.clauseway.vavr.collection.Vector;
  * dominated conjunct contributes nothing and drops, a dominating newcomer
  * evicts what it covers — subsumption dedup is this ⊕'s absorption, not a
  * separate mechanism. ⊗ is conjunction: the cross product of pairwise
- * conjunct meets ({@link Factor#meet} pointwise). 1 is TRUE — the
+ * conjunct meets ({@link Residues#meet} pointwise). 1 is TRUE — the
  * single empty conjunct, a GROUND answer — and {@code 1 ⊕ a = 1} makes
  * {@link #RING} BOUNDED: a value that reached 1 can never move, which is
  * why ground answers stream and conditional answers wait for their seal.

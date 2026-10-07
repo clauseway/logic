@@ -37,7 +37,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
- * Data and its only interpreter in one class: the {@link Agenda} worklist — what
+ * Data and its only interpreter in one class: the {@code Agenda} worklist — what
  * the old recursion kept as suspended frames — and the engine that drains it
  * (docs/reference/constraint-kernel.md, Steps 2.5 and 3.5).
  */
@@ -55,7 +55,7 @@ public final class Propagation {
 	 *
 	 * <p>An empty prefix is a no-op success; a package with no constraint stores takes
 	 * the pure-relational fast path (apply the delta, skip all machinery). Otherwise
-	 * the prefix enters the {@link Agenda} as a Bind item: if an agenda is already
+	 * the prefix enters the {@code Agenda} as a Bind item: if an agenda is already
 	 * riding the package a drain is in flight and the item merely queues; if not, this
 	 * call is the outermost trigger and drains to fixpoint. Applying a Bind
 	 * revalidates the prefix against the live package (open variables bind their
