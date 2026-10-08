@@ -6,6 +6,7 @@ import static org.clauseway.functional.fibers.Fiber.done;
 import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.Nothing;
 import org.clauseway.logic.constraints.Propagation;
+import org.clauseway.logic.goals.optimizer.Barrier;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import java.util.ArrayList;
@@ -35,9 +36,10 @@ public class Condu implements Goal {
 		return next;
 	}
 
+	/** Committed choice is a barrier: the branch's pending search expands before any alternative is judged. */
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge entered) {
-		return Propagation.enforced(this::judge).apply(entered);
+		return Barrier.of(this::judge).apply(entered);
 	}
 
 	private Cont<Knowledge, Nothing> judge(Knowledge s) {

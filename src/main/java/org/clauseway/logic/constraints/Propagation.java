@@ -308,21 +308,20 @@ public final class Propagation {
 	}
 
 	/**
-	 * The goal under the finite exit: the branch's pending search expands before
-	 * it runs. Straight through when no citizen is pending — an idle package
-	 * costs no steps.
+	 * The emissions under the finite exit: each settles its pending search
+	 * before it is handed on. Straight through when no citizen is pending — an
+	 * idle package costs no steps. (The entry side is a {@link
+	 * org.clauseway.logic.goals.optimizer.Barrier}: it expands before it runs.)
 	 */
-	public static Goal enforced(Goal goal) {
-		return s -> owing(s).isPresent()
-				? enforce(s).flatMap(goal)
-				: goal.apply(s);
-	}
-
-	/** The emissions under the finite exit: each settles its pending search before it is handed on. */
 	public static Cont<Knowledge, Nothing> settled(Cont<Knowledge, Nothing> source) {
-		return k -> source.apply(p -> owing(p).isPresent()
+		return k -> source.apply(p -> searchPending(p)
 				? enforce(p).apply(k)
 				: k.apply(p));
+	}
+
+	/** True while some citizen still owes search at the exit. */
+	public static boolean searchPending(Knowledge p) {
+		return owing(p).isPresent();
 	}
 
 	private static Optional<Enforceable> owing(Knowledge p) {
