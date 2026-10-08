@@ -14,12 +14,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.clauseway.functional.algebra.Semirings;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
+import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.aggregate.Aggregate;
 import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
+import org.clauseway.logic.tabling.Tabled;
 import org.clauseway.logic.tabling.Tabling;
+import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.functional.tuples.Tuple;
@@ -132,6 +135,41 @@ public class OrderingOptimizerTest {
 		Goal sorted = b3.and(barrier).and(b1).accept(new OrderingOptimizer()).ground();
 		assertThat(((Conjunction) sorted).getClauses())
 				.containsExactly(b3, barrier, b1);
+	}
+
+	@Test
+	public void aPricedBarrierHoldsPositionOnlyWhileUnpriced() {
+		Goal b5 = new FixedOrder(5), b1 = new FixedOrder(1);
+		Goal unpriced = Barrier.priced(p -> Long.MAX_VALUE, new FixedOrder(1));
+		Goal priced = Barrier.priced(p -> 2, new FixedOrder(1));
+
+		Goal held = b5.and(unpriced).and(b1).accept(new OrderingOptimizer()).ground();
+		assertThat(((Conjunction) held).getClauses()).containsExactly(b5, unpriced, b1);
+
+		Goal sorted = b5.and(priced).and(b1).accept(new OrderingOptimizer()).ground();
+		assertThat(((Conjunction) sorted).getClauses()).containsExactly(b1, priced, b5);
+	}
+
+	@Test
+	public void aTabledCallHoldsPositionUntilItsEntryCompletesThenSortsByItsCount() {
+		Tabled<Tuple1<Unifiable<Integer>>> rel = Tabling.define(t -> t.apply(x ->
+				unify(x, lval(1)).or(unify(x, lval(2)))));
+		Unifiable<Integer> out = lvar();
+		Goal call = rel.apply(Tuple.of(out));
+		Goal b5 = new FixedOrder(5), b1 = new FixedOrder(1);
+		Goal conjunction = b5.and(call).and(b1);
+		Knowledge p = Knowledge.empty().withStore(Table.empty());
+
+		// the rewrite runs on its own scheduler, as Query's root rewrite does: pricing
+		// a tabled call grounds a reify, which may not nest inside another ground
+		// in progress: the entry is absent from the pricing package's table
+		Goal held = new BreadthFirstScheduler<>(conjunction.accept(new OrderingOptimizer().with(p))).get();
+		assertThat(((Conjunction) held).getClauses()).containsExactly(b5, call, b1);
+
+		// completed: the full drain seals the entry, whose count (2) now prices the call
+		assertThat(Query.of(call).from(p).on(TestSchedulers.factory()).solve(out).count()).isEqualTo(2);
+		Goal sorted = new BreadthFirstScheduler<>(conjunction.accept(new OrderingOptimizer().with(p))).get();
+		assertThat(((Conjunction) sorted).getClauses()).containsExactly(b1, call, b5);
 	}
 
 	@Test
