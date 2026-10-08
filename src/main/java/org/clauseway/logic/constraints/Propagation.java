@@ -307,19 +307,22 @@ public final class Propagation {
 				.orElseGet(() -> Cont.just(p));
 	}
 
-	/** The goal under the finite exit: the branch's pending search expands before it runs. */
+	/**
+	 * The goal under the finite exit: the branch's pending search expands before
+	 * it runs. Straight through when no citizen is pending — an idle package
+	 * costs no steps.
+	 */
 	public static Goal enforced(Goal goal) {
-		return s -> k -> exit(s, s1 -> goal.apply(s1).apply(k));
+		return s -> owing(s).isPresent()
+				? enforce(s).flatMap(goal)
+				: goal.apply(s);
 	}
 
 	/** The emissions under the finite exit: each settles its pending search before it is handed on. */
 	public static Cont<Knowledge, Nothing> settled(Cont<Knowledge, Nothing> source) {
-		return k -> source.apply(p -> exit(p, k));
-	}
-
-	/** Hands {@code p} to {@code k} through the exit — straight through when no citizen is pending, so an idle package costs no steps. */
-	private static Fiber<Nothing> exit(Knowledge p, Fiber.Fn<Knowledge, Nothing> k) {
-		return owing(p).isPresent() ? enforce(p).apply(k) : k.apply(p);
+		return k -> source.apply(p -> owing(p).isPresent()
+				? enforce(p).apply(k)
+				: k.apply(p));
 	}
 
 	private static Optional<Enforceable> owing(Knowledge p) {
