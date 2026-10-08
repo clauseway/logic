@@ -327,7 +327,7 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 	 * imposition failed.
 	 */
 	public static Fiber<List<Knowledge>> imposed(Posting literal, Knowledge scratch) {
-		return Exhaustion.collected(literal.apply(scratch))
+		return Exhaustion.collected(Propagation.settled(Propagation.enforced(literal).apply(scratch)))
 				.map(List::ofAll);
 	}
 

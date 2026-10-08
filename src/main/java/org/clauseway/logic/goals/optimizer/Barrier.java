@@ -7,6 +7,7 @@ import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.goals.Goal;
+import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.vavr.collection.LinkedHashMap;
@@ -59,7 +60,7 @@ public class Barrier implements Goal, Bounded {
 
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge s) {
-		return goal.apply(s);
+		return Propagation.enforced(goal).apply(s);
 	}
 
 	@Override

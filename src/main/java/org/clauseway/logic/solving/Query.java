@@ -17,6 +17,7 @@ import org.clauseway.functional.fibers.interpreter.ScopeProfiler;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.functional.fibers.schedulers.DepthFirstScheduler;
 import org.clauseway.logic.constraints.Constraints;
+import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.logic.debug.DebugStore;
 import org.clauseway.logic.debug.ProfilerStore;
 import org.clauseway.logic.debug.Trace;
@@ -204,12 +205,16 @@ public final class Query {
 		return root.withStore(store);
 	}
 
-	/** The primitive: one emission per derivation, driven by the caller. */
+	/**
+	 * The primitive: one emission per derivation, driven by the caller. Each
+	 * emission has passed the finite exit ({@link Propagation#enforce}): no
+	 * pending search rides a raw package.
+	 */
 	public Cont<Knowledge, Nothing> run() {
 		Goal entry = optimizer == null
 				? goal
 				: new BreadthFirstScheduler<>(goal.accept(optimizer)).get();
-		return entry.apply(root());
+		return Propagation.settled(entry.apply(root()));
 	}
 
 	/**

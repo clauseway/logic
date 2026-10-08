@@ -150,7 +150,10 @@ public class Tabling {
 		Unifiable<?> argsTerm = lval(structural(args));
 		// keyed widening: the call pattern is the table key, so no optimizer may
 		// move binders across it — the contract as a type, not an accident of opacity
-		return Barrier.priced(p -> tabledOrder(p, relation, argsTerm), callerPkg -> k ->
+		// the caller's pending search expands before the call keys itself: the key
+		// is what the textual order would have produced, and it carries no closure
+		return Barrier.priced(p -> tabledOrder(p, relation, argsTerm), caller -> k ->
+				Propagation.enforce(caller).apply(callerPkg ->
 				Residues.about(callerPkg, argsTerm).flatMap(keyPair -> {
 					// the call's REGION: the bindings factor's image (args
 					// reified with anys) plus each store's slot-named factor
@@ -207,7 +210,7 @@ public class Tabling {
 							// a lost claim is a silent no-op: winner or loser, every
 							// caller falls through to here and reads as a consumer
 							.flatMap(__ -> consume(entry, reader, entry.answers()));
-				}));
+				})));
 	}
 
 	/**
@@ -255,7 +258,7 @@ public class Tabling {
 			Unifiable<?> argsTerm,
 			Table table,
 			Emitter<JoinMap<Reified<?>, Object>> emit) {
-		return goal.apply(bodyPkg).apply(answerPkg -> {
+		return Propagation.settled(goal.apply(bodyPkg)).apply(answerPkg -> {
 			// the Table transport is the canary: a goal that returned a fresh
 			// package instead of deriving from its input shed every store — the
 			// damage downstream is SILENT (answers reified over fresh

@@ -5,6 +5,7 @@ import static org.clauseway.functional.fibers.Fiber.done;
 
 import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.Nothing;
+import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import java.util.ArrayList;
@@ -35,14 +36,18 @@ public class Condu implements Goal {
 	}
 
 	@Override
-	public Cont<Knowledge, Nothing> apply(Knowledge s) {
+	public Cont<Knowledge, Nothing> apply(Knowledge entered) {
+		return Propagation.enforced(this::judge).apply(entered);
+	}
+
+	private Cont<Knowledge, Nothing> judge(Knowledge s) {
 		return Cont.callCC(exit -> Cont.suspend(k -> {
 			AtomicBoolean committed = new AtomicBoolean(false);
 			List<Knowledge> results = new ArrayList<>();
 			return clauses.stream()
 					.reduce(Fiber.done(nothing()),
 							(acc, g) -> acc.flatMap(_0 ->
-									Exhaustion.exhausted(g.apply(s).run(s1 -> {
+									Exhaustion.exhausted(Propagation.settled(g.apply(s)).run(s1 -> {
 										results.add(s1);
 										return nothing();
 									})).flatMap(_1 -> {

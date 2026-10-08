@@ -51,7 +51,7 @@ public class Constraints {
 	 * term, the front door's ask captures it as a condition.
 	 */
 	public static <T> Cont<Knowledge, Nothing> enforced(Knowledge s, Term<T> x) {
-		return enforce(s, x).apply(s)
+		return Propagation.settled(Propagation.enforced(s1 -> enforce(s1, x).apply(s1)).apply(s))
 				.flatMap(Constraints::verifyNoPendingSuspensions);
 	}
 

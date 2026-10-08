@@ -31,6 +31,7 @@ import org.clauseway.vavr.Tuple2;
 import org.clauseway.vavr.collection.LinkedHashSet;
 import org.clauseway.vavr.collection.List;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -291,6 +292,42 @@ public final class Propagation {
 			}
 			return Cont.just(current);
 		};
+	}
+
+	/**
+	 * The finite exit: every {@link Enforceable} citizen settles what it owes,
+	 * one step at a time, each child re-entering until no citizen is pending.
+	 * Runs wherever a branch is judged — before an answer leaves, before a
+	 * tabled call keys itself, before committed choice or a trial reads a
+	 * body's answers.
+	 */
+	public static Cont<Knowledge, Nothing> enforce(Knowledge p) {
+		return owing(p)
+				.<Cont<Knowledge, Nothing>> map(citizen -> Cont.defer(() ->
+						Fiber.done(citizen.enforce().apply(p).flatMap(Propagation::enforce))))
+				.orElseGet(() -> Cont.just(p));
+	}
+
+	/** The goal under the finite exit: the branch's pending search expands before it runs. */
+	public static Goal enforced(Goal goal) {
+		return s -> k -> owing(s).isPresent()
+				? enforce(s).apply(s1 -> goal.apply(s1).apply(k))
+				: goal.apply(s).apply(k);
+	}
+
+	/** The emissions under the finite exit: each settles its pending search before it is handed on. */
+	public static Cont<Knowledge, Nothing> settled(Cont<Knowledge, Nothing> source) {
+		return k -> source.apply(p -> owing(p).isPresent()
+				? enforce(p).apply(k)
+				: k.apply(p));
+	}
+
+	private static Optional<Enforceable> owing(Knowledge p) {
+		return p.getStores().values().toJavaStream()
+				.filter(Enforceable.class::isInstance)
+				.map(Enforceable.class::cast)
+				.filter(Enforceable::pending)
+				.findFirst();
 	}
 
 	/** Answers may not leave while suspensions pend. */
