@@ -11,6 +11,7 @@ import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Conjunction;
+import org.clauseway.logic.goals.Deferred;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.NamedGoal;
 import org.clauseway.logic.goals.Knowledge;
@@ -61,6 +62,11 @@ public interface Optimizer {
 
 	default Fiber<Goal> visit(Barrier barrier) {
 		return Fiber.done(barrier);
+	}
+
+	/** A deferred body is unknown but not opaque: left in place, never a barrier. */
+	default Fiber<Goal> visit(Deferred deferred) {
+		return Fiber.done(deferred);
 	}
 
 	/** Visits every clause in order, collecting the per-clause results. */
@@ -119,6 +125,11 @@ public interface Optimizer {
 			@Override
 			public Fiber<Goal> visit(Barrier barrier) {
 				return all(barrier);
+			}
+
+			@Override
+			public Fiber<Goal> visit(Deferred deferred) {
+				return all(deferred);
 			}
 
 			@Override

@@ -8,7 +8,6 @@ import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.goals.optimizer.Bounded;
 import org.clauseway.logic.goals.optimizer.Optimizer;
-import org.clauseway.logic.goals.optimizer.OptimizerStore;
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -226,15 +225,10 @@ public interface Goal extends Function<Knowledge, Cont<Knowledge, Nothing>> {
 	 * </pre>
 	 *
 	 * @param g A {@link Supplier} that provides the goal to be executed.
-	 * @return A new {@link Goal} that defers the creation of the actual goal.
+	 * @return A {@link Deferred} goal, named for the trace.
 	 */
 	static Goal defer(Supplier<Goal> g) {
-		return goal(s -> OptimizerStore.from(s)
-				.map(store -> Cont.<Knowledge, Nothing> defer(() ->
-						store.rewrite(g.get(), s)
-								.map(body -> body.apply(s))))
-				.getOrElse(() -> g.get().apply(s)))
-				.named("recursive call");
+		return new Deferred(g).named("recursive call");
 	}
 
 	/**

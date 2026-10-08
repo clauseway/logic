@@ -14,19 +14,25 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.clauseway.functional.algebra.Semirings;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
+import org.clauseway.functional.fibers.Fiber;
+import org.clauseway.functional.fibers.interpreter.Scope;
+import org.clauseway.functional.fibers.interpreter.StepListener;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.aggregate.Aggregate;
 import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
+import org.clauseway.logic.goals.Logic;
 import org.clauseway.logic.tabling.Tabled;
 import org.clauseway.logic.tabling.Tabling;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.unification.Substitutions;
+import org.clauseway.logic.unification.structures.LList;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.functional.tuples.Tuple1;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import lombok.Value;
 import org.clauseway.logic.unification.terms.Term;
@@ -170,6 +176,62 @@ public class OrderingOptimizerTest {
 		assertThat(Query.of(call).from(p).on(TestSchedulers.factory()).solve(out).count()).isEqualTo(2);
 		Goal sorted = new BreadthFirstScheduler<>(conjunction.accept(new OrderingOptimizer().with(p))).get();
 		assertThat(((Conjunction) sorted).getClauses()).containsExactly(b1, call, b5);
+	}
+
+	@Test
+	public void aDeferredBodySortsLastAndNeverPartitions() {
+		// a deferred relation body is transparent widening: unknown order, movable
+		Goal b3 = new FixedOrder(3), b1 = new FixedOrder(1);
+		Goal deferred = Goal.defer(Goal::success);
+		Goal sorted = b3.and(deferred).and(b1).accept(new OrderingOptimizer()).ground();
+		assertThat(((Conjunction) sorted).getClauses()).containsExactly(b1, b3, deferred);
+	}
+
+	@Test
+	public void aRecursiveRelationNoLongerHoldsItsSegment() {
+		// R1 of docs/notes/conde-parks-until-enforce.md: appendo's recursive defer
+		// made the whole relation a barrier, so the unification could not cross it
+		Unifiable<LList<Integer>> x = lvar(), y = lvar();
+		Unifiable<Integer> a = lvar();
+		Goal appendo = Logic.appendo(x, y, LList.ofAll(1, 2, 3));
+		Goal binding = unify(x, LList.of(a));
+
+		Goal sorted = appendo.and(binding).accept(new OrderingOptimizer()).ground();
+		assertThat(((Conjunction) sorted).getClauses()).containsExactly(binding, appendo);
+	}
+
+	/**
+	 * R1's step counts under the fair driver, pinned exactly — a changed count is
+	 * a decision. The pass now reaches the hand-swapped search (the unification
+	 * runs first, the dead clause is doomed at each layer) but pays the rewrite
+	 * walk per unfolding on top, which on a workload this small outweighs the
+	 * saving: 252 against 199 as written and 113 by hand (receipt R3 of the note).
+	 */
+	@Test
+	public void theOrderingPassReordersAppendoAndPaysTheRewriteWalk() {
+		Unifiable<LList<Integer>> x = lvar(), y = lvar();
+		Unifiable<Integer> a = lvar();
+		Goal asWritten = Logic.appendo(x, y, LList.ofAll(1, 2, 3)).and(unify(x, LList.of(a)));
+		Goal swapped = unify(x, LList.of(a)).and(Logic.appendo(x, y, LList.ofAll(1, 2, 3)));
+		Optimizer ordering = Optimizer.pipeline(new CascadingOptimizer(), new OrderingOptimizer());
+
+		assertThat(Query.of(asWritten).optimized(ordering).solve(y).count()).isEqualTo(1);
+		assertThat(steps(Query.of(asWritten), y)).isEqualTo(199);
+		assertThat(steps(Query.of(swapped), y)).isEqualTo(113);
+		assertThat(steps(Query.of(asWritten).optimized(ordering), y)).isEqualTo(252);
+	}
+
+	private static <T> long steps(Query query, Unifiable<T> out) {
+		AtomicLong count = new AtomicLong();
+		StepListener counting = new StepListener() {
+			@Override
+			public void onStep(Fiber<?> node, Scope scope, String name) {
+				count.incrementAndGet();
+			}
+		};
+		query.on(fiber -> new BreadthFirstScheduler<>(fiber).withListener(counting)).solve(out)
+				.collect(Collectors.toList());
+		return count.get();
 	}
 
 	@Test

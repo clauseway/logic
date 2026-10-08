@@ -7,6 +7,7 @@ import org.clauseway.functional.algebra.Semirings;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Conjunction;
+import org.clauseway.logic.goals.Deferred;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.NamedGoal;
 import org.clauseway.logic.goals.Knowledge;
@@ -77,6 +78,10 @@ public class OrderingOptimizer implements Optimizer {
 			return Fiber.defer(() -> price(named.getGoal()))
 					.map(p -> new Priced(NamedGoal.of(named.getLabel(), p.getGoal(), named.getName()),
 							p.getOrder(), p.isBarrier()));
+		}
+		if (g instanceof Deferred) {
+			// transparent widening: no bound estimable, sortable to the back
+			return Fiber.done(new Priced(g, Long.MAX_VALUE, false));
 		}
 		if (g instanceof Bounded) {
 			long declared = ((Bounded) g).answers(bound);
