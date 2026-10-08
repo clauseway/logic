@@ -202,13 +202,16 @@ public class OrderingOptimizerTest {
 
 	/**
 	 * R1's step counts under the fair driver, pinned exactly — a changed count is
-	 * a decision. The pass now reaches the hand-swapped search (the unification
-	 * runs first, the dead clause is doomed at each layer) but pays the rewrite
-	 * walk per unfolding on top, which on a workload this small outweighs the
-	 * saving: 252 against 199 as written and 113 by hand (receipt R3 of the note).
+	 * a decision, not a cost model. Steps count what the scheduler steps: the
+	 * search (one unfolding once the unification runs first, against a split
+	 * enumeration as written) AND the rewrite walk, whose visitor is a fiber
+	 * stepped like search work; a direct-recursive walk would do the same work
+	 * off the count. Wall time is the cost measure: on this shape the reorder
+	 * turns a search linear in the list into one unfolding, and the rewrite
+	 * costs a few microseconds per unfolding.
 	 */
 	@Test
-	public void theOrderingPassReordersAppendoAndPaysTheRewriteWalk() {
+	public void theOrderingPassReordersAppendo() {
 		Unifiable<LList<Integer>> x = lvar(), y = lvar();
 		Unifiable<Integer> a = lvar();
 		Goal asWritten = Logic.appendo(x, y, LList.ofAll(1, 2, 3)).and(unify(x, LList.of(a)));
