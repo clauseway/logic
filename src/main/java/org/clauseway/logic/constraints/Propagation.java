@@ -3,11 +3,17 @@ package org.clauseway.logic.constraints;
 // ABOUTME: The propagation engine: the chokepoint that applies prefixes, the agenda
 // ABOUTME: worklist that makes the fixpoint explicit, and verdict administration.
 
+import java.util.Collections;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.Nothing;
+import org.clauseway.functional.fibers.Cont;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.MFiber;
-import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.constraints.store.Atom;
 import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.constraints.store.Doomed;
@@ -22,20 +28,14 @@ import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.logic.goals.Watermark;
-import org.clauseway.logic.unification.terms.LVar;
 import org.clauseway.logic.unification.Prefix;
 import org.clauseway.logic.unification.Substitutions;
+import org.clauseway.logic.unification.terms.LVar;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.vavr.Tuple;
 import org.clauseway.vavr.Tuple2;
 import org.clauseway.vavr.collection.LinkedHashSet;
 import org.clauseway.vavr.collection.List;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 /**
  * Data and its only interpreter in one class: the {@code Agenda} worklist — the
@@ -303,16 +303,13 @@ public final class Propagation {
 	 */
 	public static Cont<Knowledge, Nothing> enforce(Knowledge p) {
 		return owing(p)
-				.<Cont<Knowledge, Nothing>> map(citizen -> Cont.defer(() ->
-						Fiber.done(citizen.enforce().apply(p).flatMap(Propagation::enforce))))
+				.map(citizen -> citizen.enforce().apply(p).flatMap(Propagation::enforce))
 				.orElseGet(() -> Cont.just(p));
 	}
 
 	/** The goal under the finite exit: the branch's pending search expands before it runs. */
 	public static Goal enforced(Goal goal) {
-		return s -> k -> owing(s).isPresent()
-				? enforce(s).apply(s1 -> goal.apply(s1).apply(k))
-				: goal.apply(s).apply(k);
+		return s -> enforce(s).flatMap(goal);
 	}
 
 	/** The emissions under the finite exit: each settles its pending search before it is handed on. */
