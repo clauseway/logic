@@ -48,10 +48,12 @@ public class OrderingOptimizer implements Optimizer {
 		return price(conjunction).map(Priced::getGoal);
 	}
 
+	/** A barrier partitions its segment; ∞ alone only sorts last. */
 	@Value
 	private static class Priced {
 		Goal goal;
 		long order;
+		boolean barrier;
 	}
 
 	private Fiber<Priced> price(Goal g) {
@@ -59,20 +61,22 @@ public class OrderingOptimizer implements Optimizer {
 			return Optimizer.visitAll(((Conjunction) g).getClauses(), this::price)
 					.map(ps -> new Priced(
 							Conjunction.of(sortSegments(ps).toArray(new Goal[0])),
-							productOf(ps)));
+							productOf(ps),
+							anyBarrier(ps)));
 		}
 		if (g instanceof Conde) {
 			return Optimizer.visitAll(((Conde) g).getClauses(), this::price)
 					.map(ps -> {
 						List<Goal> alternatives = new ArrayList<>();
 						ps.forEach(p -> alternatives.add(p.getGoal()));
-						return new Priced(Conde.of(alternatives), sumOf(ps));
+						return new Priced(Conde.of(alternatives), sumOf(ps), anyBarrier(ps));
 					});
 		}
 		if (g instanceof NamedGoal) {
 			NamedGoal named = (NamedGoal) g;
 			return Fiber.defer(() -> price(named.getGoal()))
-					.map(p -> new Priced(NamedGoal.of(named.getLabel(), p.getGoal(), named.getName()), p.getOrder()));
+					.map(p -> new Priced(NamedGoal.of(named.getLabel(), p.getGoal(), named.getName()),
+							p.getOrder(), p.isBarrier()));
 		}
 		if (g instanceof Bounded) {
 			long declared = ((Bounded) g).answers(bound);
@@ -83,17 +87,24 @@ public class OrderingOptimizer implements Optimizer {
 						"a bound is a count and cannot be negative: "
 								+ g + " declared " + declared);
 			}
-			return Fiber.done(new Priced(g, declared));
+			// an explicit barrier holds position while unpriced (∞); a finite
+			// price is its immovability transition — it sorts like any leaf
+			return Fiber.done(new Priced(g, declared,
+					g instanceof Barrier && declared == Long.MAX_VALUE));
 		}
-		return Fiber.done(new Priced(g, Long.MAX_VALUE));
+		return Fiber.done(new Priced(g, Long.MAX_VALUE, true));
 	}
 
-	/** Barriers (∞) hold position; each maximal finite run sorts ascending, stably. */
+	private static boolean anyBarrier(List<Priced> ps) {
+		return ps.stream().anyMatch(Priced::isBarrier);
+	}
+
+	/** Barriers hold position; each maximal run between them sorts ascending, stably, ∞ last. */
 	private static List<Goal> sortSegments(List<Priced> ps) {
 		List<Goal> out = new ArrayList<>();
 		List<Priced> run = new ArrayList<>();
 		for (Priced p : ps) {
-			if (p.getOrder() == Long.MAX_VALUE) {
+			if (p.isBarrier()) {
 				flush(run, out);
 				out.add(p.getGoal());
 			} else {

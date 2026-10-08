@@ -99,6 +99,42 @@ public class OrderingOptimizerTest {
 	}
 
 	@Test
+	public void anUnboundedLeafSortsToTheBackOfItsSegment() {
+		// no bound estimable is transparent widening: sortable, last — not a partition
+		Goal b3 = new FixedOrder(3), unbounded = new FixedOrder(Long.MAX_VALUE), b1 = new FixedOrder(1);
+		Goal sorted = b3.and(unbounded).and(b1).accept(new OrderingOptimizer()).ground();
+		assertThat(((Conjunction) sorted).getClauses())
+				.containsExactly(b1, b3, unbounded);
+	}
+
+	@Test
+	public void aSaturatedConjunctionSortsToTheBackOfItsSegment() {
+		Goal huge = new FixedOrder(Long.MAX_VALUE / 2), b3 = new FixedOrder(3);
+		Goal b2 = new FixedOrder(2), b1 = new FixedOrder(1);
+		Goal sorted = b2.and(huge.and(b3)).and(b1).accept(new OrderingOptimizer()).ground();
+		assertThat(((Conjunction) sorted).getClauses())
+				.containsExactly(b1, b2, Conjunction.of(b3, huge));
+	}
+
+	@Test
+	public void aConjunctionHoldingABarrierHoldsPosition() {
+		Goal b3 = new FixedOrder(3), b1 = new FixedOrder(1), inner = new FixedOrder(1);
+		Goal barrier = opaque();
+		Goal sorted = b3.and(inner.and(barrier)).and(b1).accept(new OrderingOptimizer()).ground();
+		assertThat(((Conjunction) sorted).getClauses())
+				.containsExactly(b3, Conjunction.of(inner, barrier), b1);
+	}
+
+	@Test
+	public void anExplicitBarrierHoldsPosition() {
+		Goal b3 = new FixedOrder(3), b1 = new FixedOrder(1);
+		Goal barrier = Barrier.of(new FixedOrder(1));
+		Goal sorted = b3.and(barrier).and(b1).accept(new OrderingOptimizer()).ground();
+		assertThat(((Conjunction) sorted).getClauses())
+				.containsExactly(b3, barrier, b1);
+	}
+
+	@Test
 	public void ordersWithoutNormalizing() {
 		// normalization is CascadingOptimizer's job, reached via the pipeline:
 		// the ordering pass alone leaves nested disjunctions un-flattened
