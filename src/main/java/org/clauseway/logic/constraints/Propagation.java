@@ -309,7 +309,9 @@ public final class Propagation {
 
 	/** The goal under the finite exit: the branch's pending search expands before it runs. */
 	public static Goal enforced(Goal goal) {
-		return s -> enforce(s).flatMap(goal);
+		return s -> k -> owing(s).isPresent()
+				? enforce(s).apply(s1 -> goal.apply(s1).apply(k))
+				: goal.apply(s).apply(k);
 	}
 
 	/** The emissions under the finite exit: each settles its pending search before it is handed on. */
