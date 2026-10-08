@@ -11,7 +11,10 @@
   the repo it resurrects the staged fork of the fork-timing arc, which
   won the August campaign and died unrecorded with the disjunctive-store
   branch.
-- **evidence held**: derivation, plus the measured record it leans on.
+- **evidence held**: derivation; measurement — the three receipts of
+  § Receipts (two step-count races and a two-plane profile, run on
+  master and re-run on branch infinity-sorts-last, identical to the
+  step); plus the measured record it leans on.
   The deletion commit (de1d1d1f) states the three-lane verdict: "fair
   conde wins the static shops 2.2–3x, staged projection wins variable
   spaces 4x, and the bare race converges to a flat 5x loss" for
@@ -127,10 +130,12 @@ where the static pass is blind:
   literal is decided when the space domain is LABELLED, and no conjunct
   order puts a disjunction after labelling. Enforce does.
 - **determinacy is declared there, discovered here** — `Bounded` is a
-  trust surface on leaves; an opaque relation call is ∞ and a barrier;
-  a call determinate after one unfolding, or determinate because of
-  bindings made elsewhere, is invisible to the sort (its javadoc calls
-  the pass half-blind). The sweep never asks.
+  trust surface on leaves; a call determinate after one unfolding, or
+  determinate because of bindings made elsewhere, is invisible to the
+  sort (its javadoc calls the pass half-blind). The sweep never asks.
+  Receipt R2 isolates this: the information is not in the tree.
+  (That an opaque relation call is held as a BARRIER is the
+  implementation, not the principle — receipt R1 and § The defer leaf.)
 - **no rewrite, no unfold tax** — a park is a list append.
 - **forks shrink, not just move** — a three-way disjunction with two
   Doomed alternatives is a unit after the sweep; DoomPruner can only
@@ -176,9 +181,165 @@ a multiplied one.
   as "a suspension whose ripeness is at-exit" is withdrawn.)
 - **Not confluent goals keep `Barrier`** — committed choice, negation,
   impure projection bodies, closed aggregates: each a mini-exit.
+- **No dominance over the hand order or the optimizer.** What IS
+  guaranteed, on the pure fragment: the same answer set (confluence),
+  and at any given fork a SUPERSET of the knowledge that fork would see
+  under any textual order, hence a subset of surviving alternatives
+  there. Not guaranteed: tree size, because forks happen in a different
+  order. Three exposures, named: (i) fork order — first-fail on live
+  `Bounded` is a heuristic with a good average and no dominance result,
+  and a hand-chosen pivot can beat it; (ii) wide propagation — every
+  posting enters the widest state the branch will have, so a heavy
+  propagator (GAC over large domains, a long bounds chain) may cost
+  more once wide than twice ground, labelling-order-blind.md's
+  ground-two-compute-one seen from the other side; (iii) termination —
+  a determinate conjunct unbounded without the fork's binding
+  (`(X≡a ∨ X≡b) ∧ loop(X)`, `loop(X) :- X≡f(Y) ∧ loop(Y)`) terminates
+  today and diverges parked; rare (a conde-free recursive relation) but
+  real, and the Andorra record names it — Andorra-I's answer was
+  sequential-conjunction annotations, which here is `Barrier`. Plus
+  latency: time to first answer can rise while total work falls (the
+  genesis pin is where it shows). Against the optimizer specifically:
+  the pass moves only what it can price and leaves opaque calls in
+  place, so (iii) cannot happen under it; on (ii) both are equally
+  exposed; on fail-fast among determinate conjuncts the pass is ahead
+  by at most one wasted pass.
 - **A determinate infinite loop still loops.** Same as today.
 - **Traces stop reading in Prolog order**; sibling `Call` ports firing
   up front was the first symptom of this already.
+
+## Receipts (October 2026, fair driver, step counts; scratch tests, not kept)
+
+Three measurements, run on master and re-run on branch
+infinity-sorts-last (∞ sorts last, only barriers partition) — identical
+to the step on both. The instrument is the engine's own step listener
+and the two-plane ScopeProfiler, the same ones the scheduling benchmark
+uses.
+
+**R1 — implementation, not principle.** `appendo(X, Y, [1,2,3]) ∧
+X ≡ [A]`, one answer.
+
+| spelling | steps |
+|---|---|
+| as written, no optimizer | 179 |
+| as written, OrderingOptimizer (Cascading ∘ Ordering) | 591 |
+| hand-swapped, posting first | 93 |
+
+The rewritten tree is `(appendo(...) && X ≡ [A])` on both branches: the
+call did not move. Cause: `appendo`'s second clause ends in `defer(...)`,
+which is `goal(lambda).named("recursive call")` — an unrecognised leaf,
+priced as a barrier; barrier-ness propagates up through the conjunction,
+the `Conde` and the name (`anyBarrier`), so the whole relation
+partitions its segment and the unification cannot cross it. On master ∞
+and barrier were one thing; infinity-sorts-last separates them but a
+composite holding a barrier still partitions, and the `defer` leaf is
+not ∞, it is UNKNOWN — the fix does not reach this case. With the leaf
+recognised (§ The defer leaf) the unification sorts first, the hook then
+forces the body with `X` bound, and DoomPruner kills the dead clause:
+the optimizer's PRINCIPLE reproduces parking on R1 completely. R1 is
+therefore struck as evidence for this note; it stands as a finding
+against the implementation.
+
+**R2 — principle.** `p(X) ∧ q(X)`: `p` an opaque call whose body is an
+eight-way `Conde`, each alternative binding `X` and running a fixed
+`appendo`; `q` an opaque call determinate after TWO unfoldings
+(`defer(defer(X ≡ 1))`). Neither declares `Bounded`. One answer.
+
+| spelling | steps |
+|---|---|
+| `p ∧ q` as written, no optimizer | 1021 |
+| `p ∧ q`, OrderingOptimizer | 6903 |
+| `q ∧ p`, hand-swapped | 167 |
+
+The tree gives a rewriter nothing to sort on: both conjuncts are
+opaque, both price ∞, and with ∞ movable they tie and the stable sort
+keeps textual order. That `q` is determinate exists only in the run,
+two layers deep. Parking reaches the 167 shape without the swap: `q`'s
+unfoldings are determinate and run before the parked `Conde`, and the
+sweep then dooms seven of eight heads. The optimizer reaches it only by
+a declaration (`Bounded(1)` on `q` — a mode annotation) or by FORCING
+(§ The defer leaf, depth two). This is Andorra's claim against
+reordering in one measurement: a rewriter orders by what the tree says,
+determinate-first orders by what running says.
+
+**R3 — the unfold tax, profiled.** R2's workload under the ScopeProfiler.
+
+| leaf workforce | optimizer off | optimizer on |
+|---|---|---|
+| recursive call (the `defer` hook) | 140 | 6078 |
+| unification | 724 | 628 |
+| `appendo` body | 560 | 600 |
+| total | 1433 | 7315 |
+
+Every added step lands under the recursive-call leaf and is minted at
+`OrderingOptimizer.price` or `Optimizer.visit`: the hook splices
+`store.rewrite(body, s)` into the goal's continuation, so the visitor's
+FIBER is stepped by the scheduler like search work. Per node, per pass:
+a `Fiber.defer` per child in `visitAll`, a `Fiber.zip` + `map` per
+child to collect, a `map` to rebuild, a `map` to re-mint the
+`NamedGoal`, and in the ordering pass another `Fiber.defer` per named
+node — then the pipeline walks the whole tree once per pass. ≈ 20 steps
+per node; ≈ 140 per rewrite of `appendo`'s seven-node body, ≈ 1460 for
+`p`'s. The rewrite reordered nothing here. This is the +37% of the
+August record measured at 5× because the real work per unfolding is
+tiny; it is paid whether or not anything moves, and it is NOT tagging —
+an eager direct-recursive walk removes it from the step count. A parked
+`Conde` is a list append and pays none of it: the one claim in this
+note R3 strengthens.
+
+## The defer leaf — the one declaration that is a string
+
+The class of trouble the receipts expose is not tags as such. A `Goal`
+is an opaque function, so every property a consumer needs about it is
+DECLARED from outside — optional (a lambda declares nothing),
+conservative when absent (barrier), contagious upward (one unrecognised
+leaf partitions its whole composite), and estimated where present
+(`Bounded` is a trust surface). The engine already found the
+non-brittle shape once: a `Posting` is determinate because of what it
+IS, `Doomed` is read off the value — properties by construction, not by
+label (finite-goal-tier.md is the same move for the forking fragment;
+goals-as-data.md the full cure). The optimizer is the consumer most
+exposed because it needs the most properties; `defer` is the leaf it
+most needs and the one that is literally a string.
+
+Give `Goal.defer` its own goal class carrying the supplier. What the
+optimizer can then do, in two steps:
+
+- **By type alone — one bit.** "This is a recursive unfolding made
+  through the library's door, not an arbitrary lambda" licenses a
+  POLICY: transparent widening, unknown order, movable, sorts last,
+  never a barrier. A contract ("what you defer is a pure relation
+  body"), not knowledge. Safe against the impure citizens the engine
+  already names (tabled calls are `Barrier` instances; committed choice
+  its own classes); exposes only side-effecting user lambdas hidden in
+  a relation body. Enough for R1. Nothing for R2 — `p` and `q` both
+  read "deferred, unknown" and tie.
+- **By forcing — the door.** The type carries the supplier, so the
+  optimizer can force one layer at plan time: allocation, not search —
+  the body's tree is built, nothing runs, nothing binds. Then
+  doom-sweep the clause heads against the live knowledge (what
+  DoomPruner does at the hook already) and classify the call: no live
+  clause ⇒ the conjunction is refuted before anything runs; one ⇒
+  determinate, price 1, sort first like a posting; several ⇒ price the
+  sum, sort last. That is this note's sweep performed speculatively at
+  the layer boundary. R2 needs forcing depth two to see `q`'s
+  unification; depth one sees another deferred leaf and learns nothing.
+  Costs: bodies of conjuncts that an earlier failing sibling would have
+  spared get allocated; the forced body must be the one that runs, so
+  the rewrite splices it in (as the hook does for the unfolding goal
+  today, now for its siblings too); a depth knob appears, and every
+  program has a depth at which it is wrong; the pass stays half-blind
+  within a layer; and the walk tax (R3) grows with every forced body
+  until the walk stops being a fiber.
+
+The comparison in one sentence: with its own type the optimizer can
+OBSERVE determinacy by forcing to depth d at plan time, paying
+allocation and a parameter; parking observes it by running to
+quiescence at enforce, paying nothing up front and needing no
+parameter, because the run IS the forcing. Same observation, two
+clocks. The type is what lets a planner make the observation at all —
+without it a deferred body is a lambda, and the only thing a planner
+can do with a lambda is step around it.
 
 ## Lineage — prior work, piece by piece
 
