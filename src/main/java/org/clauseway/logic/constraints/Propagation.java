@@ -295,40 +295,40 @@ public final class Propagation {
 	}
 
 	/**
-	 * The finite exit: every {@link Enforceable} citizen settles what it owes,
+	 * Settles pending search: every {@link Pending} citizen runs what it owes,
 	 * one step at a time, each child re-entering until no citizen is pending.
-	 * Runs wherever a branch is judged — before an answer leaves, before a
-	 * tabled call keys itself, before committed choice or a trial reads a
-	 * body's answers.
+	 * Runs wherever a branch is judged — before a {@link
+	 * org.clauseway.logic.goals.optimizer.Barrier} runs, before an answer
+	 * leaves, before a tabled call keys itself.
 	 */
-	public static Cont<Knowledge, Nothing> enforce(Knowledge p) {
+	public static Cont<Knowledge, Nothing> settle(Knowledge p) {
 		return owing(p)
-				.map(citizen -> citizen.enforce().apply(p).flatMap(Propagation::enforce))
+				.map(citizen -> citizen.settle().apply(p).flatMap(Propagation::settle))
 				.orElseGet(() -> Cont.just(p));
 	}
 
 	/**
-	 * The emissions under the finite exit: each settles its pending search
-	 * before it is handed on. Straight through when no citizen is pending — an
-	 * idle package costs no steps. (The entry side is a {@link
-	 * org.clauseway.logic.goals.optimizer.Barrier}: it expands before it runs.)
+	 * The emissions settled: each one's pending search runs before it is handed
+	 * on. Straight through when no citizen is pending — an idle package costs no
+	 * steps. (The entry side is a {@link
+	 * org.clauseway.logic.goals.optimizer.Barrier}: it settles before it runs.)
 	 */
 	public static Cont<Knowledge, Nothing> settled(Cont<Knowledge, Nothing> source) {
 		return k -> source.apply(p -> searchPending(p)
-				? enforce(p).apply(k)
+				? settle(p).apply(k)
 				: k.apply(p));
 	}
 
-	/** True while some citizen still owes search at the exit. */
+	/** True while some citizen still owes search. */
 	public static boolean searchPending(Knowledge p) {
 		return owing(p).isPresent();
 	}
 
-	private static Optional<Enforceable> owing(Knowledge p) {
+	private static Optional<Pending> owing(Knowledge p) {
 		return p.getStores().values().toJavaStream()
-				.filter(Enforceable.class::isInstance)
-				.map(Enforceable.class::cast)
-				.filter(Enforceable::pending)
+				.filter(Pending.class::isInstance)
+				.map(Pending.class::cast)
+				.filter(Pending::pending)
 				.findFirst();
 	}
 

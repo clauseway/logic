@@ -58,11 +58,11 @@ public class Barrier implements Goal, Bounded {
 		return order.applyAsLong(p);
 	}
 
-	/** A barrier runs under the fixpoint of the outside's determinate work: pending search expands first. */
+	/** A barrier runs under the fixpoint of the outside's determinate work: pending search settles first. */
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge s) {
 		return Propagation.searchPending(s)
-				? Propagation.enforce(s).flatMap(goal)
+				? Propagation.settle(s).flatMap(goal)
 				: goal.apply(s);
 	}
 

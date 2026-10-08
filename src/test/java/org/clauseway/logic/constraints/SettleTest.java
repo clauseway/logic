@@ -1,7 +1,7 @@
 package org.clauseway.logic.constraints;
 
-// ABOUTME: Pins the finite exit: every Enforceable store settles what it owes,
-// ABOUTME: to quiescence, before an answer leaves or a committed choice judges.
+// ABOUTME: Pins settling: every Pending store runs the search it owes, to
+// ABOUTME: quiescence, before an answer leaves or a committed choice judges.
 
 import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
@@ -22,11 +22,11 @@ import java.util.stream.Collectors;
 import lombok.Value;
 import org.junit.Test;
 
-public class EnforceTest {
+public class SettleTest {
 
 	/** Owes one fork of {@code x} over its values, then nothing. */
 	@Value
-	private static class Choice implements Enforceable {
+	private static class Choice implements Pending {
 		Unifiable<Integer> x;
 		List<Integer> values;
 
@@ -36,7 +36,7 @@ public class EnforceTest {
 		}
 
 		@Override
-		public Goal enforce() {
+		public Goal settle() {
 			Choice settled = new Choice(x, Arrays.asList());
 			return Conde.of(values.stream()
 					.map(v -> unify(x, lval(v)).and(s -> Cont.just(s.putStore(settled))))
@@ -46,7 +46,7 @@ public class EnforceTest {
 
 	/** A second store class, so two citizens can owe work in one package. */
 	@Value
-	private static class OtherChoice implements Enforceable {
+	private static class OtherChoice implements Pending {
 		Unifiable<Integer> y;
 		List<Integer> values;
 
@@ -56,7 +56,7 @@ public class EnforceTest {
 		}
 
 		@Override
-		public Goal enforce() {
+		public Goal settle() {
 			OtherChoice settled = new OtherChoice(y, Arrays.asList());
 			return Conde.of(values.stream()
 					.map(v -> unify(y, lval(v)).and(s -> Cont.just(s.putStore(settled))))

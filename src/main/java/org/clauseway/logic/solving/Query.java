@@ -207,8 +207,8 @@ public final class Query {
 
 	/**
 	 * The primitive: one emission per derivation, driven by the caller. Each
-	 * emission has passed the finite exit ({@link Propagation#enforce}): no
-	 * pending search rides a raw package.
+	 * emission is settled ({@link Propagation#settle}): no pending search rides
+	 * a raw package.
 	 */
 	public Cont<Knowledge, Nothing> run() {
 		Goal entry = optimizer == null
