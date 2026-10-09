@@ -5,7 +5,7 @@ import static org.clauseway.functional.fibers.Fiber.done;
 
 import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.Nothing;
-import org.clauseway.logic.goals.optimizer.Barrier;
+import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import java.util.ArrayList;
@@ -35,10 +35,10 @@ public class Condu implements Goal {
 		return next;
 	}
 
-	/** Committed choice is a barrier: the branch's pending search expands before any alternative is judged. */
+	/** The branch's pending search settles once, before any alternative is judged. */
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge entered) {
-		return Barrier.of(this::judge).apply(entered);
+		return Propagation.settle(this::judge).apply(entered);
 	}
 
 	private Cont<Knowledge, Nothing> judge(Knowledge s) {
@@ -48,10 +48,10 @@ public class Condu implements Goal {
 			return clauses.stream()
 					.reduce(Fiber.done(nothing()),
 							(acc, g) -> acc.flatMap(_0 ->
-									Exhaustion.exhausted(Barrier.of(g).apply(s).run(s1 -> {
+									Subsolve.of(g).each(s, s1 -> {
 										results.add(s1);
-										return nothing();
-									})).flatMap(_1 -> {
+										return done(nothing());
+									}).flatMap(_1 -> {
 										if (committed.get() || results.isEmpty()) {
 											return done(nothing());
 										}

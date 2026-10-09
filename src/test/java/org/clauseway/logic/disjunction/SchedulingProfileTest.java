@@ -30,7 +30,8 @@ public class SchedulingProfileTest {
 
 	private static final String[] SKIP = {
 			"org.clauseway.functional.",
-			"org.clauseway.logic.goals.Exhaustion"
+			"org.clauseway.logic.goals.Exhaustion",
+					"org.clauseway.logic.goals.Subsolve"
 	};
 
 	@Test

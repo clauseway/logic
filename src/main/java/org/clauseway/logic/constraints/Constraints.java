@@ -10,7 +10,6 @@ import org.clauseway.logic.constraints.store.Renaming;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
-import org.clauseway.logic.goals.optimizer.Barrier;
 import org.clauseway.logic.unification.terms.LVal;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.terms.Reified;
@@ -52,9 +51,8 @@ public class Constraints {
 	 * term, the front door's ask captures it as a condition.
 	 */
 	public static <T> Cont<Knowledge, Nothing> enforced(Knowledge s, Term<T> x) {
-		// the commit is a barrier: pending search settles before labelling and
-		// what labelling parks settles after it, ahead of the owed-condition check
-		return Barrier.of(s1 -> enforce(s1, x).apply(s1)).apply(s)
+		// what labelling parks settles before the owed-condition check
+		return Propagation.settle(enforce(s, x).apply(s))
 				.flatMap(Constraints::verifyNoPendingSuspensions);
 	}
 

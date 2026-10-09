@@ -2,7 +2,7 @@ package org.clauseway.logic.goals;
 
 import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.Nothing;
-import org.clauseway.logic.goals.optimizer.Barrier;
+import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import java.util.ArrayList;
@@ -33,10 +33,10 @@ public class Conda implements Goal {
 		return next;
 	}
 
-	/** Committed choice is a barrier: the branch's pending search expands before any alternative is judged. */
+	/** The branch's pending search settles once, before any alternative is judged. */
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge entered) {
-		return Barrier.of(this::judge).apply(entered);
+		return Propagation.settle(this::judge).apply(entered);
 	}
 
 	private Cont<Knowledge, Nothing> judge(Knowledge s) {
@@ -47,17 +47,16 @@ public class Conda implements Goal {
 							Fiber.<Nothing> done(Nothing.nothing()),
 							(acc, g) -> acc.flatMap(_0 -> {
 								// DELIVERIES CROSS THE DELIMITER: collect the committed
-								// solution inside the claimed exploration, hand it to the
+								// solution inside the inner solve, hand it to the
 								// continuation only after the seal - running k inside
 								// would bill downstream work to the clause's workforce
 								AtomicReference<Knowledge> won = new AtomicReference<>();
-								Fiber<Nothing> collected = Exhaustion.exhausted(Barrier.of(g).apply(s)
-										.runRec(s1 -> {
+								Fiber<Nothing> collected = Subsolve.of(g).each(s, s1 -> {
 									if (committed.compareAndSet(false, true)) {
 										won.set(s1);
 									}
 									return Fiber.done(Nothing.nothing()); // ignore subsequent solutions
-								}));
+								});
 								return collected.flatMap(_1 -> won.get() != null
 										? exit.<Knowledge> with(won.get()).runRec(k)
 										: Fiber.done(Nothing.nothing()));

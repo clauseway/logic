@@ -14,7 +14,7 @@ import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.logic.constraints.Trial;
 import org.clauseway.logic.constraints.Posting;
 import org.clauseway.logic.finitedomain.Longs;
-import org.clauseway.logic.goals.Exhaustion;
+import org.clauseway.logic.goals.Subsolve;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Term;
@@ -32,12 +32,12 @@ public class TrialEdgeTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 
-		Knowledge state = Exhaustion.collected(
+		Knowledge state = Subsolve.of(
 						Propagation.suspend(
 										Collections.singletonList(y),
 										s -> s.walk(y).isVal(),
-										x.unifies(1).or(x.unifies(2)))
-								.apply(Knowledge.empty()))
+										x.unifies(1).or(x.unifies(2))))
+				.collect(Knowledge.empty())
 				.ground().get(0);
 
 		org.clauseway.vavr.collection.List<Knowledge> worlds = Trial.imposed(y.unifies(5), state).ground();

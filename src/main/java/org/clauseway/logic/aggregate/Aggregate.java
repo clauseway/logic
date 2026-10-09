@@ -13,7 +13,7 @@ import org.clauseway.functional.algebra.Monoids;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.logic.constraints.Constraints;
-import org.clauseway.logic.goals.Exhaustion;
+import org.clauseway.logic.goals.Subsolve;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Watermark;
 import org.clauseway.logic.goals.optimizer.Barrier;
@@ -101,7 +101,7 @@ public class Aggregate {
 			Watermark watermark = Watermark.now();
 			Unifiable<S> solution = lvar();
 			Unifiable<Integer> payload = lvar();
-			Goal closed = pkg2 -> body.apply(solution, payload).apply(pkg2.putStore(watermark));
+			Subsolve closed = Subsolve.of(body.apply(solution, payload)).closed(watermark);
 			return foldDistinct(lval(Tuple.of(solution, payload)), payload, closed, result, Monoids.INT_SUM, false)
 					.apply(pkg).apply(k);
 		});
@@ -131,36 +131,36 @@ public class Aggregate {
 	 */
 	private static <T> Goal closedAggregate(
 			Function<Unifiable<T>, Goal> body,
-			BiFunction<Unifiable<T>, Goal, Goal> fold) {
+			BiFunction<Unifiable<T>, Subsolve, Goal> fold) {
 		return Barrier.of((Goal) pkg -> k -> {
 			Watermark watermark = Watermark.now();
 			Unifiable<T> template = lvar();
-			Goal closed = pkg2 -> body.apply(template).apply(pkg2.putStore(watermark));
+			Subsolve closed = Subsolve.of(body.apply(template)).closed(watermark);
 			return fold.apply(template, closed).apply(pkg).apply(k);
 		});
 	}
 
-	private static <T> Goal findall(Unifiable<T> template, Goal goal, Unifiable<LList<T>> result) {
+	private static <T> Goal findall(Unifiable<T> template, Subsolve goal, Unifiable<LList<T>> result) {
 		return Barrier.of(pkg -> k -> {
 			Collection<Reified<T>> collected = new ConcurrentLinkedQueue<>();
-			return Exhaustion.exhausted(goal.apply(pkg).apply(answerPkg ->
+			return goal.each(pkg, answerPkg ->
 							Constraints.reify(answerPkg, template).apply(reified -> {
 								collected.add(reified);
 								return done(nothing());
-							})))
+							}))
 					.flatMap(exhausted -> buildList(collected).flatMap(list ->
 							Constraints.unify(result, list).apply(pkg).apply(k)));
 		});
 	}
 
-	private static <T> Goal count(Unifiable<T> template, Goal goal, Unifiable<Integer> result) {
+	private static <T> Goal count(Unifiable<T> template, Subsolve goal, Unifiable<Integer> result) {
 		return Barrier.of((Goal) pkg -> k -> {
 			Set<Reified<T>> solutions = ConcurrentHashMap.newKeySet();
-			return Exhaustion.exhausted(goal.apply(pkg).apply(answerPkg ->
+			return goal.each(pkg, answerPkg ->
 							Constraints.reify(answerPkg, template).apply(reified -> {
 								solutions.add(requireGround(reified));
 								return done(nothing());
-							})))
+							}))
 					.flatMap(exhausted -> Constraints.unify(result, lval(solutions.size())).apply(pkg).apply(k));
 		});
 	}
@@ -189,7 +189,7 @@ public class Aggregate {
 	private static Goal foldDistinct(
 			Unifiable<?> identity,
 			Unifiable<Integer> payload,
-			Goal goal,
+			Subsolve goal,
 			Unifiable<Integer> result,
 			Monoid<Integer> monoid,
 			boolean failWhenEmpty) {
@@ -197,7 +197,7 @@ public class Aggregate {
 			Set<Reified<?>> solutions = ConcurrentHashMap.newKeySet();
 			AtomicReference<Integer> acc = new AtomicReference<>(monoid.empty());
 			AtomicBoolean seen = new AtomicBoolean(false);
-			return Exhaustion.exhausted(goal.apply(pkg).apply(answerPkg ->
+			return goal.each(pkg, answerPkg ->
 							Constraints.reify(answerPkg, identity).apply(id ->
 									Constraints.reify(answerPkg, payload).apply(v -> {
 										if (solutions.add(requireGround(id))) {
@@ -205,7 +205,7 @@ public class Aggregate {
 											acc.updateAndGet(cur -> monoid.combine(cur, requireInt(v)));
 										}
 										return done(nothing());
-									}))))
+									})))
 					.flatMap(exhausted -> {
 						if (!seen.get() && failWhenEmpty) {
 							return done(nothing());
@@ -223,20 +223,20 @@ public class Aggregate {
 	 */
 	private static Goal fold(
 			Unifiable<Integer> expr,
-			Goal goal,
+			Subsolve goal,
 			Unifiable<Integer> result,
 			Monoid<Integer> monoid,
 			boolean failWhenEmpty) {
 		return Barrier.of((Goal) pkg -> k -> {
 			AtomicReference<Integer> acc = new AtomicReference<>(monoid.empty());
 			AtomicBoolean seen = new AtomicBoolean(false);
-			return Exhaustion.exhausted(goal.apply(pkg).apply(answerPkg ->
+			return goal.each(pkg, answerPkg ->
 							Constraints.reify(answerPkg, expr).apply(reified -> {
 								int v = requireInt(reified);
 								seen.set(true);
 								acc.updateAndGet(cur -> monoid.combine(cur, v));
 								return done(nothing());
-							})))
+							}))
 					.flatMap(exhausted -> {
 						if (!seen.get() && failWhenEmpty) {
 							return done(nothing());

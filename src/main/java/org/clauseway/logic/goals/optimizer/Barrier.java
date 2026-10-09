@@ -65,12 +65,7 @@ public class Barrier implements Goal, Bounded {
 	 */
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge s) {
-		Cont<Knowledge, Nothing> inside = Propagation.searchPending(s)
-				? Propagation.settle(s).flatMap(goal)
-				: goal.apply(s);
-		return k -> inside.apply(p -> Propagation.searchPending(p)
-				? Propagation.settle(p).apply(k)
-				: k.apply(p));
+		return Propagation.settle(Propagation.settle(goal).apply(s));
 	}
 
 	@Override

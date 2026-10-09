@@ -5,9 +5,8 @@ package org.clauseway.logic.constraints;
 
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.constraints.store.Constraint;
-import org.clauseway.logic.goals.Exhaustion;
+import org.clauseway.logic.goals.Subsolve;
 import org.clauseway.logic.goals.Knowledge;
-import org.clauseway.logic.goals.optimizer.Barrier;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.vavr.collection.LinkedHashMap;
 import org.clauseway.logic.unification.MiniKanren;
@@ -321,14 +320,13 @@ public final class Trial implements Posting.Visitor<Fiber<Trial.Outcome>> {
 	}
 
 	/**
-	 * The worlds the imposition delivered, grounded through the protocol
-	 * home ({@link Exhaustion#collected}): a fresh workforce claim, so
-	 * completion is honest even when the imposition wakes suspension bodies
-	 * (arbitrary goals, may spawn). Empty = the run stayed silent: the
-	 * imposition failed.
+	 * The worlds the imposition delivered: an inner solve over the scratch
+	 * ({@link Subsolve#collect}), so completion is honest even when the
+	 * imposition wakes suspension bodies (arbitrary goals, may spawn). Empty =
+	 * the run stayed silent: the imposition failed.
 	 */
 	public static Fiber<List<Knowledge>> imposed(Posting literal, Knowledge scratch) {
-		return Exhaustion.collected(Barrier.of(literal).apply(scratch))
+		return Subsolve.of(literal).collect(scratch)
 				.map(List::ofAll);
 	}
 
