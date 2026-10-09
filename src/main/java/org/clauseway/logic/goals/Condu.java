@@ -2,7 +2,7 @@ package org.clauseway.logic.goals;
 
 import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.Nothing;
-import org.clauseway.logic.constraints.Propagation;
+import org.clauseway.logic.goals.optimizer.Barrier;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import java.util.ArrayList;
@@ -33,10 +33,10 @@ public class Condu implements Goal {
 		return next;
 	}
 
-	/** The branch's pending search settles once, before any alternative is judged. */
+	/** The judge is a crossing: what the optimizer parked is discharged once, before any alternative is tried. */
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge entered) {
-		return Propagation.settleAndThen(this::judge).apply(entered);
+		return Barrier.settleAndThen(this::judge).apply(entered);
 	}
 
 	private Cont<Knowledge, Nothing> judge(Knowledge s) {
@@ -51,13 +51,13 @@ public class Condu implements Goal {
 								// continuation only after the seal - running k inside
 								// would bill downstream work to the clause's workforce
 								AtomicReference<Knowledge> won = new AtomicReference<>();
-								// delivering owed: see Conda
-								Fiber<Nothing> collected = Subsolve.of(g).deliveringOwed().each(s, s1 -> {
+								// an open read: see Conda
+								Fiber<Nothing> collected = Exhaustion.exhausted(Barrier.of(g).apply(s).runRec(s1 -> {
 									if (committed.compareAndSet(false, true)) {
 										won.set(s1);
 									}
 									return Fiber.done(Nothing.nothing()); // ignore subsequent solutions
-								});
+								}));
 								return collected.flatMap(_1 -> won.get() != null
 										? exit.<Knowledge> with(won.get()).runRec(k)
 										: Fiber.done(Nothing.nothing()));

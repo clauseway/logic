@@ -13,7 +13,7 @@ import org.clauseway.functional.algebra.Monoids;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.logic.constraints.Constraints;
-import org.clauseway.logic.goals.Subsolve;
+import org.clauseway.logic.constraints.Subsolve;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Watermark;
 import org.clauseway.logic.goals.optimizer.Barrier;
@@ -101,7 +101,7 @@ public class Aggregate {
 			Watermark watermark = Watermark.now();
 			Unifiable<S> solution = lvar();
 			Unifiable<Integer> payload = lvar();
-			Subsolve closed = Subsolve.of(body.apply(solution, payload)).closed(watermark);
+			Subsolve closed = Subsolve.closed(body.apply(solution, payload), watermark);
 			return foldDistinct(lval(Tuple.of(solution, payload)), payload, closed, result, Monoids.INT_SUM, false)
 					.apply(pkg).apply(k);
 		});
@@ -135,7 +135,7 @@ public class Aggregate {
 		return Barrier.of((Goal) pkg -> k -> {
 			Watermark watermark = Watermark.now();
 			Unifiable<T> template = lvar();
-			Subsolve closed = Subsolve.of(body.apply(template)).closed(watermark);
+			Subsolve closed = Subsolve.closed(body.apply(template), watermark);
 			return fold.apply(template, closed).apply(pkg).apply(k);
 		});
 	}

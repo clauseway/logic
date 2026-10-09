@@ -7,10 +7,10 @@ import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.vavr.collection.LinkedHashMap;
+import java.util.Optional;
 import java.util.function.ToLongFunction;
 import lombok.Value;
 
@@ -59,13 +59,34 @@ public class Barrier implements Goal, Bounded {
 	}
 
 	/**
-	 * Nothing parked crosses a barrier in either direction: the branch's pending
-	 * search settles before the goal runs, and each emission's settles before it
-	 * leaves. Straight through on both sides when nothing is pending.
+	 * Nothing parked crosses a barrier in either direction: the ambient
+	 * optimizer discharges what it parked before the goal runs and again behind
+	 * each emission ({@link Optimizer#crossing}). Straight through on both sides
+	 * when there is no optimizer or it has nothing to do.
 	 */
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge s) {
-		return Propagation.settleAfterEach(Propagation.settleAndThen(goal).apply(s));
+		return settleAfterEach(settleAndThen(goal).apply(s));
+	}
+
+	/** The goal behind a crossing: the optimizer discharges first, then the goal runs on each child. */
+	public static Goal settleAndThen(Goal goal) {
+		return s -> crossing(s)
+				.map(discharged -> discharged.flatMap(goal))
+				.orElseGet(() -> goal.apply(s));
+	}
+
+	/** The emissions behind a crossing: the optimizer discharges on each before it is handed on. */
+	public static Cont<Knowledge, Nothing> settleAfterEach(Cont<Knowledge, Nothing> emissions) {
+		return k -> emissions.apply(p -> crossing(p)
+				.map(discharged -> discharged.apply(k))
+				.orElseGet(() -> k.apply(p)));
+	}
+
+	private static Optional<Cont<Knowledge, Nothing>> crossing(Knowledge p) {
+		return OptimizerStore.from(p)
+				.map(store -> store.crossing(p))
+				.getOrElse(Optional.empty());
 	}
 
 	@Override

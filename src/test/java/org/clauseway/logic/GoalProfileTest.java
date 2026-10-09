@@ -27,8 +27,7 @@ public class GoalProfileTest {
 		OriginCapture.within(() -> {
 			ScopeProfiler profiler = new ScopeProfiler(
 					"org.clauseway.functional.",
-					"org.clauseway.logic.goals.Exhaustion",
-					"org.clauseway.logic.goals.Subsolve");
+					"org.clauseway.logic.goals.Exhaustion");
 			Unifiable<LList<Integer>> front = lvar();
 			Unifiable<LList<Integer>> back = lvar();
 			Unifiable<LList<Integer>> both = lvar();

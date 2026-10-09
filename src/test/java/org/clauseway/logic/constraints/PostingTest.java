@@ -11,7 +11,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.logic.finitedomain.FiniteDomain;
 import org.clauseway.logic.finitedomain.Longs;
-import org.clauseway.logic.goals.Subsolve;
+import org.clauseway.logic.goals.Exhaustion;
+import org.clauseway.logic.goals.optimizer.Barrier;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Term;
@@ -56,7 +57,7 @@ public class PostingTest {
 		// is disjoint with the post — doomed says so, and the price stays 1;
 		// the kill is the pruning pass's business (DoomPruner)
 		Unifiable<Long> x = lvar();
-		Knowledge live = Subsolve.of(dom(x, Longs.range(0, 5))).collect(Knowledge.empty())
+		Knowledge live = Exhaustion.collected(Barrier.of(dom(x, Longs.range(0, 5))).apply(Knowledge.empty()))
 				.ground().get(0);
 
 		Posting doomed = FiniteDomain.dom(x, Longs.range(6, 9));

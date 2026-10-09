@@ -4,7 +4,6 @@ package org.clauseway.logic.constraints;
 // ABOUTME: worklist that makes the fixpoint explicit, and verdict administration.
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -207,15 +206,6 @@ public final class Propagation {
 	}
 
 	/**
-	 * The parking entry: {@code body} is pending search, run at the next
-	 * boundary — a {@link Suspension#forced} suspension, which no binding wakes.
-	 */
-	public static Goal park(Goal body) {
-		return s -> Cont.just(s.withStore(Suspensions.EMPTY)
-				.updateStore(Suspensions.class, sus -> sus.park(Suspension.forced(body))));
-	}
-
-	/**
 	 * Folds a trigger over the constraint stores as one fiber: each store answers
 	 * a {@link Revision} — at most its own factor swapped — possibly across many
 	 * deferred steps (the store's scheduling choice); the driver routes the
@@ -303,52 +293,10 @@ public final class Propagation {
 		};
 	}
 
-	/**
-	 * Settles pending search: each forced suspension is taken off the package
-	 * and its body run, every child re-entering until none is parked. A {@link
-	 * org.clauseway.logic.goals.optimizer.Barrier} runs it on both of its sides
-	 * — {@link #settleAndThen(Goal)} before its goal, {@link #settleAfterEach(Cont)} behind each
-	 * emission.
-	 */
-	public static Cont<Knowledge, Nothing> settle(Knowledge p) {
-		return parked(p)
-				.map(forced -> forced.body()
-						.apply(p.updateStore(Suspensions.class, sus -> sus.without(forced)))
-						.flatMap(Propagation::settle))
-				.orElseGet(() -> Cont.just(p));
-	}
-
-	/** The goal behind settled entry: the branch's pending search runs first. Straight through when idle. */
-	public static Goal settleAndThen(Goal goal) {
-		return s -> searchPending(s)
-				? settle(s).flatMap(goal)
-				: goal.apply(s);
-	}
-
-	/** The emissions settled: each one's pending search runs before it is handed on. Straight through when idle. */
-	public static Cont<Knowledge, Nothing> settleAfterEach(Cont<Knowledge, Nothing> emissions) {
-		return k -> emissions.apply(p -> searchPending(p)
-				? settle(p).apply(k)
-				: k.apply(p));
-	}
-
-	/** True while a forced suspension is parked: search still owed at the boundary. */
-	public static boolean searchPending(Knowledge p) {
-		return parked(p).isPresent();
-	}
-
-	private static Optional<Suspension> parked(Knowledge p) {
-		return p.getStores().get(Suspensions.class)
-				.map(sus -> ((Suspensions) sus).parked.toJavaStream()
-						.filter(s -> s.flush() == Suspension.Flush.FORCE)
-						.findFirst())
-				.getOrElse(Optional.empty());
-	}
-
-	/** Answers may not leave while an owed condition pends: a suspension whose flush is FAIL. */
+	/** Answers may not leave while suspensions pend. */
 	public static boolean suspensionsPending(Knowledge p) {
 		return p.getStores().get(Suspensions.class)
-				.map(sus -> ((Suspensions) sus).parked.exists(s -> s.flush() == Suspension.Flush.FAIL))
+				.map(sus -> !((Suspensions) sus).parked.isEmpty())
 				.getOrElse(false);
 	}
 
@@ -357,11 +305,8 @@ public final class Propagation {
 	 * closed read starts from. They are inert inside it — the watermark forbids
 	 * binding their variables — and they ripen in the branch that owns them.
 	 */
-	public static Knowledge withoutOwed(Knowledge p) {
-		return p.getStores().get(Suspensions.class)
-				.map(sus -> p.putStore(new Suspensions(((Suspensions) sus).parked
-						.filter(s -> s.flush() == Suspension.Flush.FORCE))))
-				.getOrElse(p);
+	static Knowledge withoutOwed(Knowledge p) {
+		return p.getStores().get(Suspensions.class).isDefined() ? p.putStore(Suspensions.EMPTY) : p;
 	}
 
 	/**

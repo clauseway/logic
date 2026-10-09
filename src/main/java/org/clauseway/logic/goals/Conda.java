@@ -5,7 +5,7 @@ import static org.clauseway.functional.fibers.Fiber.done;
 
 import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.Nothing;
-import org.clauseway.logic.constraints.Propagation;
+import org.clauseway.logic.goals.optimizer.Barrier;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import java.util.ArrayList;
@@ -35,10 +35,10 @@ public class Conda implements Goal {
 		return next;
 	}
 
-	/** The branch's pending search settles once, before any alternative is judged. */
+	/** The judge is a crossing: what the optimizer parked is discharged once, before any alternative is tried. */
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge entered) {
-		return Propagation.settleAndThen(this::judge).apply(entered);
+		return Barrier.settleAndThen(this::judge).apply(entered);
 	}
 
 	private Cont<Knowledge, Nothing> judge(Knowledge s) {
@@ -48,12 +48,13 @@ public class Conda implements Goal {
 			return clauses.stream()
 					.reduce(Fiber.done(nothing()),
 							(acc, g) -> acc.flatMap(_0 ->
-									// delivering owed: an alternative judged under an unripe
-									// condition is the open question of entailment-vs-satisfiability
-									Subsolve.of(g).deliveringOwed().each(s, s1 -> {
+									// an open read: the winner continues the branch, its parked
+									// conditions ride — judging under an unripe one is the open
+									// question of entailment-vs-satisfiability
+									Exhaustion.exhausted(Barrier.of(g).apply(s).run(s1 -> {
 										results.add(s1);
-										return done(nothing());
-									}).flatMap(_1 -> {
+										return nothing();
+									})).flatMap(_1 -> {
 										if (committed.get() || results.isEmpty()) {
 											return done(nothing());
 										}

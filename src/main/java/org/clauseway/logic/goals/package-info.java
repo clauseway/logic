@@ -14,9 +14,8 @@
  * {@link org.clauseway.logic.goals.Watermark} are carried through the search.
  * {@link org.clauseway.logic.goals.Logic} and {@link org.clauseway.logic.goals.Matche}
  * are the relational standard library (list relations, {@code exist}, {@code project},
- * pattern-matching cases); {@link org.clauseway.logic.goals.Subsolve} is the inner solve a
- * non-monotone read is taken over — settled on both sides, read after the seal that
- * {@link org.clauseway.logic.goals.Exhaustion} certifies; {@link org.clauseway.logic.goals.GoalSemirings}
+ * pattern-matching cases); {@link org.clauseway.logic.goals.Exhaustion} certifies that a
+ * sub-search has delivered its complete answer set; {@link org.clauseway.logic.goals.GoalSemirings}
  * states the semiring laws the goal algebra satisfies.
  *
  * <p>A goal is run only through {@code org.clauseway.logic.solving.Query}; unification

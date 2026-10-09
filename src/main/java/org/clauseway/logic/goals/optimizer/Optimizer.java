@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.function.Function;
 import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.fibers.Fiber;
+import org.clauseway.functional.fibers.Cont;
+import org.clauseway.functional.Nothing;
+import java.util.Optional;
 import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Deferred;
@@ -92,6 +95,15 @@ public interface Optimizer {
 		return this;
 	}
 
+	/**
+	 * A {@link Barrier} was crossed with {@code p} — on entry, and behind each
+	 * emission. A pass that parked state in the package discharges it here;
+	 * empty means nothing to do, and the barrier is straight through.
+	 */
+	default Optional<Cont<Knowledge, Nothing>> crossing(Knowledge p) {
+		return Optional.empty();
+	}
+
 	/** Sequential composition — passes compose as a pipeline, never by merging. */
 	static Optimizer pipeline(Optimizer... optimizers) {
 		return new Optimizer() {
@@ -137,6 +149,19 @@ public interface Optimizer {
 				return pipeline(Arrays.stream(optimizers)
 						.map(o -> o.with(p))
 						.toArray(Optimizer[]::new));
+			}
+
+			/** Each pass crosses in turn, the next one over the previous one's emissions. */
+			@Override
+			public Optional<Cont<Knowledge, Nothing>> crossing(Knowledge p) {
+				Optional<Cont<Knowledge, Nothing>> crossed = Optional.empty();
+				for (Optimizer o : optimizers) {
+					crossed = crossed
+							.map(c -> c.flatMap(k -> o.crossing(k).orElseGet(() -> Cont.just(k))))
+							.map(Optional::of)
+							.orElseGet(() -> o.crossing(p));
+				}
+				return crossed;
 			}
 		};
 	}

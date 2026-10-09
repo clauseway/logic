@@ -10,6 +10,7 @@ import org.clauseway.logic.constraints.store.Renaming;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
+import org.clauseway.logic.goals.optimizer.Barrier;
 import org.clauseway.logic.unification.terms.LVal;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.terms.Reified;
@@ -51,8 +52,8 @@ public class Constraints {
 	 * term, the front door's ask captures it as a condition.
 	 */
 	public static <T> Cont<Knowledge, Nothing> enforced(Knowledge s, Term<T> x) {
-		// what labelling parks settles before the owed-condition check
-		return Propagation.settleAfterEach(enforce(s, x).apply(s))
+		// what labelling parks is discharged before the owed-condition check
+		return Barrier.settleAfterEach(enforce(s, x).apply(s))
 				.flatMap(Constraints::verifyNoPendingSuspensions);
 	}
 

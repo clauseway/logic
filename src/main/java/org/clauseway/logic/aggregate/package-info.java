@@ -10,7 +10,7 @@
  * on an empty solution set). Every aggregate is wrapped in an
  * {@link org.clauseway.logic.goals.optimizer.Barrier}, so the goal-tree optimizer
  * does not reorder across it, and runs its sub-search as a closed
- * {@link org.clauseway.logic.goals.Subsolve} so the fold sees the complete
+ * {@link org.clauseway.logic.constraints.Subsolve} so the fold sees the complete
  * answer set.
  *
  * <p>The sub-goal must be closed: a {@link org.clauseway.logic.goals.Watermark}

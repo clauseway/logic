@@ -3,11 +3,14 @@ package org.clauseway.logic.goals.optimizer;
 // ABOUTME: The ambient optimizer riding the Knowledge (DebugStore pattern): state
 // ABOUTME: flows through defer walls, so the pass is waiting when bodies unfold.
 
+import org.clauseway.functional.Nothing;
+import org.clauseway.functional.fibers.Cont;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
 import org.clauseway.vavr.control.Option;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
@@ -28,5 +31,10 @@ public class OptimizerStore implements Packaged {
 
 	public Fiber<Goal> rewrite(Goal body, Knowledge p) {
 		return body.accept(pipeline.with(p));
+	}
+
+	/** A barrier was crossed with {@code p}: the pipeline discharges what it parked. */
+	public Optional<Cont<Knowledge, Nothing>> crossing(Knowledge p) {
+		return pipeline.crossing(p);
 	}
 }
