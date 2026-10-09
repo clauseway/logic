@@ -48,6 +48,18 @@ public class TheoryMeetTest {
 	}
 
 	@Test
+	public void aFusedAtomKeepsItsSlotsPosition() {
+		// the atoms read in posting order; a slot-mate fusing into its
+		// occupant stays where the occupant was, it does not move to the end
+		Theory<FlatConstraints> met = Theory
+				.of(Arrays.asList(on(X, 1, 2), on(Y, 3)))
+				.meet(Theory.of(Collections.singletonList(on(X, 2, 3))));
+		assertThat(met.atoms()).containsExactly(on(X, 2), on(Y, 3));
+		assertThat(met.kind(Imposition.class).collect(Collectors.toList()))
+				.containsExactly(on(X, 2), on(Y, 3));
+	}
+
+	@Test
 	public void constructionDigestsCollidingAtomsTheSameWay() {
 		// normal form is construction-invariant: of() digests like meet()
 		Theory<FlatConstraints> built = Theory.of(Arrays.asList(on(X, 1, 2), on(X, 2, 3)));
