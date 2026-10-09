@@ -48,7 +48,9 @@ public class Conda implements Goal {
 			return clauses.stream()
 					.reduce(Fiber.done(nothing()),
 							(acc, g) -> acc.flatMap(_0 ->
-									Subsolve.of(g).each(s, s1 -> {
+									// delivering owed: an alternative judged under an unripe
+									// condition is the open question of entailment-vs-satisfiability
+									Subsolve.of(g).deliveringOwed().each(s, s1 -> {
 										results.add(s1);
 										return done(nothing());
 									}).flatMap(_1 -> {

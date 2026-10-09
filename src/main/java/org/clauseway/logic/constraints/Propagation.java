@@ -345,10 +345,20 @@ public final class Propagation {
 				.getOrElse(Optional.empty());
 	}
 
-	/** Answers may not leave while an owed condition pends: a suspension whose flush is FAIL. */
+	/** Answers may not leave while an owed condition pends: a suspension whose flush is FAIL, of any birth. */
 	public static boolean suspensionsPending(Knowledge p) {
+		return owed(p, 0);
+	}
+
+	/**
+	 * An owed condition born inside a read: a FAIL suspension parked at or after
+	 * {@code since} on the suspension clock. Older ones belong to the enclosing
+	 * branch and ride through.
+	 */
+	public static boolean owed(Knowledge p, long since) {
 		return p.getStores().get(Suspensions.class)
-				.map(sus -> ((Suspensions) sus).parked.exists(s -> s.flush() == Suspension.Flush.FAIL))
+				.map(sus -> ((Suspensions) sus).parked.exists(s ->
+						s.flush() == Suspension.Flush.FAIL && s.birth() >= since))
 				.getOrElse(false);
 	}
 

@@ -37,6 +37,8 @@ public class TrialEdgeTest {
 										Collections.singletonList(y),
 										s -> s.walk(y).isVal(),
 										x.unifies(1).or(x.unifies(2))))
+				// the parked suspension IS the state under test, not a read's debt
+				.deliveringOwed()
 				.collect(Knowledge.empty())
 				.ground().get(0);
 

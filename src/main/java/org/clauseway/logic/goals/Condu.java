@@ -51,7 +51,8 @@ public class Condu implements Goal {
 								// continuation only after the seal - running k inside
 								// would bill downstream work to the clause's workforce
 								AtomicReference<Knowledge> won = new AtomicReference<>();
-								Fiber<Nothing> collected = Subsolve.of(g).each(s, s1 -> {
+								// delivering owed: see Conda
+								Fiber<Nothing> collected = Subsolve.of(g).deliveringOwed().each(s, s1 -> {
 									if (committed.compareAndSet(false, true)) {
 										won.set(s1);
 									}

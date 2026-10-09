@@ -8,6 +8,7 @@ import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.logic.unification.terms.Term;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
 /**
@@ -47,16 +48,30 @@ public final class Suspension {
 		FAIL, FORCE
 	}
 
+	private static final AtomicLong BIRTHS = new AtomicLong();
+
 	private final Iterable<? extends Term<?>> watched;
 	private final Predicate<Substitutions> ripe;
 	private final Goal body;
 	private final Flush flush;
+	private final long birth;
 
 	private Suspension(Iterable<? extends Term<?>> watched, Predicate<Substitutions> ripe, Goal body, Flush flush) {
 		this.watched = watched;
 		this.ripe = ripe;
 		this.body = body;
 		this.flush = flush;
+		this.birth = BIRTHS.getAndIncrement();
+	}
+
+	/** The birth counter's current value: every suspension parked from now on satisfies {@code birth() >= births()}. */
+	public static long births() {
+		return BIRTHS.get();
+	}
+
+	/** When this suspension was parked, on the suspension clock — a read refuses only the conditions born inside it. */
+	public long birth() {
+		return birth;
 	}
 
 	/** Woken when a watched chain binds and {@code ripe} holds; an owed condition until then. */

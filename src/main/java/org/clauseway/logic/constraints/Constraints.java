@@ -10,6 +10,7 @@ import org.clauseway.logic.constraints.store.Renaming;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
+import org.clauseway.logic.goals.Watermark;
 import org.clauseway.logic.unification.terms.LVal;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.terms.Reified;
@@ -74,8 +75,17 @@ public class Constraints {
 	}
 
 	/** Answers may not leave while suspensions pend. */
+	/**
+	 * An answer may not leave while it owes a condition. Inside a closed
+	 * sub-solve the package carries a {@link Watermark}, and only conditions
+	 * born inside it are the answer's to owe — an older one belongs to the
+	 * enclosing branch and ripens there.
+	 */
 	private static Cont<Knowledge, Nothing> verifyNoPendingSuspensions(Knowledge s) {
-		if (Propagation.suspensionsPending(s)) {
+		long since = s.getStores().get(Watermark.class)
+				.map(w -> ((Watermark) w).getSuspensionMark())
+				.getOrElse(0L);
+		if (Propagation.owed(s, since)) {
 			throw new IllegalStateException(
 					"an answer may not leave while suspensions pend: "
 							+ "the owed condition cannot ride the answer");
