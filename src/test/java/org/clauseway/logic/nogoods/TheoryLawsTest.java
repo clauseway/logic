@@ -46,7 +46,7 @@ public class TheoryLawsTest {
 	}
 
 	@Test
-	public void sameSurfaceNogoodsFuseIntoOneConjunctionAtom() {
+	public void sameSurfaceNogoodsCombineIntoOneConjunctionAtom() {
 		// same name, same watched surface, different knowledge: the slot
 		// holds ONE atom — a nogood holds its conjuncts as a collection, and
 		// combine is their union

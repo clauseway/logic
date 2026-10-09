@@ -26,7 +26,7 @@ import org.junit.Test;
  * A nogood-shaped test atom: {@code this ⊑ other} iff this atom's literals
  * are a subset of the other's (the shorter nogood entails the longer), with
  * every {@code leq} call counted. Each atom is its own slot, so meet never
- * fuses and the only digestion left is domination.
+ * combines and the only normalization left is domination.
  */
 public class TheoryDominationTest {
 

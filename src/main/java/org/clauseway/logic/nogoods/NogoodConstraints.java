@@ -54,8 +54,8 @@ public final class NogoodConstraints implements Factor<NogoodConstraints>, Verif
 
 	/**
 	 * The resident view: every atom flattened to single-conjunct nogoods —
-	 * the digested form verification and reify read. Same-surface atoms may
-	 * have fused in the theory; execution sees their conjuncts one by one.
+	 * the normal form verification and reify read. Same-surface atoms may
+	 * have combined in the theory; execution sees their conjuncts one by one.
 	 */
 	public static LinkedHashSet<Nogood> getNogoods(Theory<NogoodConstraints> theory) {
 		return residents(theory).collect(LinkedHashSet.collector());

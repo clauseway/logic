@@ -40,7 +40,7 @@ public class TheoryMeetTest {
 	}
 
 	@Test
-	public void sameTargetImpositionsFuseToTheirDomainMeet() {
+	public void sameTargetImpositionsCombineToTheirDomainMeet() {
 		Theory<FlatConstraints> met = Theory
 				.of(Collections.singletonList(on(X, 1, 2)))
 				.meet(Theory.of(Collections.singletonList(on(X, 2, 3))));
@@ -48,7 +48,7 @@ public class TheoryMeetTest {
 	}
 
 	@Test
-	public void aFusedAtomKeepsItsSlotsPosition() {
+	public void aCombinedAtomKeepsItsSlotsPosition() {
 		// the atoms read in posting order; a slot-mate fusing into its
 		// occupant stays where the occupant was, it does not move to the end
 		Theory<FlatConstraints> met = Theory
@@ -75,7 +75,7 @@ public class TheoryMeetTest {
 	}
 
 	@Test
-	public void disjointDomainsFuseToBottomWhichIsALegalPlanValue() {
+	public void disjointDomainsCombineToBottomWhichIsALegalPlanValue() {
 		// ⊥ is knowledge (this branch's knowledge is refutational); only
 		// execution reads it as failure
 		Theory<FlatConstraints> met = Theory
@@ -149,7 +149,7 @@ public class TheoryMeetTest {
 	}
 
 	@Test
-	public void anEqualFuseKeepsTheOccupantThroughWith() {
+	public void anEqualCombineKeepsTheOccupantThroughWith() {
 		Theory<FlatConstraints> resident = Theory.of(Collections.singletonList(on(X, 1, 2)));
 		assertThat(resident.with(on(X, 1, 2, 3))).isSameAs(resident);
 	}
@@ -178,7 +178,7 @@ public class TheoryMeetTest {
 	}
 
 	@Test
-	public void impositionTheoriesStayLawfulUnderFusion() {
+	public void impositionTheoriesStayLawfulUnderCombining() {
 		java.util.List<Theory<FlatConstraints>> samples = Arrays.asList(
 				Theory.empty(),
 				Theory.of(Collections.singletonList(on(X, 1, 2))),
