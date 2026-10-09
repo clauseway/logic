@@ -12,6 +12,7 @@ import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.functional.Nothing;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Deferred;
@@ -96,11 +97,21 @@ public interface Optimizer {
 	}
 
 	/**
-	 * A {@link Barrier} was crossed with {@code p} — on entry, and behind each
-	 * emission. A pass that parked state in the package discharges it here;
-	 * empty means nothing to do, and the barrier is straight through.
+	 * A {@link Barrier} is being entered with {@code p}: the goal behind it is
+	 * about to be partitioned from whatever the pass parked in the package. A
+	 * pass that parked state discharges it here; empty means nothing to do,
+	 * and the barrier is straight through.
 	 */
-	default Optional<Cont<Knowledge, Nothing>> crossing(Knowledge p) {
+	default Optional<Cont<Knowledge, Nothing>> entering(Knowledge p) {
+		return Optional.empty();
+	}
+
+	/**
+	 * An answer is leaving a {@link Barrier} as {@code p}: whatever the pass
+	 * parked in it would leave with it. Discharged here; empty means nothing to
+	 * do, and the emission is straight through.
+	 */
+	default Optional<Cont<Knowledge, Nothing>> leaving(Knowledge p) {
 		return Optional.empty();
 	}
 
@@ -151,15 +162,25 @@ public interface Optimizer {
 						.toArray(Optimizer[]::new));
 			}
 
-			/** Each pass crosses in turn, the next one over the previous one's emissions. */
 			@Override
-			public Optional<Cont<Knowledge, Nothing>> crossing(Knowledge p) {
+			public Optional<Cont<Knowledge, Nothing>> entering(Knowledge p) {
+				return each(p, Optimizer::entering);
+			}
+
+			@Override
+			public Optional<Cont<Knowledge, Nothing>> leaving(Knowledge p) {
+				return each(p, Optimizer::leaving);
+			}
+
+			/** Each pass in turn, the next one over the previous one's emissions. */
+			private Optional<Cont<Knowledge, Nothing>> each(Knowledge p,
+					BiFunction<Optimizer, Knowledge, Optional<Cont<Knowledge, Nothing>>> side) {
 				Optional<Cont<Knowledge, Nothing>> crossed = Optional.empty();
 				for (Optimizer o : optimizers) {
 					crossed = crossed
-							.map(c -> c.flatMap(k -> o.crossing(k).orElseGet(() -> Cont.just(k))))
+							.map(c -> c.flatMap(k -> side.apply(o, k).orElseGet(() -> Cont.just(k))))
 							.map(Optional::of)
-							.orElseGet(() -> o.crossing(p));
+							.orElseGet(() -> side.apply(o, p));
 				}
 				return crossed;
 			}

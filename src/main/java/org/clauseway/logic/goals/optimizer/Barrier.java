@@ -60,33 +60,32 @@ public class Barrier implements Goal, Bounded {
 
 	/**
 	 * Nothing parked crosses a barrier in either direction: the ambient
-	 * optimizer discharges what it parked before the goal runs and again behind
-	 * each emission ({@link Optimizer#crossing}). Straight through on both sides
-	 * when there is no optimizer or it has nothing to do.
+	 * optimizer discharges what it parked before the goal runs
+	 * ({@link Optimizer#entering}) and again behind each emission
+	 * ({@link Optimizer#leaving}). Straight through on both sides when there is
+	 * no optimizer or it has nothing to do.
 	 */
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge s) {
 		return settleAfterEach(settleAndThen(goal).apply(s));
 	}
 
-	/** The goal behind a crossing: the optimizer discharges first, then the goal runs on each child. */
+	/** The goal behind an entry: the optimizer discharges first, then the goal runs on each child. */
 	public static Goal settleAndThen(Goal goal) {
-		return s -> crossing(s)
+		return s -> OptimizerStore.from(s)
+				.map(store -> store.entering(s))
+				.getOrElse(Optional.empty())
 				.map(discharged -> discharged.flatMap(goal))
 				.orElseGet(() -> goal.apply(s));
 	}
 
-	/** The emissions behind a crossing: the optimizer discharges on each before it is handed on. */
+	/** The emissions leaving: the optimizer discharges on each before it is handed on. */
 	public static Cont<Knowledge, Nothing> settleAfterEach(Cont<Knowledge, Nothing> emissions) {
-		return k -> emissions.apply(p -> crossing(p)
+		return k -> emissions.apply(p -> OptimizerStore.from(p)
+				.map(store -> store.leaving(p))
+				.getOrElse(Optional.empty())
 				.map(discharged -> discharged.apply(k))
 				.orElseGet(() -> k.apply(p)));
-	}
-
-	private static Optional<Cont<Knowledge, Nothing>> crossing(Knowledge p) {
-		return OptimizerStore.from(p)
-				.map(store -> store.crossing(p))
-				.getOrElse(Optional.empty());
 	}
 
 	@Override

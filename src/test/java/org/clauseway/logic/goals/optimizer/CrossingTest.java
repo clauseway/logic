@@ -1,7 +1,7 @@
 package org.clauseway.logic.goals.optimizer;
 
-// ABOUTME: Pins the crossing hook: a barrier asks the ambient optimizer on entry and
-// ABOUTME: behind each emission, and the optimizer discharges what it parked there.
+// ABOUTME: Pins the barrier hooks: a barrier asks the ambient optimizer on entry and
+// ABOUTME: as each answer leaves, and the optimizer discharges what it parked there.
 
 import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.TestSchedulers;
@@ -37,17 +37,26 @@ public class CrossingTest {
 		}
 	}
 
-	/** A pass that rewrites nothing and discharges its parked disjunctions at every crossing. */
+	/** A pass that rewrites nothing and discharges its parked disjunctions on both sides of a barrier. */
 	static class Stub implements Optimizer {
 		@Override
-		public Optional<Cont<Knowledge, Nothing>> crossing(Knowledge p) {
+		public Optional<Cont<Knowledge, Nothing>> entering(Knowledge p) {
+			return discharge(p);
+		}
+
+		@Override
+		public Optional<Cont<Knowledge, Nothing>> leaving(Knowledge p) {
+			return discharge(p);
+		}
+
+		private Optional<Cont<Knowledge, Nothing>> discharge(Knowledge p) {
 			Parked parked = Parked.in(p);
 			if (parked.getDisjunctions().isEmpty()) {
 				return Optional.empty();
 			}
 			Goal first = parked.getDisjunctions().head();
 			Knowledge rest = p.putStore(new Parked(parked.getDisjunctions().tail()));
-			return Optional.of(first.apply(rest).flatMap(child -> crossing(child).orElseGet(() -> Cont.just(child))));
+			return Optional.of(first.apply(rest).flatMap(child -> discharge(child).orElseGet(() -> Cont.just(child))));
 		}
 	}
 

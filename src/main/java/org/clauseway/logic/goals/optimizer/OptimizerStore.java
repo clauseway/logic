@@ -33,8 +33,13 @@ public class OptimizerStore implements Packaged {
 		return body.accept(pipeline.with(p));
 	}
 
-	/** A barrier was crossed with {@code p}: the pipeline discharges what it parked. */
-	public Optional<Cont<Knowledge, Nothing>> crossing(Knowledge p) {
-		return pipeline.crossing(p);
+	/** A barrier is entered with {@code p}: the pipeline discharges what it parked. */
+	public Optional<Cont<Knowledge, Nothing>> entering(Knowledge p) {
+		return pipeline.entering(p);
+	}
+
+	/** An answer leaves a barrier as {@code p}: the pipeline discharges what it parked. */
+	public Optional<Cont<Knowledge, Nothing>> leaving(Knowledge p) {
+		return pipeline.leaving(p);
 	}
 }
