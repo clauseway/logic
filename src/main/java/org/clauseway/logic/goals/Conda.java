@@ -1,5 +1,8 @@
 package org.clauseway.logic.goals;
 
+import static org.clauseway.functional.Nothing.nothing;
+import static org.clauseway.functional.fibers.Fiber.done;
+
 import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.Nothing;
 import org.clauseway.logic.constraints.Propagation;
@@ -9,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -21,7 +23,7 @@ public class Conda implements Goal {
 	List<Goal> clauses = new ArrayList<>();
 
 	@Override
-	public Conda orElseFirst(Goal... goals) {
+	public Conda orElse(Goal... goals) {
 		if (goals.length == 0) {
 			return this;
 		}
@@ -42,27 +44,25 @@ public class Conda implements Goal {
 	private Cont<Knowledge, Nothing> judge(Knowledge s) {
 		return Cont.callCC(exit -> Cont.suspend(k -> {
 			AtomicBoolean committed = new AtomicBoolean(false);
+			List<Knowledge> results = new ArrayList<>();
 			return clauses.stream()
-					.reduce(
-							Fiber.<Nothing> done(Nothing.nothing()),
-							(acc, g) -> acc.flatMap(_0 -> {
-								// DELIVERIES CROSS THE DELIMITER: collect the committed
-								// solution inside the inner solve, hand it to the
-								// continuation only after the seal - running k inside
-								// would bill downstream work to the clause's workforce
-								AtomicReference<Knowledge> won = new AtomicReference<>();
-								Fiber<Nothing> collected = Subsolve.of(g).each(s, s1 -> {
-									if (committed.compareAndSet(false, true)) {
-										won.set(s1);
-									}
-									return Fiber.done(Nothing.nothing()); // ignore subsequent solutions
-								});
-								return collected.flatMap(_1 -> won.get() != null
-										? exit.<Knowledge> with(won.get()).runRec(k)
-										: Fiber.done(Nothing.nothing()));
-							}),
-							Exceptions.throwingBiOp(UnsupportedOperationException::new)
-					);
+					.reduce(Fiber.done(nothing()),
+							(acc, g) -> acc.flatMap(_0 ->
+									Subsolve.of(g).each(s, s1 -> {
+										results.add(s1);
+										return done(nothing());
+									}).flatMap(_1 -> {
+										if (committed.get() || results.isEmpty()) {
+											return done(nothing());
+										}
+										committed.set(true);
+										return results.stream()
+												.map(exit::<Knowledge>with)
+												.map(c -> c.runRec(k))
+												.reduce(done(nothing()),
+														(l, r) -> l.flatMap(_2 -> r));
+									})),
+							Exceptions.throwingBiOp(UnsupportedOperationException::new));
 		}));
 	}
 
@@ -70,6 +70,6 @@ public class Conda implements Goal {
 	public String toString() {
 		return "(" + clauses.stream()
 				.map(Objects::toString)
-				.collect(Collectors.joining(" orElseFirst ")) + ")";
+				.collect(Collectors.joining(" orElse ")) + ")";
 	}
 }

@@ -38,7 +38,7 @@ class EnforceConstraintsFD {
 							// the sweep forces each domain-carrying var directly:
 							// the vars are the store's, not an answer structure —
 							// no term wrapping, no structural walk
-							return Goal.condu(Goal.defer(() -> forceAnsEach(xs)));
+							return Goal.conda(Goal.defer(() -> forceAnsEach(xs)));
 						})
 						.apply(a1))
 				.apply(a);

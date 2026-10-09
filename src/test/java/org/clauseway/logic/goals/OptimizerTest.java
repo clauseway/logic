@@ -49,7 +49,7 @@ public class OptimizerTest {
 		Goal lambda = leaf();
 		assertThat(cascade(lambda)).isSameAs(lambda);
 
-		Goal committed = new Conda().orElseFirst(leaf()).orElseFirst(leaf());
+		Goal committed = new Condu().orElseFirst(leaf()).orElseFirst(leaf());
 		assertThat(cascade(committed)).isSameAs(committed);
 	}
 

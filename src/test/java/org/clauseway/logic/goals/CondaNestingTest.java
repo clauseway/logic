@@ -1,6 +1,6 @@
 package org.clauseway.logic.goals;
 
-// ABOUTME: Committed choice under exhaustion: a nested condu inside a clause
+// ABOUTME: The soft cut under exhaustion: a nested conda inside a clause
 // ABOUTME: must not leak the fallback when the head clause has solutions.
 
 import org.clauseway.logic.solving.Query;
@@ -17,13 +17,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.Test;
 
-public class ConduNestingTest {
+public class CondaNestingTest {
 
 	@Test
-	public void aNestedConduCommitsWithoutLeakingTheFallback() {
+	public void aNestedCondaCommitsWithoutLeakingTheFallback() {
 		Unifiable<String> x = lvar();
-		Goal g = Goal.condu(
-				Goal.condu(unify(x, lval("keep")), unify(x, lval("inner-fallback"))),
+		Goal g = Goal.conda(
+				Goal.conda(unify(x, lval("keep")), unify(x, lval("inner-fallback"))),
 				unify(x, lval("outer-fallback")));
 
 		List<String> got = Query.of(g).on(TestSchedulers.factory()).solve(x).map(Reified::toString).collect(Collectors.toList());
@@ -32,11 +32,11 @@ public class ConduNestingTest {
 	}
 
 	@Test
-	public void aConduClauseGuardedByProjectionCommits() {
+	public void aCondaClauseGuardedByProjectionCommits() {
 		// filter's clause shape: the guard runs through Logic.project
 		Unifiable<Integer> a = lvar();
 		Unifiable<String> x = lvar();
-		Goal g = unify(a, lval(2)).and(Goal.condu(
+		Goal g = unify(a, lval(2)).and(Goal.conda(
 				Goal.defer(() -> Logic.project(a, v -> v != 1 ? Goal.success() : Goal.failure())
 						.and(unify(x, lval("keep")))),
 				unify(x, lval("skip"))));
@@ -63,7 +63,7 @@ public class ConduNestingTest {
 			java.util.function.Function<Unifiable<A>, Goal> pred) {
 		return org.clauseway.logic.goals.Matche.matche(with,
 				org.clauseway.logic.goals.Matche.llist(() -> without.unifies(LList.empty())),
-				org.clauseway.logic.goals.Matche.llist((a, d) -> Goal.condu(
+				org.clauseway.logic.goals.Matche.llist((a, d) -> Goal.conda(
 						Goal.defer(() -> pred.apply(a)
 								.and(org.clauseway.logic.goals.Matche.matche(without,
 										org.clauseway.logic.goals.Matche.llist((b, e) -> b.unifiesNc(a)
@@ -72,7 +72,7 @@ public class ConduNestingTest {
 	}
 
 	@Test
-	public void aConduInsideARecursionCommitsPerLevel() {
+	public void aCondaInsideARecursionCommitsPerLevel() {
 		assertThat(countdown(3).size()).isEqualTo(1);
 	}
 
@@ -81,12 +81,12 @@ public class ConduNestingTest {
 		return Query.of(level(n, out)).on(TestSchedulers.factory()).solve(out).map(Reified::toString).collect(Collectors.toList());
 	}
 
-	/** level(n): condu(succeed with "hit-n" and recurse; fallback). */
+	/** level(n): conda(succeed with "hit-n" and recurse; fallback). */
 	private static Goal level(int n, Unifiable<String> out) {
 		if (n == 0) {
 			return unify(out, lval("bottom"));
 		}
-		return Goal.condu(
+		return Goal.conda(
 				Goal.defer(() -> level(n - 1, out)),
 				unify(out, lval("fallback-" + n)));
 	}

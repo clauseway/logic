@@ -83,37 +83,29 @@ public interface Goal extends Function<Knowledge, Cont<Knowledge, Nothing>> {
 	}
 
 	/**
-	 * Creates a new goal that tries this goal first, and if it fails, tries the
-	 * specified {@code goals} in order.
-	 * <pre>
-	 * This is often used for committed choice or if-then-else like constructs.
-	 * This uses {@link Condu} for its underlying mechanism, specifically its {@code orElse} method.
-	 * </pre>
+	 * The soft cut: this goal, or else the first of {@code goals} that has an
+	 * answer — committing to that clause and keeping EVERY answer it has
+	 * (miniKanren's conda; {@link Conda}).
 	 *
-	 * @param goals Alternative goals to try if the preceding ones fail.
-	 * @return A new {@link Goal} representing the ordered disjunction.
-	 * @see Condu#orElse(Goal...)
-	 * @see #condu(Goal...)
+	 * @param goals Alternative goals, tried in order.
+	 * @return A {@link Conda} over this goal and the alternatives.
+	 * @see #conda(Goal...)
 	 */
 	default Goal orElse(Goal... goals) {
-		return new Condu().orElse(this).orElse(goals);
+		return new Conda().orElse(this).orElse(goals);
 	}
 
 	/**
-	 * Creates a new goal that chains this goal with subsequent {@code goals} using a
-	 * "first-match" or "committed-choice" strategy, as provided by {@link Conda#orElseFirst(Goal...)}.
-	 * <pre>
-	 * It attempts goals in sequence, and the behavior regarding commitment to the first
-	 * successful path is determined by the {@code Conda} implementation's {@code orElseFirst} method.
-	 * </pre>
+	 * Committed choice: this goal, or else the first of {@code goals} that has an
+	 * answer — committing to that clause and keeping ONE answer of it
+	 * (miniKanren's condu; {@link Condu}).
 	 *
-	 * @param goals Alternative goals to try, subject to the "orElseFirst" semantics of {@link Conda}.
-	 * @return A new {@link Goal} based on {@link Conda#orElseFirst(Goal...)}.
-	 * @see Conda#orElseFirst(Goal...)
-	 * @see #conda(Goal...)
+	 * @param goals Alternative goals, tried in order.
+	 * @return A {@link Condu} over this goal and the alternatives.
+	 * @see #condu(Goal...)
 	 */
 	default Goal orElseFirst(Goal... goals) {
-		return new Conda().orElseFirst(this).orElseFirst(goals);
+		return new Condu().orElseFirst(this).orElseFirst(goals);
 	}
 
 	/**
@@ -134,39 +126,32 @@ public interface Goal extends Function<Knowledge, Cont<Knowledge, Nothing>> {
 	}
 
 	/**
-	 * Creates a goal representing a committed choice disjunction of the provided goals.
-	 * <pre>
-	 * It tries goals in order and typically commits to the first one (or set of them)
-	 * that leads to a solution, based on the behavior of {@link Goal#orElse(Goal...)}.
-	 * If no goals are provided, it results in a {@link #failure()} goal.
-	 * </pre>
+	 * Committed choice (miniKanren's condu): the first of {@code goals} that has
+	 * an answer is committed to, and ONE of its answers is kept. Each clause is
+	 * one goal, run whole: the commit is over the clause's answers, not over a
+	 * separate question. No goals is {@link #failure()}.
 	 *
-	 * @param goals The goals to be combined.
-	 * @return A new {@link Goal} representing the committed choice disjunction (condu).
+	 * @param goals The clauses, tried in order.
+	 * @return A {@link Condu} over the clauses.
 	 */
 	static Goal condu(Goal... goals) {
 		return Arrays.stream(goals)
-				.reduce(Goal::orElse)
+				.reduce(Goal::orElseFirst)
 				.orElseGet(Goal::failure);
 	}
 
 	/**
-	 * Creates a goal representing a conditional disjunction, often used for if-then-else
-	 * style logic or "guarded" clauses.
-	 * <pre>
-	 * It combines the provided goals using the {@link Goal#orElseFirst(Goal...)} strategy.
-	 * This means it will try to satisfy the goals in a sequence, and the overall behavior
-	 * (e.g., committing to the first successful clause) is determined by the
-	 * {@code orElseFirst} logic.
-	 * If no goals are provided, it results in a {@link #failure()} goal.
-	 * </pre>
+	 * The soft cut (miniKanren's conda): the first of {@code goals} that has an
+	 * answer is committed to, and EVERY answer it has is kept. Each clause is
+	 * one goal, run whole: the commit is over the clause's answers, not over a
+	 * separate question. No goals is {@link #failure()}.
 	 *
-	 * @param goals The goals, often structured as condition-consequence clauses, to be combined.
-	 * @return A new {@link Goal} representing the conditional disjunction (conda).
+	 * @param goals The clauses, tried in order.
+	 * @return A {@link Conda} over the clauses.
 	 */
 	static Goal conda(Goal... goals) {
 		return Arrays.stream(goals)
-				.reduce(Goal::orElseFirst)
+				.reduce(Goal::orElse)
 				.orElseGet(Goal::failure);
 	}
 

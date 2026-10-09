@@ -104,11 +104,11 @@ public class SettleTest {
 
 	@Test
 	public void committedChoiceJudgesEachExpandedBranch() {
-		// without the phase at the judge, conda commits to x ≡ 2 while x is still
+		// without the phase at the judge, condu commits to x ≡ 2 while x is still
 		// open and the later fork keeps only 2; with it, each value is judged
 		Unifiable<Integer> x = lvar();
 		Knowledge root = Knowledge.empty().withStore(new Choice(x, Arrays.asList(1, 2, 3)));
-		Goal judged = Goal.conda(unify(x, lval(2)), Goal.success());
+		Goal judged = Goal.condu(unify(x, lval(2)), Goal.success());
 
 		assertThat(values(Query.of(judged).from(root), x)).containsExactly(1, 2, 3);
 	}

@@ -73,12 +73,12 @@ public class LogicTest {
 		// condu/conda commit to the first succeeding clause, so receiver
 		// mutation is invisible behaviorally — assert on structure instead
 		Unifiable<Integer> x = lvar();
-		Condu condu = (Condu) x.unifies(1).orElse(x.unifies(2));
-		condu.orElse(x.unifies(3));
-		assertThat(condu.getClauses()).hasSize(2);
-		Conda conda = (Conda) x.unifies(1).orElseFirst(x.unifies(2));
-		conda.orElseFirst(x.unifies(3));
+		Conda conda = (Conda) x.unifies(1).orElse(x.unifies(2));
+		conda.orElse(x.unifies(3));
 		assertThat(conda.getClauses()).hasSize(2);
+		Condu condu = (Condu) x.unifies(1).orElseFirst(x.unifies(2));
+		condu.orElseFirst(x.unifies(3));
+		assertThat(condu.getClauses()).hasSize(2);
 	}
 
 	@Test

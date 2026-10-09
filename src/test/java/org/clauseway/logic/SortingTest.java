@@ -35,7 +35,7 @@ import org.junit.Test;
 public class SortingTest {
 
 	public static Goal firsto(Goal... goals) {
-		return Goal.condu(goals)
+		return Goal.conda(goals)
 				.named("firsto(" + Arrays.stream(goals)
 						.map(Objects::toString)
 						.collect(Collectors.joining(", ")) + ")");
@@ -346,7 +346,7 @@ public class SortingTest {
 	static <A> Goal filter(Unifiable<LList<A>> with, Unifiable<LList<A>> without, Function<Unifiable<A>, Goal> pred) {
 		return matche(with,
 				Matche.llist(() -> without.unifies(LList.empty())),
-				Matche.llist((a, d) -> Goal.condu(
+				Matche.llist((a, d) -> Goal.conda(
 						Goal.defer(() -> pred.apply(a)
 								.and(Matche.matche(without,
 										Matche.llist((b, e) -> b.unifiesNc(a)

@@ -37,7 +37,7 @@ public class PropagationPinTest {
 		// the intersection {1,2} ∩ {1} collapses to a Singleton, which binds x mid-search
 		Goal g = exclude(x.unifies(lval(1L)))
 				.and(dom(x, Longs.range(1, 3)))       // x ∈ {1,2}
-				.and(Goal.condu(
+				.and(Goal.conda(
 						dom(x, Longs.range(1, 2)),    // ∩ → {1}: collapse-binds, violates x ≠ 1
 						dom(x, Longs.range(2, 3))));  // ∩ → {2}: the valid branch
 
