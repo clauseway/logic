@@ -6,7 +6,6 @@ package org.clauseway.logic.goals;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.constraints.Propagation;
-import org.clauseway.logic.constraints.store.Suspension;
 import org.clauseway.logic.goals.optimizer.Barrier;
 import java.util.List;
 
@@ -38,14 +37,19 @@ public final class Subsolve {
 
 	/**
 	 * An open inner solve: its bindings may reach outside variables (committed
-	 * choice). At each exit an owed condition born inside refuses — a read over
-	 * answers that still owe a condition is a read at zero strength.
+	 * choice). At each exit an answer that still owes a condition refuses — a
+	 * read over such answers is a read at zero strength.
 	 */
 	public static Subsolve of(Goal goal) {
 		return new Subsolve(goal, null, false);
 	}
 
-	/** Closed under {@code mark}: a variable born before it refuses inside (aggregates). */
+	/**
+	 * Closed under {@code mark}: a variable born before it refuses inside
+	 * (aggregates). The enclosing branch's owed conditions are set aside on
+	 * entry — inert here, they ripen where they belong — so what is pending at
+	 * exit is the read's own.
+	 */
 	public Subsolve closed(Watermark mark) {
 		return new Subsolve(goal, mark, deliversOwed);
 	}
@@ -63,25 +67,23 @@ public final class Subsolve {
 	 * {@code consumer} inside the claimed workforce; completes only at the seal.
 	 */
 	public Fiber<Nothing> each(Knowledge from, Fiber.Fn<Knowledge, Nothing> consumer) {
-		long since = Suspension.births();
 		return Exhaustion.exhausted(Barrier.of(goal).apply(start(from))
-				.apply(answer -> consumer.apply(settled(answer, since))));
+				.apply(answer -> consumer.apply(settled(answer))));
 	}
 
 	/** Runs from {@code from} to the seal and returns every settled answer package. */
 	public Fiber<List<Knowledge>> collect(Knowledge from) {
-		long since = Suspension.births();
-		return Exhaustion.collected(Barrier.of(goal).apply(start(from)).map(answer -> settled(answer, since)));
+		return Exhaustion.collected(Barrier.of(goal).apply(start(from)).map(this::settled));
 	}
 
 	private Knowledge start(Knowledge from) {
-		return mark == null ? from : from.putStore(mark);
+		return mark == null ? from : Propagation.withoutOwed(from).putStore(mark);
 	}
 
-	private Knowledge settled(Knowledge answer, long since) {
-		if (!deliversOwed && Propagation.owed(answer, since)) {
+	private Knowledge settled(Knowledge answer) {
+		if (!deliversOwed && Propagation.suspensionsPending(answer)) {
 			throw new IllegalStateException(
-					"an answer may not be read while it owes a condition born inside the read: "
+					"an answer may not be read while it owes a condition: "
 							+ "the owed condition cannot ride the answer");
 		}
 		return answer;

@@ -3,7 +3,6 @@ package org.clauseway.logic.goals;
 // ABOUTME: The birth watermark a closed sub-solve carries: a variable born before
 // ABOUTME: the mark may not surface unbound inside — the closed-aggregate age check.
 
-import org.clauseway.logic.constraints.store.Suspension;
 import org.clauseway.logic.unification.terms.LVar;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.Prefix;
@@ -30,12 +29,10 @@ import lombok.Value;
 @Value
 public class Watermark implements Packaged {
 	long mark;
-	/** The suspension clock at the same moment: the conditions a read inside owes are those born from here. */
-	long suspensionMark;
 
 	/** A watermark admitting exactly the variables born from this moment on. */
 	public static Watermark now() {
-		return new Watermark(LVar.births(), Suspension.births());
+		return new Watermark(LVar.births());
 	}
 
 	private boolean refuses(Name<?> name) {

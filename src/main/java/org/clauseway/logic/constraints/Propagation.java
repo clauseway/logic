@@ -345,21 +345,23 @@ public final class Propagation {
 				.getOrElse(Optional.empty());
 	}
 
-	/** Answers may not leave while an owed condition pends: a suspension whose flush is FAIL, of any birth. */
+	/** Answers may not leave while an owed condition pends: a suspension whose flush is FAIL. */
 	public static boolean suspensionsPending(Knowledge p) {
-		return owed(p, 0);
+		return p.getStores().get(Suspensions.class)
+				.map(sus -> ((Suspensions) sus).parked.exists(s -> s.flush() == Suspension.Flush.FAIL))
+				.getOrElse(false);
 	}
 
 	/**
-	 * An owed condition born inside a read: a FAIL suspension parked at or after
-	 * {@code since} on the suspension clock. Older ones belong to the enclosing
-	 * branch and ride through.
+	 * The package with the enclosing branch's owed conditions set aside: what a
+	 * closed read starts from. They are inert inside it — the watermark forbids
+	 * binding their variables — and they ripen in the branch that owns them.
 	 */
-	public static boolean owed(Knowledge p, long since) {
+	public static Knowledge withoutOwed(Knowledge p) {
 		return p.getStores().get(Suspensions.class)
-				.map(sus -> ((Suspensions) sus).parked.exists(s ->
-						s.flush() == Suspension.Flush.FAIL && s.birth() >= since))
-				.getOrElse(false);
+				.map(sus -> p.putStore(new Suspensions(((Suspensions) sus).parked
+						.filter(s -> s.flush() == Suspension.Flush.FORCE))))
+				.getOrElse(p);
 	}
 
 	/**
