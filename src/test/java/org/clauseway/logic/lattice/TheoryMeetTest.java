@@ -49,7 +49,7 @@ public class TheoryMeetTest {
 
 	@Test
 	public void aCombinedAtomKeepsItsSlotsPosition() {
-		// the atoms read in posting order; a slot-mate fusing into its
+		// the atoms read in posting order; a slot-mate combining into its
 		// occupant stays where the occupant was, it does not move to the end
 		Theory<FlatConstraints> met = Theory
 				.of(Arrays.asList(on(X, 1, 2), on(Y, 3)))
@@ -60,8 +60,8 @@ public class TheoryMeetTest {
 	}
 
 	@Test
-	public void constructionDigestsCollidingAtomsTheSameWay() {
-		// normal form is construction-invariant: of() digests like meet()
+	public void constructionNormalizesCollidingAtomsTheSameWay() {
+		// normal form is construction-invariant: of() combines like meet()
 		Theory<FlatConstraints> built = Theory.of(Arrays.asList(on(X, 1, 2), on(X, 2, 3)));
 		assertThat(built.atoms()).containsExactly(on(X, 2));
 	}
@@ -86,8 +86,8 @@ public class TheoryMeetTest {
 	}
 
 	@Test
-	public void theTheoryReadsItsOwnBottomAtDigestion() {
-		// the ⊥ scan is digestion's business, read through the declared
+	public void theTheoryReadsItsOwnBottomAsAtomsArrive() {
+		// the ⊥ scan is the doors' business, read through the declared
 		// Absorbing capability: a theory carrying an absorbing atom IS
 		// absorbing; live knowledge and the unit are not
 		Theory<FlatConstraints> bottom = Theory
@@ -96,14 +96,14 @@ public class TheoryMeetTest {
 		assertThat(bottom.isAbsorbing()).isTrue();
 		assertThat(Theory.of(Collections.singletonList(on(X, 1, 2))).isAbsorbing()).isFalse();
 		assertThat(Theory.<FlatConstraints> empty().isAbsorbing()).isFalse();
-		// the incremental door agrees with digestion
+		// the incremental door agrees with meet
 		assertThat(Theory.of(Collections.singletonList(on(X, 1)))
 				.with(on(X, 2)).isAbsorbing()).isTrue();
 	}
 
 	@Test
 	public void atomsWithoutTheCapabilityUnionEvenOnACollidingSurface() {
-		// same watched surface, different names: a propagator never fuses —
+		// same watched surface, different names: a propagator never combines —
 		// only family code (the atom kind) declares combinability
 		Propagator<FlatConstraints> even = TestPropagators.of(FlatConstraints.empty(), "even",
 				Collections.singletonList(X), (watched, state) -> Verdict.keep());
@@ -138,12 +138,12 @@ public class TheoryMeetTest {
 	@Test
 	public void aCoveredMeetReturnsTheReceiverItself() {
 		// identity-preserving meet: nothing moved — every incoming atom equal
-		// to or fused-equal with its occupant — so the receiver rides through
+		// to or combined-equal with its occupant — so the receiver rides through
 		// BY REFERENCE; a door's no-op guard is ==
 		Theory<FlatConstraints> resident = Theory.of(Arrays.asList(on(X, 1, 2), on(Y, 3)));
 		assertThat(resident.meet(Theory.of(Collections.singletonList(on(X, 1, 2)))))
 				.isSameAs(resident);
-		// a wider incoming fuses to the occupant's own value: still identity
+		// a wider incoming combines to the occupant's own value: still identity
 		assertThat(resident.meet(Theory.of(Collections.singletonList(on(X, 1, 2, 3)))))
 				.isSameAs(resident);
 	}

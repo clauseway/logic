@@ -28,7 +28,7 @@ import lombok.Value;
  *
  * <p>The declared {@link Semilattice} is the capability the theory meet
  * reads: same-target impositions combine to their domain meet — the value
- * plane digesting without context. A ⊥ result ({@code target ⊂ ∅}) is a
+ * plane combining without context. A ⊥ result ({@code target ⊂ ∅}) is a
  * legal plan value; only execution reads it as failure.
  */
 @Value

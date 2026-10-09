@@ -32,7 +32,7 @@ import lombok.Value;
  * capability) is conjunct union — same-surface knowledge accumulates in
  * place. A conjunct's jointness and literal granularity live in the posting
  * itself ({@code Posting.all} for {@code ¬(l₁ ∧ … ∧ lₙ)}). The factor holds
- * SINGLE-conjunct residents (its digested form — {@code meet(Atom)}
+ * SINGLE-conjunct residents (its normal form — {@code meet(Atom)}
  * flattens); multi-conjunct atoms live in plan space.
  */
 @Value
@@ -117,7 +117,7 @@ public class Nogood implements Atom<NogoodConstraints>, Doomed, Semilattice<Nogo
 		return make(forbidden.addAll(other.forbidden));
 	}
 
-	/** The factor-resident face: a digested nogood holds exactly one conjunct. */
+	/** The factor-resident face: a resident nogood holds exactly one conjunct. */
 	public Posting conjunct() {
 		if (forbidden.size() != 1) {
 			throw new IllegalStateException(

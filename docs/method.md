@@ -232,7 +232,7 @@ move earns a place here after it has fired at least twice.
   every watcher of a bound var so families could trust keys without
   walking; ~2.5× on the genesis fixture, where nearly every step is a
   bind — reverted with its refutation in constraint-kernel §7), and its
-  own watchers index (+20% maintenance at every digestion door, zero
+  own watchers index (+20% maintenance at every theory door, zero
   readers after the revert). The lazy alternative — every read walks —
   was correct the whole time: staleness that every read resolves is a
   cost to keep, not a bug to fix. Corollary, from the same firing: the

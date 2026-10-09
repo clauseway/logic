@@ -23,9 +23,9 @@
   is the memo's DROPPABILITY guarantee — marshal never serializes it, a
   fresh consumer rebuilds once — not its update path; crossings and
   marshal read only the Theory half; (2) Theory implements Absorbing
-  by a digest-time capability read (atom instanceof Absorbing —
+  by a capability read at the theory's doors (atom instanceof Absorbing —
   Imposition declares it by its value's own absorption): the ⊥-scan
-  LatticeFactor.absorb already runs, moved to digestion, cached; (3)
+  LatticeFactor.absorb already runs, moved to the doors, cached; (3)
   the cascade drains the theory under its own lawful bound — the
   MonotoneDrain signature is NOT touched; (4) crossings become pure
   theory renames end to end and `rename` dies as a factor method; the
@@ -62,7 +62,7 @@ to the theory or exist to reach it.
 
 What it does NOT change: the three doors and the chokepoint (resolve /
 activate / absorb speak exactly as they do — absorb already takes a
-theory); the capability doctrine (Doomed, Semilattice-fusion, sharp
+theory); the capability doctrine (Doomed, Semilattice-combining, sharp
 leq all stay atom-declared, kernel-read); suspensions stay the
 driver's citizens, untouched; the stated-vs-absorb singleton
 divergence is unaffected and still awaits its own ruling.

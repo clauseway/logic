@@ -4,8 +4,8 @@ The idea, corrected by measurement: finding a changed term's watchers by
 scanning all parked propagators (`p.watches(live, next)` per queue item)
 is quadratic in the constraint population, and an index by watched name
 would make it a lookup — but the index's DESIGN decides whether it can be
-cheap. An index **derived from the atoms' watched surfaces** (a digestion
-product, like slots and kinds) can only stay truthful if the atoms
+cheap. An index **derived from the atoms' watched surfaces** (a product
+of normalization, like slots and kinds) can only stay truthful if the atoms
 themselves stay textually renamed to representatives — which forces
 rewriting every watcher of a bound var into persistent maps at every
 bind. That trade was built and measured (the one-door arc, Aug 2026):
@@ -31,7 +31,7 @@ fighting it.
   counts and only 5–8% wall-clock — the scan is not the per-step growth
   term; the note's cheapest-kill clause fired. (2) The maintenance side:
   the derived index's upkeep (watcherAdded/watcherRemoved at every
-  digestion door) alone cost ~20% on the same fixture with no reader —
+  theory door) alone cost ~20% on the same fixture with no reader —
   the maintenance exceeded the lookup's savings. (3) The rewrite-per-bind
   that kept the derived index truthful cost ~2.5× (n=5/6/7 =
   268/3,256/41,926 ms vs 100/1,072/13,272 pre-arc; steps identical).

@@ -97,7 +97,7 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 		return valueAtom(theory, v).map(Imposition::getValue);
 	}
 
-	/** Narrowing write: the value FUSES with any existing entry at {@code x}. */
+	/** Narrowing write: the value COMBINES with any existing entry at {@code x}. */
 	public Theory<S> withValue(Theory<S> theory, Term<?> x, L value) {
 		return theory.with(imposition(x, value));
 	}
@@ -228,18 +228,18 @@ public abstract class LatticeFactor<L extends Domain<L>, S extends LatticeFactor
 		ArrayDeque<Term<?>> queue = new ArrayDeque<>();
 		for (Atom<S> atom : focus) {
 			if (atom instanceof Imposition) {
-				// the door fused the value into its slot; re-state the fused
+				// the door combined the value into its slot; re-state the combined
 				// value through update's routing against the slot-stripped
 				// theory, so the routing sees exactly the combined knowledge
 				Imposition<L, S> imposition = (Imposition<L, S>) atom;
 				Term<?> target = imposition.getTarget();
-				L fused = valueAtom(current, target).map(Imposition::getValue)
+				L combined = valueAtom(current, target).map(Imposition::getValue)
 						.getOrElse(imposition.getValue());
-				if (fused.isAbsorbing()) {
+				if (combined.isAbsorbing()) {
 					return Fiber.done(Revision.fail());
 				}
 				Theory<S> stripped = spent(current, target);
-				current = consume(update(stripped, state, state.walk(target), fused),
+				current = consume(update(stripped, state, state.walk(target), combined),
 						stripped, inferred, runs, queue);
 			} else if (atom instanceof Propagator) {
 				if (!current.atoms().contains(atom)) {

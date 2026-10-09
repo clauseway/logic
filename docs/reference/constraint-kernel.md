@@ -135,7 +135,7 @@ face — the registration seed), `name()`, `watched()` (the held collection —
 its equality is the kind's identity granularity), `rename(Renaming)`.
 Everything else is DECLARED CAPABILITY, read by the kernel, never assumed:
 
-- `Semilattice` — the atom kind knows how to digest its own slot-mates
+- `Semilattice` — the atom kind knows how to combine its own slot-mates
   (same family, name, and watched surface): domains meet, same-surface
   nogood conjuncts union. A kind that cannot combine yet collides has
   broken single occupancy — it must hold the collection inside the atom.
@@ -146,17 +146,17 @@ Everything else is DECLARED CAPABILITY, read by the kernel, never assumed:
   walked terms.
 
 **`Theory<F>`** is a factor's knowledge as SYNTAX: a family-homogeneous
-atom set in normal form. Every door digests: slot-mates fuse through the
+atom set in normal form. Every door normalizes: slot-mates combine through the
 Semilattice capability, then SUBSUMPTION DELETION drops every atom
 strictly dominated by another. Its surface: `meet` (an index merge —
-union, fuse, prune; IDENTITY-PRESERVING: when nothing moves the receiver
+union, combine, prune; IDENTITY-PRESERVING: when nothing moves the receiver
 returns itself, so a door's no-op guard is reference equality), `leq`
 (the COVERING order: every atom of the wider
 theory entailed by some atom of this one — grade two of the leq tower,
 `structural ⊂ covering ⊂ family-semantic`, sharp exactly as far as the
 atom classes' own overrides reach, blind to conjunctive entailment by
 construction), `split(vars)` (the name cut: covered ⊗ remainder = this),
-`rename` (the crossing, re-digesting), the slot read (`atom(family, name,
+`rename` (the crossing, re-normalizing), the slot read (`atom(family, name,
 surface)`, one hop) and the kind read (`kind(Class)`, buckets matched by
 assignability). Theories are what CROSSES: keys, answers, replay and
 Residues all carry theories, and the key form is
@@ -326,7 +326,7 @@ unify and `members` a shared kind-tagged `decompose`.
    constrain-mode queries assume snapshots (monotonicity engine-wide).
 5. **Capability honesty**: `Doomed` may never claim a failure later
    knowledge could lift; sharp `leq` overrides answer false over open
-   terms; a declared Semilattice fusion is the kind's own normal form.
+   terms; a declared Semilattice combine is the kind's own normal form.
 6. Everything else IS types: prefix validity, custody, reexamine locality,
    substitution scoping.
 
@@ -368,7 +368,7 @@ persistent maps at each bind cost ~2.5× wall-clock on the genesis fixture
 at read was already correct for the dead-alias case the rename was
 scaffolding for: names only die at var-var aliasing, and every family
 examination resolves its terms through the substitution anyway. The
-watchers index the rename needed cost a further ~20% in per-digestion
+watchers index the rename needed cost a further ~20% in per-door
 maintenance with no other reader, and died with it. Both are archived on
 branch `one-door-rename-lens` with their receipts; if watcher-wake cost
 ever matters at population scale, the shape that composes with

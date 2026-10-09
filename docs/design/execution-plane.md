@@ -44,7 +44,7 @@ watched-name index routes each door to the affected atoms; unaffected
 atoms are untouched.
 
 Corollaries the arc already shipped without naming them: aliasing is
-atom re-slotting (fusion at the collision — the `with` door); a
+atom re-slotting (combining at the collision — the `with` door); a
 ground-keyed entry is decided knowledge (admitted → discharged; refused
 → ⊥, which is a legal plan value that execution reads as failure);
 `normalize` verifies ground-keyed entries rather than skipping them.
@@ -54,10 +54,10 @@ ground-keyed entry is decided knowledge (admitted → discharged; refused
 - **Atom** — the unit: `getFactorClass`, `name()`, `watched()` (the
   HELD collection; its equality is the kind's identity granularity),
   `payload()`, total `rename`. PartialOrder with structural default and
-  sharp family overrides; kinds that digest slot-mates declare
+  sharp family overrides; kinds that combine slot-mates declare
   Semilattice (Imposition: same-target domain meet; Nogood: same-surface
   conjunct union).
-- **Theory** — the plan-space value: meet = insert / fuse slot-mates /
+- **Theory** — the plan-space value: meet = insert / combine slot-mates /
   delete strictly dominated; leq = the covering order; slot, kind and
   watched-name indexes; `with` / `without` as the factor doors.
 - **Coherence precondition (new, now law)**: Theory's leq and meet are
@@ -129,7 +129,7 @@ decide from their own walked literals (`Trial.now`'s reads, pre-paid at
 the door); store-shaped conjuncts go through the probe, where the trial
 imposes, propagation runs, and sibling stores veto exactly as today.
 The lattice store's update routing splits the same way: alias re-slot,
-ground admit, and fusion are ingestion; propagator examination and the
+ground admit, and combining are ingestion; propagator examination and the
 cascade are the prune; collapse minting leaves as data.
 
 ## 5. What dies
@@ -159,7 +159,7 @@ cascade are the prune; collapse minting leaves as data.
    open and is not silently resolved here.
 4. **Verification strength is a dial deliberately left at full.** The
    probe runs real propagation. The zero-propagation downgrade (decide a
-   store-shaped literal by fuse/covering reads against the sibling
+   store-shaped literal by combine/covering reads against the sibling
    theory) is sound and delay-safe — verdicts are monotone under binding
    growth, and labelling grounds every literal into the binding-shaped
    lane eventually — but weaker pruning can cost exponential search, so
@@ -193,7 +193,7 @@ Recorded because the path is the argument (method.md).
 Entering: **Factor / Theory / Atom** (the arc's ratified type triple,
 owed their glossary lines), **covering** (Theory's leq — grade two of
 the structural ⊂ covering ⊂ semantic tower), **slot** (collision key:
-name + held watched collection), **fusion** (slot-mates combining via
+name + held watched collection), **combining** (slot-mates meeting via
 their declared Semilattice), **subsumption deletion** (dominated atoms
 drop; import — resolution provers' subsumption deletion, receipt owed
 at entry), **Probe** (this document's §3; the lattice-store bridge,

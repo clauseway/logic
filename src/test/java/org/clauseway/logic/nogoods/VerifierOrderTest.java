@@ -19,7 +19,7 @@ import org.junit.Test;
  * value family has finished reacting to the current trigger. Store fold
  * order follows store REGISTRATION order, so the two programs below differ
  * only in which family registers first — and the answer set may not. Before
- * verifier-last, the verifier-first order let an entailed literal fuse into
+ * verifier-last, the verifier-first order let an entailed literal combine into
  * a not-yet-spent domain entry, misread as owed, and the veto never fired —
  * the tabled-exclusion regression, deterministic in this shape.
  */

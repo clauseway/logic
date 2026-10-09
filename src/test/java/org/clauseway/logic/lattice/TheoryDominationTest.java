@@ -1,7 +1,7 @@
 package org.clauseway.logic.lattice;
 
 // ABOUTME: Subsumption deletion under meet: what domination drops, and that
-// ABOUTME: digesting arrivals costs leq calls linear in the resident theory.
+// ABOUTME: meeting arrivals costs leq calls linear in the resident theory.
 
 import static org.assertj.core.api.Assertions.assertThat;
 

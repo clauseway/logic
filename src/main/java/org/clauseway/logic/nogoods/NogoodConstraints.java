@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 /**
  * A theory of nogoods, held conjunctively — the package's own ∧. The value
  * plane is the pair's resident {@link Theory}: the statement door's meet is
- * union with same-surface fusion and subsumption deletion (a dominated nogood
+ * union with same-surface combining and subsumption deletion (a dominated nogood
  * drops — fewer trials, same knowledge), leq is the covering order. The
  * execution-plane normal form is wholesale re-verification:
  * {@link Verification#verify} wrapped into {@link Revision} — none → fail,

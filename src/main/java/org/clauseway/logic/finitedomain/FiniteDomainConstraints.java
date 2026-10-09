@@ -68,7 +68,7 @@ public class FiniteDomainConstraints extends LatticeFactor<Domain<Object>, Finit
 				.getOrElse(HashSet.empty());
 	}
 
-	/** Narrowing write on a theory: the domain fuses with any existing entry at {@code x}. */
+	/** Narrowing write on a theory: the domain combines with any existing entry at {@code x}. */
 	@SuppressWarnings("unchecked")
 	public static Theory<FiniteDomainConstraints> withDomain(
 			Theory<FiniteDomainConstraints> theory, Term<?> x, Domain<?> xd) {
