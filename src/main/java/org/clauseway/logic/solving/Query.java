@@ -17,12 +17,12 @@ import org.clauseway.functional.fibers.interpreter.ScopeProfiler;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.functional.fibers.schedulers.DepthFirstScheduler;
 import org.clauseway.logic.constraints.Constraints;
-import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.logic.debug.DebugStore;
 import org.clauseway.logic.debug.ProfilerStore;
 import org.clauseway.logic.debug.Trace;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Packaged;
+import org.clauseway.logic.goals.optimizer.Barrier;
 import org.clauseway.logic.goals.optimizer.Optimizer;
 import org.clauseway.logic.goals.optimizer.OptimizerStore;
 import org.clauseway.logic.goals.Knowledge;
@@ -206,15 +206,14 @@ public final class Query {
 	}
 
 	/**
-	 * The primitive: one emission per derivation, driven by the caller. Each
-	 * emission is settled ({@link Propagation#settle}): no pending search rides
-	 * a raw package.
+	 * The primitive: one emission per derivation, driven by the caller. The
+	 * solve runs under a {@link Barrier}: no pending search rides a raw package.
 	 */
 	public Cont<Knowledge, Nothing> run() {
 		Goal entry = optimizer == null
 				? goal
 				: new BreadthFirstScheduler<>(goal.accept(optimizer)).get();
-		return Propagation.settled(entry.apply(root()));
+		return Barrier.of(entry).apply(root());
 	}
 
 	/**

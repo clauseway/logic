@@ -297,26 +297,13 @@ public final class Propagation {
 	/**
 	 * Settles pending search: every {@link Pending} citizen runs what it owes,
 	 * one step at a time, each child re-entering until no citizen is pending.
-	 * Runs wherever a branch is judged — before a {@link
-	 * org.clauseway.logic.goals.optimizer.Barrier} runs, before an answer
-	 * leaves, before a tabled call keys itself.
+	 * A {@link org.clauseway.logic.goals.optimizer.Barrier} runs it on both of
+	 * its sides: before its goal runs and before each emission leaves.
 	 */
 	public static Cont<Knowledge, Nothing> settle(Knowledge p) {
 		return owing(p)
 				.map(citizen -> citizen.settle().apply(p).flatMap(Propagation::settle))
 				.orElseGet(() -> Cont.just(p));
-	}
-
-	/**
-	 * The emissions settled: each one's pending search runs before it is handed
-	 * on. Straight through when no citizen is pending — an idle package costs no
-	 * steps. (The entry side is a {@link
-	 * org.clauseway.logic.goals.optimizer.Barrier}: it settles before it runs.)
-	 */
-	public static Cont<Knowledge, Nothing> settled(Cont<Knowledge, Nothing> source) {
-		return k -> source.apply(p -> searchPending(p)
-				? settle(p).apply(k)
-				: k.apply(p));
 	}
 
 	/** True while some citizen still owes search. */

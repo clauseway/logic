@@ -2,7 +2,6 @@ package org.clauseway.logic.goals;
 
 import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.Nothing;
-import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.logic.goals.optimizer.Barrier;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
@@ -52,7 +51,7 @@ public class Conda implements Goal {
 								// continuation only after the seal - running k inside
 								// would bill downstream work to the clause's workforce
 								AtomicReference<Knowledge> won = new AtomicReference<>();
-								Fiber<Nothing> collected = Exhaustion.exhausted(Propagation.settled(g.apply(s))
+								Fiber<Nothing> collected = Exhaustion.exhausted(Barrier.of(g).apply(s)
 										.runRec(s1 -> {
 									if (committed.compareAndSet(false, true)) {
 										won.set(s1);

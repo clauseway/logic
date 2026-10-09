@@ -5,7 +5,6 @@ import static org.clauseway.functional.fibers.Fiber.done;
 
 import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.Nothing;
-import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.logic.goals.optimizer.Barrier;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
@@ -49,7 +48,7 @@ public class Condu implements Goal {
 			return clauses.stream()
 					.reduce(Fiber.done(nothing()),
 							(acc, g) -> acc.flatMap(_0 ->
-									Exhaustion.exhausted(Propagation.settled(g.apply(s)).run(s1 -> {
+									Exhaustion.exhausted(Barrier.of(g).apply(s).run(s1 -> {
 										results.add(s1);
 										return nothing();
 									})).flatMap(_1 -> {

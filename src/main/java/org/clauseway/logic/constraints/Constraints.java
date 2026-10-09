@@ -52,9 +52,9 @@ public class Constraints {
 	 * term, the front door's ask captures it as a condition.
 	 */
 	public static <T> Cont<Knowledge, Nothing> enforced(Knowledge s, Term<T> x) {
-		// the commit is a barrier: pending search expands before labelling, and
-		// what labelling parks settles before the owed-condition check
-		return Propagation.settled(Barrier.of(s1 -> enforce(s1, x).apply(s1)).apply(s))
+		// the commit is a barrier: pending search settles before labelling and
+		// what labelling parks settles after it, ahead of the owed-condition check
+		return Barrier.of(s1 -> enforce(s1, x).apply(s1)).apply(s)
 				.flatMap(Constraints::verifyNoPendingSuspensions);
 	}
 

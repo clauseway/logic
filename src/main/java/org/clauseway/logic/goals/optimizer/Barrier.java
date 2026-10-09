@@ -58,12 +58,19 @@ public class Barrier implements Goal, Bounded {
 		return order.applyAsLong(p);
 	}
 
-	/** A barrier runs under the fixpoint of the outside's determinate work: pending search settles first. */
+	/**
+	 * Nothing parked crosses a barrier in either direction: the branch's pending
+	 * search settles before the goal runs, and each emission's settles before it
+	 * leaves. Straight through on both sides when nothing is pending.
+	 */
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge s) {
-		return Propagation.searchPending(s)
+		Cont<Knowledge, Nothing> inside = Propagation.searchPending(s)
 				? Propagation.settle(s).flatMap(goal)
 				: goal.apply(s);
+		return k -> inside.apply(p -> Propagation.searchPending(p)
+				? Propagation.settle(p).apply(k)
+				: k.apply(p));
 	}
 
 	@Override

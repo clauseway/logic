@@ -255,7 +255,7 @@ public class Tabling {
 			Unifiable<?> argsTerm,
 			Table table,
 			Emitter<JoinMap<Reified<?>, Object>> emit) {
-		return Propagation.settled(goal.apply(bodyPkg)).apply(answerPkg -> {
+		return Barrier.of(goal).apply(bodyPkg).apply(answerPkg -> {
 			// the Table transport is the canary: a goal that returned a fresh
 			// package instead of deriving from its input shed every store — the
 			// damage downstream is SILENT (answers reified over fresh
