@@ -52,7 +52,7 @@ public class Constraints {
 	 */
 	public static <T> Cont<Knowledge, Nothing> enforced(Knowledge s, Term<T> x) {
 		// what labelling parks settles before the owed-condition check
-		return Propagation.settle(enforce(s, x).apply(s))
+		return Propagation.settleAfterEach(enforce(s, x).apply(s))
 				.flatMap(Constraints::verifyNoPendingSuspensions);
 	}
 

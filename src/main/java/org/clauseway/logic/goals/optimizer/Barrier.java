@@ -65,7 +65,7 @@ public class Barrier implements Goal, Bounded {
 	 */
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge s) {
-		return Propagation.settle(Propagation.settle(goal).apply(s));
+		return Propagation.settleAfterEach(Propagation.settleAndThen(goal).apply(s));
 	}
 
 	@Override

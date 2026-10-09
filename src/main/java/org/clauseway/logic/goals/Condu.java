@@ -36,7 +36,7 @@ public class Condu implements Goal {
 	/** The branch's pending search settles once, before any alternative is judged. */
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge entered) {
-		return Propagation.settle(this::judge).apply(entered);
+		return Propagation.settleAndThen(this::judge).apply(entered);
 	}
 
 	private Cont<Knowledge, Nothing> judge(Knowledge s) {

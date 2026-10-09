@@ -307,7 +307,7 @@ public final class Propagation {
 	 * Settles pending search: each forced suspension is taken off the package
 	 * and its body run, every child re-entering until none is parked. A {@link
 	 * org.clauseway.logic.goals.optimizer.Barrier} runs it on both of its sides
-	 * — {@link #settle(Goal)} before its goal, {@link #settle(Cont)} behind each
+	 * — {@link #settleAndThen(Goal)} before its goal, {@link #settleAfterEach(Cont)} behind each
 	 * emission.
 	 */
 	public static Cont<Knowledge, Nothing> settle(Knowledge p) {
@@ -319,14 +319,14 @@ public final class Propagation {
 	}
 
 	/** The goal behind settled entry: the branch's pending search runs first. Straight through when idle. */
-	public static Goal settle(Goal goal) {
+	public static Goal settleAndThen(Goal goal) {
 		return s -> searchPending(s)
 				? settle(s).flatMap(goal)
 				: goal.apply(s);
 	}
 
 	/** The emissions settled: each one's pending search runs before it is handed on. Straight through when idle. */
-	public static Cont<Knowledge, Nothing> settle(Cont<Knowledge, Nothing> emissions) {
+	public static Cont<Knowledge, Nothing> settleAfterEach(Cont<Knowledge, Nothing> emissions) {
 		return k -> emissions.apply(p -> searchPending(p)
 				? settle(p).apply(k)
 				: k.apply(p));
