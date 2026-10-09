@@ -25,7 +25,7 @@ public class OptimizerTest {
 	}
 
 	private static Goal cascade(Goal g) {
-		return g.accept(new CascadingOptimizer()).ground();
+		return g.accept(new CascadingOptimizer());
 	}
 
 	@Test
@@ -79,7 +79,7 @@ public class OptimizerTest {
 	public void rewrittenGoalSolvesToTheSameAnswers() {
 		Unifiable<Integer> x = lvar();
 		Goal g = unify(x, lval(3)).and(Goal.success().and(Goal.success()));
-		assertThat(Query.of(g.accept(new CascadingOptimizer()).ground()).on(TestSchedulers.factory()).solve(x)
+		assertThat(Query.of(g.accept(new CascadingOptimizer())).on(TestSchedulers.factory()).solve(x)
 				.map(Object::toString)
 				.collect(Collectors.toList()))
 				.isEqualTo(Query.of(g).on(TestSchedulers.factory()).solve(x)

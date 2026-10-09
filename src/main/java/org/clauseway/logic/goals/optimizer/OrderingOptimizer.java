@@ -4,7 +4,6 @@ package org.clauseway.logic.goals.optimizer;
 // ABOUTME: answers), pricing and rebuilding the tree in one bottom-up traversal.
 
 import org.clauseway.functional.algebra.Semirings;
-import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Deferred;
@@ -45,8 +44,8 @@ public class OrderingOptimizer implements Optimizer {
 	}
 
 	@Override
-	public Fiber<Goal> visit(Conjunction conjunction) {
-		return price(conjunction).map(Priced::getGoal);
+	public Goal visit(Conjunction conjunction) {
+		return price(conjunction).getGoal();
 	}
 
 	/** A barrier partitions its segment; ∞ alone only sorts last. */
@@ -57,31 +56,29 @@ public class OrderingOptimizer implements Optimizer {
 		boolean barrier;
 	}
 
-	private Fiber<Priced> price(Goal g) {
+	private Priced price(Goal g) {
 		if (g instanceof Conjunction) {
-			return Optimizer.visitAll(((Conjunction) g).getClauses(), this::price)
-					.map(ps -> new Priced(
-							Conjunction.of(sortSegments(ps).toArray(new Goal[0])),
-							productOf(ps),
-							anyBarrier(ps)));
+			List<Priced> ps = Optimizer.visitAll(((Conjunction) g).getClauses(), this::price);
+			return new Priced(
+					Conjunction.of(sortSegments(ps).toArray(new Goal[0])),
+					productOf(ps),
+					anyBarrier(ps));
 		}
 		if (g instanceof Conde) {
-			return Optimizer.visitAll(((Conde) g).getClauses(), this::price)
-					.map(ps -> {
-						List<Goal> alternatives = new ArrayList<>();
-						ps.forEach(p -> alternatives.add(p.getGoal()));
-						return new Priced(Conde.of(alternatives), sumOf(ps), anyBarrier(ps));
-					});
+			List<Priced> ps = Optimizer.visitAll(((Conde) g).getClauses(), this::price);
+			List<Goal> alternatives = new ArrayList<>();
+			ps.forEach(p -> alternatives.add(p.getGoal()));
+			return new Priced(Conde.of(alternatives), sumOf(ps), anyBarrier(ps));
 		}
 		if (g instanceof NamedGoal) {
 			NamedGoal named = (NamedGoal) g;
-			return Fiber.defer(() -> price(named.getGoal()))
-					.map(p -> new Priced(NamedGoal.of(named.getLabel(), p.getGoal(), named.getName()),
-							p.getOrder(), p.isBarrier()));
+			Priced p = price(named.getGoal());
+			return new Priced(NamedGoal.of(named.getLabel(), p.getGoal(), named.getName()),
+					p.getOrder(), p.isBarrier());
 		}
 		if (g instanceof Deferred) {
 			// transparent widening: no bound estimable, sortable to the back
-			return Fiber.done(new Priced(g, Long.MAX_VALUE, false));
+			return new Priced(g, Long.MAX_VALUE, false);
 		}
 		if (g instanceof Bounded) {
 			long declared = ((Bounded) g).answers(bound);
@@ -94,10 +91,10 @@ public class OrderingOptimizer implements Optimizer {
 			}
 			// an explicit barrier holds position while unpriced (∞); a finite
 			// price is its immovability transition — it sorts like any leaf
-			return Fiber.done(new Priced(g, declared,
-					g instanceof Barrier && declared == Long.MAX_VALUE));
+			return new Priced(g, declared,
+					g instanceof Barrier && declared == Long.MAX_VALUE);
 		}
-		return Fiber.done(new Priced(g, Long.MAX_VALUE, true));
+		return new Priced(g, Long.MAX_VALUE, true);
 	}
 
 	private static boolean anyBarrier(List<Priced> ps) {

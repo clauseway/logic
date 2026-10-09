@@ -83,7 +83,7 @@ public class OrderingOptimizerTest {
 		// a bound is a COUNT: the pricer's saturating arithmetic and segment
 		// sort both assume non-negatives, so a lying estimator refuses by name
 		Goal liar = new FixedOrder(-5);
-		assertThatThrownBy(() -> liar.and(new FixedOrder(3)).accept(new OrderingOptimizer()).ground())
+		assertThatThrownBy(() -> liar.and(new FixedOrder(3)).accept(new OrderingOptimizer()))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("-5");
 	}
@@ -92,7 +92,7 @@ public class OrderingOptimizerTest {
 	public void pricesWithThePackageNotJustTheSubstitution() {
 		Goal sighted = new StoreSighted();
 		Goal b3 = new FixedOrder(3);
-		Goal sorted = b3.and(sighted).accept(new OrderingOptimizer()).ground();
+		Goal sorted = b3.and(sighted).accept(new OrderingOptimizer());
 		assertThat(((Conjunction) sorted).getClauses())
 				.containsExactly(sighted, b3);
 	}
@@ -102,7 +102,7 @@ public class OrderingOptimizerTest {
 		Goal b5 = new FixedOrder(5), b1 = new FixedOrder(1), b3 = new FixedOrder(3), b2 = new FixedOrder(2);
 		Goal barrier = opaque();
 		Goal sorted = b5.and(b1).and(barrier).and(b3).and(b2)
-				.accept(new OrderingOptimizer()).ground();
+				.accept(new OrderingOptimizer());
 		assertThat(((Conjunction) sorted).getClauses())
 				.containsExactly(b1, b5, barrier, b2, b3);
 	}
@@ -111,7 +111,7 @@ public class OrderingOptimizerTest {
 	public void anUnboundedLeafSortsToTheBackOfItsSegment() {
 		// no bound estimable is transparent widening: sortable, last — not a partition
 		Goal b3 = new FixedOrder(3), unbounded = new FixedOrder(Long.MAX_VALUE), b1 = new FixedOrder(1);
-		Goal sorted = b3.and(unbounded).and(b1).accept(new OrderingOptimizer()).ground();
+		Goal sorted = b3.and(unbounded).and(b1).accept(new OrderingOptimizer());
 		assertThat(((Conjunction) sorted).getClauses())
 				.containsExactly(b1, b3, unbounded);
 	}
@@ -120,7 +120,7 @@ public class OrderingOptimizerTest {
 	public void aSaturatedConjunctionSortsToTheBackOfItsSegment() {
 		Goal huge = new FixedOrder(Long.MAX_VALUE / 2), b3 = new FixedOrder(3);
 		Goal b2 = new FixedOrder(2), b1 = new FixedOrder(1);
-		Goal sorted = b2.and(huge.and(b3)).and(b1).accept(new OrderingOptimizer()).ground();
+		Goal sorted = b2.and(huge.and(b3)).and(b1).accept(new OrderingOptimizer());
 		assertThat(((Conjunction) sorted).getClauses())
 				.containsExactly(b1, b2, Conjunction.of(b3, huge));
 	}
@@ -129,7 +129,7 @@ public class OrderingOptimizerTest {
 	public void aConjunctionHoldingABarrierHoldsPosition() {
 		Goal b3 = new FixedOrder(3), b1 = new FixedOrder(1), inner = new FixedOrder(1);
 		Goal barrier = opaque();
-		Goal sorted = b3.and(inner.and(barrier)).and(b1).accept(new OrderingOptimizer()).ground();
+		Goal sorted = b3.and(inner.and(barrier)).and(b1).accept(new OrderingOptimizer());
 		assertThat(((Conjunction) sorted).getClauses())
 				.containsExactly(b3, Conjunction.of(inner, barrier), b1);
 	}
@@ -138,7 +138,7 @@ public class OrderingOptimizerTest {
 	public void anExplicitBarrierHoldsPosition() {
 		Goal b3 = new FixedOrder(3), b1 = new FixedOrder(1);
 		Goal barrier = Barrier.of(new FixedOrder(1));
-		Goal sorted = b3.and(barrier).and(b1).accept(new OrderingOptimizer()).ground();
+		Goal sorted = b3.and(barrier).and(b1).accept(new OrderingOptimizer());
 		assertThat(((Conjunction) sorted).getClauses())
 				.containsExactly(b3, barrier, b1);
 	}
@@ -149,10 +149,10 @@ public class OrderingOptimizerTest {
 		Goal unpriced = Barrier.priced(p -> Long.MAX_VALUE, new FixedOrder(1));
 		Goal priced = Barrier.priced(p -> 2, new FixedOrder(1));
 
-		Goal held = b5.and(unpriced).and(b1).accept(new OrderingOptimizer()).ground();
+		Goal held = b5.and(unpriced).and(b1).accept(new OrderingOptimizer());
 		assertThat(((Conjunction) held).getClauses()).containsExactly(b5, unpriced, b1);
 
-		Goal sorted = b5.and(priced).and(b1).accept(new OrderingOptimizer()).ground();
+		Goal sorted = b5.and(priced).and(b1).accept(new OrderingOptimizer());
 		assertThat(((Conjunction) sorted).getClauses()).containsExactly(b1, priced, b5);
 	}
 
@@ -169,12 +169,12 @@ public class OrderingOptimizerTest {
 		// the rewrite runs on its own scheduler, as Query's root rewrite does: pricing
 		// a tabled call grounds a reify, which may not nest inside another ground
 		// in progress: the entry is absent from the pricing package's table
-		Goal held = new BreadthFirstScheduler<>(conjunction.accept(new OrderingOptimizer().with(p))).get();
+		Goal held = conjunction.accept(new OrderingOptimizer().with(p));
 		assertThat(((Conjunction) held).getClauses()).containsExactly(b5, call, b1);
 
 		// completed: the full drain seals the entry, whose count (2) now prices the call
 		assertThat(Query.of(call).from(p).on(TestSchedulers.factory()).solve(out).count()).isEqualTo(2);
-		Goal sorted = new BreadthFirstScheduler<>(conjunction.accept(new OrderingOptimizer().with(p))).get();
+		Goal sorted = conjunction.accept(new OrderingOptimizer().with(p));
 		assertThat(((Conjunction) sorted).getClauses()).containsExactly(b1, call, b5);
 	}
 
@@ -183,7 +183,7 @@ public class OrderingOptimizerTest {
 		// a deferred relation body is transparent widening: unknown order, movable
 		Goal b3 = new FixedOrder(3), b1 = new FixedOrder(1);
 		Goal deferred = Goal.defer(Goal::success);
-		Goal sorted = b3.and(deferred).and(b1).accept(new OrderingOptimizer()).ground();
+		Goal sorted = b3.and(deferred).and(b1).accept(new OrderingOptimizer());
 		assertThat(((Conjunction) sorted).getClauses()).containsExactly(b1, b3, deferred);
 	}
 
@@ -196,19 +196,16 @@ public class OrderingOptimizerTest {
 		Goal appendo = Logic.appendo(x, y, LList.ofAll(1, 2, 3));
 		Goal binding = unify(x, LList.of(a));
 
-		Goal sorted = appendo.and(binding).accept(new OrderingOptimizer()).ground();
+		Goal sorted = appendo.and(binding).accept(new OrderingOptimizer());
 		assertThat(((Conjunction) sorted).getClauses()).containsExactly(binding, appendo);
 	}
 
 	/**
 	 * R1's step counts under the fair driver, pinned exactly — a changed count is
-	 * a decision, not a cost model. Steps count what the scheduler steps: the
-	 * search (one unfolding once the unification runs first, against a split
-	 * enumeration as written) AND the rewrite walk, whose visitor is a fiber
-	 * stepped like search work; a direct-recursive walk would do the same work
-	 * off the count. Wall time is the cost measure: on this shape the reorder
-	 * turns a search linear in the list into one unfolding, and the rewrite
-	 * costs a few microseconds per unfolding.
+	 * a decision. The optimizer walk is a plain recursion, no scheduler's work,
+	 * so the counts are the search alone: as written, a split enumeration; by
+	 * hand or by the pass, one unfolding once the unification runs first. The
+	 * pass lands one step under the hand swap (it also normalizes the tree).
 	 */
 	@Test
 	public void theOrderingPassReordersAppendo() {
@@ -221,7 +218,7 @@ public class OrderingOptimizerTest {
 		assertThat(Query.of(asWritten).optimized(ordering).solve(y).count()).isEqualTo(1);
 		assertThat(steps(Query.of(asWritten), y)).isEqualTo(199);
 		assertThat(steps(Query.of(swapped), y)).isEqualTo(113);
-		assertThat(steps(Query.of(asWritten).optimized(ordering), y)).isEqualTo(252);
+		assertThat(steps(Query.of(asWritten).optimized(ordering), y)).isEqualTo(112);
 	}
 
 	private static <T> long steps(Query query, Unifiable<T> out) {
@@ -243,7 +240,7 @@ public class OrderingOptimizerTest {
 		// the ordering pass alone leaves nested disjunctions un-flattened
 		Goal a = new FixedOrder(1), b = new FixedOrder(2), c = new FixedOrder(3);
 		Goal nested = b.or(c);
-		Goal rewritten = a.or(nested).accept(new OrderingOptimizer()).ground();
+		Goal rewritten = a.or(nested).accept(new OrderingOptimizer());
 		assertThat(((Conde) rewritten).getClauses())
 				.containsExactly(a, nested);
 	}
@@ -253,7 +250,7 @@ public class OrderingOptimizerTest {
 		Goal b2 = new FixedOrder(2), b3 = new FixedOrder(3), b4 = new FixedOrder(4);
 		// conde(2, 3) has derived order 5 — the order-4 leaf sorts ahead of it
 		Goal conde = b2.or(b3);
-		Goal sorted = conde.and(b4).accept(new OrderingOptimizer()).ground();
+		Goal sorted = conde.and(b4).accept(new OrderingOptimizer());
 		assertThat(((Conjunction) sorted).getClauses())
 				.containsExactly(b4, conde);
 	}
@@ -264,7 +261,7 @@ public class OrderingOptimizerTest {
 		// it is a barrier, not a cheap one-answer goal
 		Goal agg = Aggregate.count(t -> Goal.success(), lvar());
 		Goal b2 = new FixedOrder(2);
-		Goal sorted = b2.and(agg).accept(new OrderingOptimizer()).ground();
+		Goal sorted = b2.and(agg).accept(new OrderingOptimizer());
 		assertThat(((Conjunction) sorted).getClauses())
 				.containsExactly(b2, agg);
 	}
@@ -301,7 +298,7 @@ public class OrderingOptimizerTest {
 
 		Goal b5 = new FixedOrder(5), b1 = new FixedOrder(1), b3 = new FixedOrder(3), b2 = new FixedOrder(2);
 		Goal sorted = b5.and(b1).and(tabled).and(b3).and(b2)
-				.accept(new OrderingOptimizer()).ground();
+				.accept(new OrderingOptimizer());
 		assertThat(((Conjunction) sorted).getClauses())
 				.containsExactly(b1, b5, tabled, b2, b3);
 	}

@@ -210,9 +210,7 @@ public final class Query {
 	 * solve runs under a {@link Barrier}: no pending search rides a raw package.
 	 */
 	public Cont<Knowledge, Nothing> run() {
-		Goal entry = optimizer == null
-				? goal
-				: new BreadthFirstScheduler<>(goal.accept(optimizer)).get();
+		Goal entry = optimizer == null ? goal : goal.accept(optimizer);
 		return Barrier.of(entry).apply(root());
 	}
 

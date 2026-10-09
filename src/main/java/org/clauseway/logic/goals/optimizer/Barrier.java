@@ -89,7 +89,7 @@ public class Barrier implements Goal, Bounded {
 	}
 
 	@Override
-	public Fiber<Goal> accept(Optimizer optimizer) {
+	public Goal accept(Optimizer optimizer) {
 		return optimizer.visit(this);
 	}
 

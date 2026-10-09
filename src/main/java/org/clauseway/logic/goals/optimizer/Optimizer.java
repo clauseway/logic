@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.clauseway.functional.Exceptions;
-import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.functional.Nothing;
 import java.util.Optional;
@@ -44,47 +44,40 @@ import org.clauseway.logic.goals.Knowledge;
 public interface Optimizer {
 
 	/** The fallback and extension hook: anything unrecognised is a barrier. */
-	default Fiber<Goal> visit(Goal goal) {
-		return Fiber.done(goal);
+	default Goal visit(Goal goal) {
+		return goal;
 	}
 
-	default Fiber<Goal> visit(Conjunction conjunction) {
-		return visitAll(conjunction.getClauses(), g -> g.accept(this))
-				.map(gs -> Conjunction.of(gs.toArray(new Goal[0])));
+	default Goal visit(Conjunction conjunction) {
+		return Conjunction.of(visitAll(conjunction.getClauses(), g -> g.accept(this)).toArray(new Goal[0]));
 	}
 
-	default Fiber<Goal> visit(Conde conde) {
-		return visitAll(conde.getClauses(), g -> g.accept(this))
-				.map(Conde::of);
+	default Goal visit(Conde conde) {
+		return Conde.of(visitAll(conde.getClauses(), g -> g.accept(this)));
 	}
 
 	/** Transparent: tracing must not disable optimization. */
-	default Fiber<Goal> visit(NamedGoal named) {
-		return named.getGoal().accept(this)
-				.map(g -> NamedGoal.of(named.getLabel(), g, named.getName()));
+	default Goal visit(NamedGoal named) {
+		return NamedGoal.of(named.getLabel(), named.getGoal().accept(this), named.getName());
 	}
 
-	default Fiber<Goal> visit(Barrier barrier) {
-		return Fiber.done(barrier);
+	default Goal visit(Barrier barrier) {
+		return barrier;
 	}
 
 	/** A deferred body is unknown but not opaque: left in place, never a barrier. */
-	default Fiber<Goal> visit(Deferred deferred) {
-		return Fiber.done(deferred);
+	default Goal visit(Deferred deferred) {
+		return deferred;
 	}
 
-	/** Visits every clause in order, collecting the per-clause results. */
-	static <T> Fiber<List<T>> visitAll(List<Goal> clauses, Function<Goal, Fiber<T>> visit) {
-		return clauses.stream()
-				// defer keeps the descent on the fiber trampoline, not the Java stack
-				.map(g -> Fiber.defer(() -> visit.apply(g)))
-				.reduce(Fiber.done(new ArrayList<>()),
-						(acc, r) -> Fiber.zip(acc, r)
-								.map(t -> {
-									t._1.add(t._2);
-									return t._1;
-								}),
-						Exceptions.throwingBiOp(UnsupportedOperationException::new));
+	/**
+	 * Visits every clause in order, collecting the per-clause results. A plain
+	 * recursion: a goal tree's depth is its nesting, not its size — and/or
+	 * chains are flat and the walk stops at every {@link Deferred} — so the
+	 * Java stack is the right stack, and the walk is no scheduler's work.
+	 */
+	static <T> List<T> visitAll(List<Goal> clauses, Function<Goal, T> visit) {
+		return clauses.stream().map(visit).collect(Collectors.toList());
 	}
 
 	/**
@@ -118,40 +111,41 @@ public interface Optimizer {
 	/** Sequential composition — passes compose as a pipeline, never by merging. */
 	static Optimizer pipeline(Optimizer... optimizers) {
 		return new Optimizer() {
-			private Fiber<Goal> all(Goal g) {
-				return Arrays.stream(optimizers)
-						.reduce(Fiber.done(g),
-								(acc, o) -> acc.flatMap(g1 -> g1.accept(o)),
-								Exceptions.throwingBiOp(UnsupportedOperationException::new));
+			private Goal all(Goal g) {
+				Goal rewritten = g;
+				for (Optimizer o : optimizers) {
+					rewritten = rewritten.accept(o);
+				}
+				return rewritten;
 			}
 
 			@Override
-			public Fiber<Goal> visit(Goal goal) {
+			public Goal visit(Goal goal) {
 				return all(goal);
 			}
 
 			@Override
-			public Fiber<Goal> visit(Conjunction conjunction) {
+			public Goal visit(Conjunction conjunction) {
 				return all(conjunction);
 			}
 
 			@Override
-			public Fiber<Goal> visit(Conde conde) {
+			public Goal visit(Conde conde) {
 				return all(conde);
 			}
 
 			@Override
-			public Fiber<Goal> visit(NamedGoal named) {
+			public Goal visit(NamedGoal named) {
 				return all(named);
 			}
 
 			@Override
-			public Fiber<Goal> visit(Barrier barrier) {
+			public Goal visit(Barrier barrier) {
 				return all(barrier);
 			}
 
 			@Override
-			public Fiber<Goal> visit(Deferred deferred) {
+			public Goal visit(Deferred deferred) {
 				return all(deferred);
 			}
 

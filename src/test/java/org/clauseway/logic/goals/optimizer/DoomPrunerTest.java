@@ -101,7 +101,7 @@ public class DoomPrunerTest {
 
 	@Test
 	public void aBareDoomedPostingRewritesToFailure() {
-		Goal pruned = Longs.leq(lval(5L), lval(2L)).accept(new DoomPruner()).ground();
+		Goal pruned = Longs.leq(lval(5L), lval(2L)).accept(new DoomPruner());
 		assertThat(((Bounded) pruned).answers(Substitutions.empty())).isZero();
 	}
 }

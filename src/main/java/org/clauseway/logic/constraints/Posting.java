@@ -318,7 +318,7 @@ public interface Posting extends Goal, Bounded, Postable {
 		}
 
 		@Override
-		public Fiber<Goal> accept(Optimizer optimizer) {
+		public Goal accept(Optimizer optimizer) {
 			return named.accept(optimizer);
 		}
 

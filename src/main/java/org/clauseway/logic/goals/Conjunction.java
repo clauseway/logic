@@ -4,7 +4,6 @@ import static org.clauseway.functional.fibers.Cont.suspend;
 
 import org.clauseway.functional.Exceptions;
 import org.clauseway.functional.Nothing;
-import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.goals.optimizer.Optimizer;
 import java.util.ArrayList;
@@ -44,7 +43,7 @@ public class Conjunction implements Goal {
 	}
 
 	@Override
-	public Fiber<Goal> accept(Optimizer optimizer) {
+	public Goal accept(Optimizer optimizer) {
 		return optimizer.visit(this);
 	}
 

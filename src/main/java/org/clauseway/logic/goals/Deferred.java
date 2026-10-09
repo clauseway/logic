@@ -5,7 +5,6 @@ package org.clauseway.logic.goals;
 
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
-import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.goals.optimizer.Optimizer;
 import org.clauseway.logic.goals.optimizer.OptimizerStore;
 import java.util.function.Supplier;
@@ -28,14 +27,12 @@ public class Deferred implements Goal {
 	@Override
 	public Cont<Knowledge, Nothing> apply(Knowledge s) {
 		return OptimizerStore.from(s)
-				.map(store -> Cont.<Knowledge, Nothing> defer(() ->
-						store.rewrite(body.get(), s)
-								.map(unfolded -> unfolded.apply(s))))
+				.map(store -> store.rewrite(body.get(), s).apply(s))
 				.getOrElse(() -> body.get().apply(s));
 	}
 
 	@Override
-	public Fiber<Goal> accept(Optimizer optimizer) {
+	public Goal accept(Optimizer optimizer) {
 		return optimizer.visit(this);
 	}
 

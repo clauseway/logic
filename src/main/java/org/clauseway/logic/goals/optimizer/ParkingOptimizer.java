@@ -5,7 +5,6 @@ package org.clauseway.logic.goals.optimizer;
 
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
-import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
@@ -31,9 +30,8 @@ import java.util.Optional;
 public class ParkingOptimizer implements Optimizer {
 
 	@Override
-	public Fiber<Goal> visit(Conde conde) {
-		return Optimizer.visitAll(conde.getClauses(), g -> g.accept(this))
-				.map(alternatives -> new Parking(Conde.of(alternatives)));
+	public Goal visit(Conde conde) {
+		return new Parking(Conde.of(Optimizer.visitAll(conde.getClauses(), g -> g.accept(this))));
 	}
 
 	@Override

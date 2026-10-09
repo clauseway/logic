@@ -197,7 +197,7 @@ public interface Goal extends Function<Knowledge, Cont<Knowledge, Nothing>> {
 	 * their own overload; everything else — including plain lambda goals — lands
 	 * in the generic {@code visit(Goal)} and is a barrier by construction.
 	 */
-	default Fiber<Goal> accept(Optimizer optimizer) {
+	default Goal accept(Optimizer optimizer) {
 		return optimizer.visit(this);
 	}
 

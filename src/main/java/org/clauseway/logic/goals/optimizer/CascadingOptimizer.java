@@ -3,11 +3,9 @@ package org.clauseway.logic.goals.optimizer;
 // ABOUTME: The normalization pass: nested conjunctions splice into their parent
 // ABOUTME: and nested condes become sibling alternatives, in one bottom-up traversal.
 
-import static org.clauseway.functional.fibers.Fiber.done;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
@@ -22,29 +20,28 @@ import org.clauseway.logic.goals.Goal;
 public class CascadingOptimizer implements Optimizer {
 
 	@Override
-	public Fiber<Goal> visit(Conjunction conjunction) {
-		return conjunction.getClauses().stream()
-				.map(g -> Fiber.defer(() -> g.accept(this)))
-				.map(f -> f.map(g -> g instanceof Conjunction ?
+	public Goal visit(Conjunction conjunction) {
+		if (conjunction.getClauses().isEmpty()) {
+			return Goal.success();
+		}
+		return Conjunction.of(conjunction.getClauses().stream()
+				.map(g -> g.accept(this))
+				.flatMap(g -> g instanceof Conjunction ?
 						((Conjunction) g).getClauses().stream() :
-						Stream.of(g)))
-				.reduce((l, r) -> Fiber.zip(l, r)
-						.map(t -> t.apply(Stream::concat)))
-				.map(f -> f.map(s -> s.toArray(Goal[]::new))
-						.map(gs -> (Goal) Conjunction.of(gs)))
-				.orElseGet(() -> done(Goal.success()));
+						Stream.of(g))
+				.toArray(Goal[]::new));
 	}
 
 	@Override
-	public Fiber<Goal> visit(Conde conde) {
-		return conde.getClauses().stream()
-				.map(g -> Fiber.defer(() -> g.accept(this)))
-				.map(f -> f.map(g -> g instanceof Conde ?
+	public Goal visit(Conde conde) {
+		if (conde.getClauses().isEmpty()) {
+			return Goal.failure();
+		}
+		return Conde.of(conde.getClauses().stream()
+				.map(g -> g.accept(this))
+				.flatMap(g -> g instanceof Conde ?
 						((Conde) g).getClauses().stream() :
-						Stream.of(g)))
-				.reduce((l, r) -> Fiber.zip(l, r)
-						.map(t -> t.apply(Stream::concat)))
-				.map(f -> f.map(s -> (Goal) Conde.of(s.collect(Collectors.toList()))))
-				.orElseGet(() -> done(Goal.failure()));
+						Stream.of(g))
+				.collect(Collectors.toList()));
 	}
 }

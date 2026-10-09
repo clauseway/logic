@@ -45,7 +45,7 @@ class NamedGoal implements Goal {
 	}
 
 	@Override
-	public Fiber<Goal> accept(Optimizer optimizer) {
+	public Goal accept(Optimizer optimizer) {
 		return optimizer.visit(this);
 	}
 

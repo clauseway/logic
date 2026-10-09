@@ -5,7 +5,6 @@ package org.clauseway.logic.goals.optimizer;
 
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
-import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.Packaged;
@@ -29,7 +28,7 @@ public class OptimizerStore implements Packaged {
 		return pkg.getStores().get(OptimizerStore.class).map(OptimizerStore.class::cast);
 	}
 
-	public Fiber<Goal> rewrite(Goal body, Knowledge p) {
+	public Goal rewrite(Goal body, Knowledge p) {
 		return body.accept(pipeline.with(p));
 	}
 

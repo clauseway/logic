@@ -3,7 +3,6 @@ package org.clauseway.logic.goals.optimizer;
 // ABOUTME: Prunes doomed branches: a posting refuted under the pass state rewrites
 // ABOUTME: to failure, a dead conjunct collapses its conjunction, dead alternatives drop.
 
-import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.constraints.Posting;
 import org.clauseway.logic.goals.Conde;
 import org.clauseway.logic.goals.Conjunction;
@@ -43,23 +42,23 @@ public class DoomPruner implements Optimizer {
 	}
 
 	@Override
-	public Fiber<Goal> visit(Goal goal) {
-		return prune(goal).map(Pruned::getGoal);
+	public Goal visit(Goal goal) {
+		return prune(goal).getGoal();
 	}
 
 	@Override
-	public Fiber<Goal> visit(Conjunction conjunction) {
-		return prune(conjunction).map(Pruned::getGoal);
+	public Goal visit(Conjunction conjunction) {
+		return prune(conjunction).getGoal();
 	}
 
 	@Override
-	public Fiber<Goal> visit(Conde conde) {
-		return prune(conde).map(Pruned::getGoal);
+	public Goal visit(Conde conde) {
+		return prune(conde).getGoal();
 	}
 
 	@Override
-	public Fiber<Goal> visit(NamedGoal named) {
-		return prune(named).map(Pruned::getGoal);
+	public Goal visit(NamedGoal named) {
+		return prune(named).getGoal();
 	}
 
 	@Value
@@ -68,37 +67,32 @@ public class DoomPruner implements Optimizer {
 		boolean dead;
 	}
 
-	private Fiber<Pruned> prune(Goal g) {
+	private Pruned prune(Goal g) {
 		if (g instanceof Conjunction) {
-			return Optimizer.visitAll(((Conjunction) g).getClauses(), this::prune)
-					.map(ps -> ps.stream().anyMatch(Pruned::isDead) ?
-							new Pruned(Goal.failure(), true) :
-							new Pruned(Conjunction.of(ps.stream()
-									.map(Pruned::getGoal)
-									.toArray(Goal[]::new)), false));
+			List<Pruned> ps = Optimizer.visitAll(((Conjunction) g).getClauses(), this::prune);
+			return ps.stream().anyMatch(Pruned::isDead) ?
+					new Pruned(Goal.failure(), true) :
+					new Pruned(Conjunction.of(ps.stream()
+							.map(Pruned::getGoal)
+							.toArray(Goal[]::new)), false);
 		}
 		if (g instanceof Conde) {
-			return Optimizer.visitAll(((Conde) g).getClauses(), this::prune)
-					.map(ps -> {
-						List<Goal> live = ps.stream()
-								.filter(p -> !p.isDead())
-								.map(Pruned::getGoal)
-								.collect(Collectors.toList());
-						return live.isEmpty() ?
-								new Pruned(Goal.failure(), true) :
-								new Pruned(Conde.of(live), false);
-					});
+			List<Goal> live = Optimizer.visitAll(((Conde) g).getClauses(), this::prune).stream()
+					.filter(p -> !p.isDead())
+					.map(Pruned::getGoal)
+					.collect(Collectors.toList());
+			return live.isEmpty() ?
+					new Pruned(Goal.failure(), true) :
+					new Pruned(Conde.of(live), false);
 		}
 		if (g instanceof NamedGoal) {
 			NamedGoal named = (NamedGoal) g;
-			return Fiber.defer(() -> prune(named.getGoal()))
-					.map(p -> new Pruned(
-							NamedGoal.of(named.getLabel(), p.getGoal(), named.getName()),
-							p.isDead()));
+			Pruned p = prune(named.getGoal());
+			return new Pruned(NamedGoal.of(named.getLabel(), p.getGoal(), named.getName()), p.isDead());
 		}
 		if (g instanceof Posting && ((Posting) g).doomed(bound)) {
-			return Fiber.done(new Pruned(Goal.failure(), true));
+			return new Pruned(Goal.failure(), true);
 		}
-		return Fiber.done(new Pruned(g, false));
+		return new Pruned(g, false);
 	}
 }

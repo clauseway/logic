@@ -1,7 +1,7 @@
 package org.clauseway.logic.disjunction;
 
 // ABOUTME: Parking's pins: do no harm on the ratified lanes, make conjunct order
-// ABOUTME: irrelevant, and stay a constant factor from the best hand order.
+// ABOUTME: irrelevant, and land at the best hand order's search.
 
 import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -38,10 +38,11 @@ import org.junit.Test;
  * count is a decision, not drift.
  *
  * <p>Recorded, not pinned (Oct 2026, the shape pinned below): the ordering
- * pass takes 851,962 steps as written and 56,497 swapped — it reorders
- * nothing here (both conjuncts price ∞) and pays its two-pass walk at every
- * unfolding of the order it inherits. The parked lane's constant factor over
- * the best hand order is the same walk, paid once.
+ * pass reorders nothing here — both conjuncts price ∞ — and inherits the
+ * written order's search: 67,384 steps as written, 4,729 swapped, against
+ * eager's 71,608 and 4,995 (the small saving is its normalization). Before
+ * the optimizer walk became a plain recursion it was stepped like search
+ * work: 851,962 and 56,497 then, with the parked lane at 14,847.
  */
 public class ParkingBenchmarkTest {
 
@@ -138,13 +139,13 @@ public class ParkingBenchmarkTest {
 		Unifiable<Long> y = lvar();
 		long swapped = steps(parked(determinacyAfterUnfolding(y, 2, 16, 10, 4, true)), y);
 
-		assertThat(asWritten).isEqualTo(14_847);
-		assertThat(swapped).isEqualTo(14_849);
+		assertThat(asWritten).isEqualTo(4_871);
+		assertThat(swapped).isEqualTo(4_873);
 		assertThat(swapped - asWritten).as("the swapped conjunction's one extra defer").isEqualTo(2);
 	}
 
 	@Test
-	public void parkedBeatsTheWrittenOrderAndStaysAConstantFactorFromTheBest() {
+	public void parkedBeatsTheWrittenOrderAndLandsAtTheBest() {
 		Unifiable<Long> x = lvar();
 		long eagerAsWritten = steps(Query.of(determinacyAfterUnfolding(x, 2, 16, 10, 4, false)), x);
 		Unifiable<Long> y = lvar();
@@ -155,8 +156,8 @@ public class ParkingBenchmarkTest {
 		assertThat(eagerAsWritten).isEqualTo(71_608);
 		assertThat(eagerBest).isEqualTo(4_995);
 		assertThat(parked).isLessThan(eagerAsWritten);
-		// the constant is the optimizer walk at each unfolding, paid once
-		assertThat(parked).isLessThan(eagerBest * 7 / 2);
+		// the walk is a plain recursion, no scheduler's work: parked lands at the best order
+		assertThat(parked).isLessThanOrEqualTo(eagerBest);
 	}
 
 	private static List<Reified<LList<Long>>> answers(Query query, Unifiable<LList<Long>> out) {
