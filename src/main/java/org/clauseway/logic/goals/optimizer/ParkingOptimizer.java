@@ -26,6 +26,13 @@ import java.util.Optional;
  * {@code Conde} parks in its turn when its alternative runs. The pass never
  * enters a {@link Barrier}, committed choice or an unrecognised goal: a
  * disjunction written inside one forks eagerly, as written.
+ *
+ * <p>The one termination hazard: a conde-free recursion that stops only
+ * through a binding a fork would have made — {@code (x ≡ a ∨ x ≡ b) ∧
+ * loop(x)} with {@code loop(x) :- x ≡ f(y) ∧ loop(y)} — runs open forever,
+ * since no barrier is reached while determinate work remains. A
+ * {@link Barrier} on the loop forks first; a loop whose base case is an
+ * alternative parks itself.
  */
 public class ParkingOptimizer implements Optimizer {
 
