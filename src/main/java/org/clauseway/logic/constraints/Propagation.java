@@ -207,6 +207,15 @@ public final class Propagation {
 	}
 
 	/**
+	 * The parking entry: {@code body} is pending search, run at the next
+	 * boundary — a {@link Suspension#forced} suspension, which no binding wakes.
+	 */
+	public static Goal park(Goal body) {
+		return s -> Cont.just(s.withStore(Suspensions.EMPTY)
+				.updateStore(Suspensions.class, sus -> sus.park(Suspension.forced(body))));
+	}
+
+	/**
 	 * Folds a trigger over the constraint stores as one fiber: each store answers
 	 * a {@link Revision} — at most its own factor swapped — possibly across many
 	 * deferred steps (the store's scheduling choice); the driver routes the
@@ -295,15 +304,17 @@ public final class Propagation {
 	}
 
 	/**
-	 * Settles pending search: every {@link Pending} citizen runs what it owes,
-	 * one step at a time, each child re-entering until no citizen is pending.
-	 * A {@link org.clauseway.logic.goals.optimizer.Barrier} runs it on both of
-	 * its sides — {@link #settle(Goal)} before its goal, {@link #settle(Cont)}
-	 * behind each emission.
+	 * Settles pending search: each forced suspension is taken off the package
+	 * and its body run, every child re-entering until none is parked. A {@link
+	 * org.clauseway.logic.goals.optimizer.Barrier} runs it on both of its sides
+	 * — {@link #settle(Goal)} before its goal, {@link #settle(Cont)} behind each
+	 * emission.
 	 */
 	public static Cont<Knowledge, Nothing> settle(Knowledge p) {
-		return owing(p)
-				.map(citizen -> citizen.settle().apply(p).flatMap(Propagation::settle))
+		return parked(p)
+				.map(forced -> forced.body()
+						.apply(p.updateStore(Suspensions.class, sus -> sus.without(forced)))
+						.flatMap(Propagation::settle))
 				.orElseGet(() -> Cont.just(p));
 	}
 
@@ -321,23 +332,23 @@ public final class Propagation {
 				: k.apply(p));
 	}
 
-	/** True while some citizen still owes search. */
+	/** True while a forced suspension is parked: search still owed at the boundary. */
 	public static boolean searchPending(Knowledge p) {
-		return owing(p).isPresent();
+		return parked(p).isPresent();
 	}
 
-	private static Optional<Pending> owing(Knowledge p) {
-		return p.getStores().values().toJavaStream()
-				.filter(Pending.class::isInstance)
-				.map(Pending.class::cast)
-				.filter(Pending::pending)
-				.findFirst();
+	private static Optional<Suspension> parked(Knowledge p) {
+		return p.getStores().get(Suspensions.class)
+				.map(sus -> ((Suspensions) sus).parked.toJavaStream()
+						.filter(s -> s.flush() == Suspension.Flush.FORCE)
+						.findFirst())
+				.getOrElse(Optional.empty());
 	}
 
-	/** Answers may not leave while suspensions pend. */
+	/** Answers may not leave while an owed condition pends: a suspension whose flush is FAIL. */
 	public static boolean suspensionsPending(Knowledge p) {
 		return p.getStores().get(Suspensions.class)
-				.map(sus -> !((Suspensions) sus).parked.isEmpty())
+				.map(sus -> ((Suspensions) sus).parked.exists(s -> s.flush() == Suspension.Flush.FAIL))
 				.getOrElse(false);
 	}
 

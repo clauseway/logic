@@ -1,12 +1,13 @@
 package org.clauseway.logic.constraints.store;
 
-// ABOUTME: A parked search effect: run the body once the condition over the shared
-// ABOUTME: substitution holds. The condition must be monotone: once true, stays true.
+// ABOUTME: A parked search effect, with a wake condition over the shared substitution
+// ABOUTME: and a flush policy at the boundary: FAIL (an owed condition) or FORCE (run it).
 
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.logic.unification.terms.Term;
+import java.util.Collections;
 import java.util.function.Predicate;
 
 /**
@@ -31,21 +32,45 @@ import java.util.function.Predicate;
  * are both bound", "x == y is decided"); conditions about its ABSENCE do not
  * ("x is still unbound", "fewer than two are bound") — those are
  * negation-as-failure, whose home is committed choice, not the suspension lane.
+ *
+ * <p><b>The flush policy.</b> What a parked mechanism means at a boundary —
+ * an answer leaving, a {@link org.clauseway.logic.goals.optimizer.Barrier}:
+ * {@link Flush#FAIL}, an owed condition that may not ride an answer; or
+ * {@link Flush#FORCE}, pending search that runs there. A {@link #forced}
+ * suspension watches nothing and is never woken by the substrate — only the
+ * boundary runs it (a parked disjunction, the same policy labelling has).
  */
 public final class Suspension {
+
+	/** End-of-branch treatment of a parked mechanism. */
+	public enum Flush {
+		FAIL, FORCE
+	}
 
 	private final Iterable<? extends Term<?>> watched;
 	private final Predicate<Substitutions> ripe;
 	private final Goal body;
+	private final Flush flush;
 
-	private Suspension(Iterable<? extends Term<?>> watched, Predicate<Substitutions> ripe, Goal body) {
+	private Suspension(Iterable<? extends Term<?>> watched, Predicate<Substitutions> ripe, Goal body, Flush flush) {
 		this.watched = watched;
 		this.ripe = ripe;
 		this.body = body;
+		this.flush = flush;
 	}
 
+	/** Woken when a watched chain binds and {@code ripe} holds; an owed condition until then. */
 	public static Suspension of(Iterable<? extends Term<?>> watched, Predicate<Substitutions> ripe, Goal body) {
-		return new Suspension(watched, ripe, body);
+		return new Suspension(watched, ripe, body, Flush.FAIL);
+	}
+
+	/** Never woken by the substrate: pending search, run at the next boundary. */
+	public static Suspension forced(Goal body) {
+		return new Suspension(Collections.emptyList(), s -> false, body, Flush.FORCE);
+	}
+
+	public Flush flush() {
+		return flush;
 	}
 
 	public boolean isRipe(Knowledge state) {
@@ -67,6 +92,6 @@ public final class Suspension {
 
 	@Override
 	public String toString() {
-		return "suspend" + watched;
+		return flush == Flush.FORCE ? "parked(" + body + ")" : "suspend" + watched;
 	}
 }
