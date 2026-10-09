@@ -118,33 +118,43 @@ public final class Theory<F extends Factor<F>> implements Semilattice<Theory<F>>
 
 	/** Normal form: fuse slot-mates, then delete dominated — every door digests. */
 	private static <F extends Factor<F>> Theory<F> digested(Iterable<? extends Atom<F>> in) {
-		LinkedHashMap<Slot, Atom<F>> slots = LinkedHashMap.empty();
+		Theory<F> fused = empty();
 		for (Atom<F> atom : in) {
-			slots = inserted(slots, slotOf(atom), atom);
+			fused = fused.admitted(atom)._1;
 		}
-		return pruned(slots);
+		return fused.culled(fused.atoms);
 	}
 
 	/**
-	 * The capability meet: an atom kind that declares {@link Semilattice}
-	 * knows how to digest its own slot-mates — combining is family
-	 * knowledge, read here as a capability, never assumed. A kind that
-	 * cannot combine yet collides has broken the single-occupancy
-	 * obligation: hold the collection inside the atom.
+	 * The capability meet at one slot: an atom kind that declares
+	 * {@link Semilattice} knows how to digest its own slot-mates — combining
+	 * is family knowledge, read here as a capability, never assumed. A kind
+	 * that cannot combine yet collides has broken the single-occupancy
+	 * obligation: hold the collection inside the atom. Answers the theory
+	 * with the atom in residence and the atom that moved — the arrival, or
+	 * the fusion standing in the occupant's position — none when the
+	 * occupant already carried it.
 	 */
-	private static <F extends Factor<F>> LinkedHashMap<Slot, Atom<F>> inserted(
-			LinkedHashMap<Slot, Atom<F>> slots, Slot slot, Atom<F> atom) {
-		return slots.get(slot)
-				.map(occupant -> {
-					if (occupant.equals(atom)) {
-						return slots;
-					}
-					if (occupant instanceof Semilattice && atom instanceof Semilattice) {
-						return slots.put(slot, fuse(occupant, atom));
-					}
-					throw uncombinable(occupant, atom);
-				})
-				.getOrElse(() -> slots.put(slot, atom));
+	private Tuple2<Theory<F>, Option<Atom<F>>> admitted(Atom<F> atom) {
+		Slot slot = slotOf(atom);
+		Option<Atom<F>> occupant = slots.get(slot);
+		if (!occupant.isDefined()) {
+			return Tuple.of(new Theory<>(atoms.add(atom), slots.put(slot, atom),
+					kindAdded(kinds, atom), absorbing || absorbs(atom)), Option.some(atom));
+		}
+		Atom<F> prior = occupant.get();
+		if (prior.equals(atom)) {
+			return Tuple.of(this, Option.none());
+		}
+		if (prior instanceof Semilattice && atom instanceof Semilattice) {
+			Atom<F> fused = fuse(prior, atom);
+			if (fused.equals(prior)) {
+				return Tuple.of(this, Option.none());
+			}
+			return Tuple.of(new Theory<>(atoms.replace(prior, fused), slots.put(slot, fused),
+					kindReplaced(kinds, prior, fused), absorbing || absorbs(fused)), Option.some(fused));
+		}
+		throw uncombinable(prior, atom);
 	}
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
@@ -158,33 +168,31 @@ public final class Theory<F extends Factor<F>> implements Semilattice<Theory<F>>
 						+ prior + " vs " + atom);
 	}
 
-	/** The domination filter over the fused slots; rebuilt only on a kill. */
-	private static <F extends Factor<F>> Theory<F> pruned(LinkedHashMap<Slot, Atom<F>> slots) {
-		LinkedHashSet<Atom<F>> flat = LinkedHashSet.ofAll(slots.values());
-		LinkedHashSet<Atom<F>> kept = minimal(flat);
-		if (kept.size() == flat.size()) {
-			return new Theory<>(flat, slots, kindsOf(flat),
-					flat.exists(Theory::absorbs));
-		}
-		return new Theory<>(kept, slots.filterValues(kept::contains), kindsOf(kept),
-				kept.exists(Theory::absorbs));
-	}
-
-	private static <F extends Factor<F>> LinkedHashMap<Class<?>, LinkedHashSet<Atom<F>>> kindsOf(
-			LinkedHashSet<Atom<F>> atoms) {
-		return atoms.foldLeft(LinkedHashMap.empty(), (kinds, atom) ->
-				kinds.put(atom.getClass(), kinds.get(atom.getClass())
-						.getOrElse(LinkedHashSet.empty())
-						.add(atom)));
-	}
-
 	/**
-	 * Subsumption deletion: drops every atom STRICTLY dominated by another
+	 * Subsumption deletion among the suspects: a resident STRICTLY dominated
+	 * by a suspect drops, and so does a suspect dominated by anyone
 	 * (mutually-entailing distinct atoms both stay — dropping either would
-	 * lose knowledge the other's structure does not carry).
+	 * lose knowledge the other's structure does not carry). Residents never
+	 * meet residents: a digested theory is already subsumption-free, so only
+	 * what moved can dominate or be dominated; with every atom a suspect
+	 * this is the full sweep.
 	 */
-	private static <F extends Factor<F>> LinkedHashSet<Atom<F>> minimal(LinkedHashSet<Atom<F>> atoms) {
-		return atoms.filter(a -> !atoms.exists(b -> dominates(b, a)));
+	private Theory<F> culled(LinkedHashSet<Atom<F>> suspects) {
+		LinkedHashSet<Atom<F>> killed = atoms.filter(x -> suspects.contains(x) ?
+				atoms.exists(y -> dominates(y, x)) :
+				suspects.exists(s -> dominates(s, x)));
+		return killed.isEmpty() ? this : dropped(killed);
+	}
+
+	/** The removal bookkeeping: atoms, slot index, kind index, ⊥ flag. */
+	private Theory<F> dropped(LinkedHashSet<Atom<F>> killed) {
+		LinkedHashSet<Atom<F>> kept = atoms.removeAll(killed);
+		LinkedHashMap<Class<?>, LinkedHashSet<Atom<F>>> keptKinds = kinds;
+		for (Atom<F> atom : killed) {
+			keptKinds = kindRemoved(keptKinds, atom);
+		}
+		return new Theory<>(kept, slots.filterValues(kept::contains), keptKinds,
+				absorbing && kept.exists(Theory::absorbs));
 	}
 
 	/** Strict domination: {@code b} entails {@code a} and not the reverse. */
@@ -222,27 +230,7 @@ public final class Theory<F extends Factor<F>> implements Semilattice<Theory<F>>
 	 * a family with cross-slot entailment (nogood subsumption) must meet.
 	 */
 	public Theory<F> with(Atom<F> atom) {
-		Slot slot = slotOf(atom);
-		Option<Atom<F>> occupant = slots.get(slot);
-		if (!occupant.isDefined()) {
-			return new Theory<>(atoms.add(atom), slots.put(slot, atom),
-					kindAdded(kinds, atom),
-					absorbing || absorbs(atom));
-		}
-		Atom<F> prior = occupant.get();
-		if (prior.equals(atom)) {
-			return this;
-		}
-		if (prior instanceof Semilattice && atom instanceof Semilattice) {
-			Atom<F> fused = fuse(prior, atom);
-			if (fused.equals(prior)) {
-				return this;
-			}
-			return new Theory<>(atoms.remove(prior).add(fused), slots.put(slot, fused),
-					kindAdded(kindRemoved(kinds, prior), fused),
-					absorbing || absorbs(fused));
-		}
-		throw uncombinable(prior, atom);
+		return admitted(atom)._1;
 	}
 
 	private static <F extends Factor<F>> LinkedHashMap<Class<?>, LinkedHashSet<Atom<F>>> kindAdded(
@@ -262,6 +250,16 @@ public final class Theory<F extends Factor<F>> implements Semilattice<Theory<F>>
 				kinds.put(atom.getClass(), bucket);
 	}
 
+	private static <F extends Factor<F>> LinkedHashMap<Class<?>, LinkedHashSet<Atom<F>>> kindReplaced(
+			LinkedHashMap<Class<?>, LinkedHashSet<Atom<F>>> kinds, Atom<F> prior, Atom<F> fused) {
+		if (!prior.getClass().equals(fused.getClass())) {
+			return kindAdded(kindRemoved(kinds, prior), fused);
+		}
+		return kinds.put(prior.getClass(), kinds.get(prior.getClass())
+				.getOrElse(LinkedHashSet.empty())
+				.replace(prior, fused));
+	}
+
 	/**
 	 * Occupant removal — NOT an algebra operation (knowledge only grows
 	 * under ⊗): the execution plane's own-factor surgery, for a store
@@ -269,15 +267,9 @@ public final class Theory<F extends Factor<F>> implements Semilattice<Theory<F>>
 	 * leaves the theory untouched.
 	 */
 	public Theory<F> without(Atom<F> atom) {
-		Slot slot = slotOf(atom);
-		return slots.get(slot)
+		return slots.get(slotOf(atom))
 				.filter(atom::equals)
-				.map(occupant -> {
-					LinkedHashSet<Atom<F>> left = atoms.remove(occupant);
-					return new Theory<F>(left, slots.remove(slot),
-							kindRemoved(kinds, occupant),
-							absorbing && left.exists(Theory::absorbs));
-				})
+				.map(occupant -> dropped(LinkedHashSet.of(occupant)))
 				.getOrElse(this);
 	}
 
@@ -296,70 +288,20 @@ public final class Theory<F extends Factor<F>> implements Semilattice<Theory<F>>
 	 * equal theory: an incoming atom the domination filter kills; the door
 	 * then queues a no-op the family answers cheaply.)
 	 *
-	 * <p>The domination phase is incremental too: the receiver is already
-	 * subsumption-free, so only the atoms that moved can dominate or be
-	 * dominated — each is checked against the residents and its fellow
-	 * arrivals, never resident against resident. The indexes follow the
-	 * same delta; the slot index is rebuilt only on a kill.
+	 * <p>The domination phase is incremental too: only the atoms that moved
+	 * are suspects, so the cull is linear in the receiver per arrival.
 	 */
 	public Theory<F> meet(Theory<F> other) {
-		LinkedHashMap<Slot, Atom<F>> merged = slots;
-		LinkedHashSet<Atom<F>> fused = atoms;
-		LinkedHashMap<Class<?>, LinkedHashSet<Atom<F>>> fusedKinds = kinds;
-		LinkedHashSet<Atom<F>> arrived = LinkedHashSet.empty();
-		for (Tuple2<Slot, Atom<F>> entry : other.slots) {
-			Option<Atom<F>> occupant = merged.get(entry._1);
-			if (!occupant.isDefined()) {
-				merged = merged.put(entry._1, entry._2);
-				fused = fused.add(entry._2);
-				fusedKinds = kindAdded(fusedKinds, entry._2);
-				arrived = arrived.add(entry._2);
-				continue;
+		Theory<F> fused = this;
+		LinkedHashSet<Atom<F>> moved = LinkedHashSet.empty();
+		for (Atom<F> atom : other.atoms) {
+			Tuple2<Theory<F>, Option<Atom<F>>> step = fused.admitted(atom);
+			fused = step._1;
+			if (step._2.isDefined()) {
+				moved = moved.add(step._2.get());
 			}
-			Atom<F> prior = occupant.get();
-			if (prior.equals(entry._2)) {
-				continue;
-			}
-			if (prior instanceof Semilattice && entry._2 instanceof Semilattice) {
-				Atom<F> combined = fuse(prior, entry._2);
-				if (!combined.equals(prior)) {
-					merged = merged.put(entry._1, combined);
-					fused = fused.replace(prior, combined);
-					fusedKinds = kindReplaced(fusedKinds, prior, combined);
-					arrived = arrived.add(combined);
-				}
-				continue;
-			}
-			throw uncombinable(prior, entry._2);
 		}
-		if (arrived.isEmpty()) {
-			return this;
-		}
-		LinkedHashSet<Atom<F>> all = fused;
-		LinkedHashSet<Atom<F>> arrivals = arrived;
-		LinkedHashSet<Atom<F>> killed = all.filter(x -> arrivals.contains(x) ?
-				all.exists(y -> dominates(y, x)) :
-				arrivals.exists(a -> dominates(a, x)));
-		if (killed.isEmpty()) {
-			return new Theory<>(all, merged, fusedKinds, absorbing || arrivals.exists(Theory::absorbs));
-		}
-		LinkedHashSet<Atom<F>> kept = all.removeAll(killed);
-		LinkedHashMap<Class<?>, LinkedHashSet<Atom<F>>> keptKinds = fusedKinds;
-		for (Atom<F> atom : killed) {
-			keptKinds = kindRemoved(keptKinds, atom);
-		}
-		return new Theory<>(kept, merged.filterValues(kept::contains), keptKinds,
-				kept.exists(Theory::absorbs));
-	}
-
-	private static <F extends Factor<F>> LinkedHashMap<Class<?>, LinkedHashSet<Atom<F>>> kindReplaced(
-			LinkedHashMap<Class<?>, LinkedHashSet<Atom<F>>> kinds, Atom<F> prior, Atom<F> fused) {
-		if (!prior.getClass().equals(fused.getClass())) {
-			return kindAdded(kindRemoved(kinds, prior), fused);
-		}
-		return kinds.put(prior.getClass(), kinds.get(prior.getClass())
-				.getOrElse(LinkedHashSet.empty())
-				.replace(prior, fused));
+		return moved.isEmpty() ? this : fused.culled(moved);
 	}
 
 	@Override
