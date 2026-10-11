@@ -11,7 +11,7 @@ tests.
 1. **TDD.** Write a failing test first, watch it fail, then make it pass. For a bug, first
    write a test that reproduces it.
 2. **The test suite is your safety net.** `mvn test` must end in `BUILD SUCCESS`. Never
-   commit or merge with a red suite. Count today: ~870 tests. If the count drops, you
+   commit or merge with a red suite. Count today: ~920 tests. If the count drops, you
    deleted or emptied a test — don't.
 3. **Test output must be pristine.** No `System.out.println` in tests or in `src/main`.
    Assert results; don't print them. (One intentional exception is documented below.)
@@ -34,9 +34,11 @@ tests.
    **Always import at the top level — NEVER inline-qualify** (`io.vavr.Function2 f`
    is wrong; import it). The only excuse is a genuine simple-name clash in the same
    file (e.g. `java.util.stream.Stream` vs vavr's `Stream`).
-7. **`functional` is a separate repo and a Maven dependency.** It lives at
-   `../functional`. If you change it, `cd ../functional && mvn -q install` before `logic`
-   can see the change. Schedulers, fibers, `Cont`, `Nothing` all live there.
+7. **`functional` is a separate repo and a Maven dependency**, resolved from Central at
+   the released version in the POM. It lives at `../functional`; to build against a local
+   change there, point the dependency at functional's `-SNAPSHOT`, `mvn -q install` there,
+   and restore the released version before merging. Schedulers, fibers, `Cont`, `Nothing`
+   all live there.
 8. **Vocabulary is gated.** Docs may only use terms listed in `docs/glossary.md`. A new
    term or an imported theorem enters by the human's explicit adoption — proposed in
    conversation first, ratified, then given its one-line glossary entry (imports marked
@@ -161,11 +163,12 @@ arguments show their current (deep-walked) values. See `debug/Trace.java`, `debu
 ## Backlog (what's left, with risk)
 
 - **Public-API docs** — e.g. `FiniteDomain` has 13 public methods and no javadoc. Low risk.
-- **Dependency modernization** — assertj 3.4.1 and junit 4 are old; `logic` and `functional`
-  are `-SNAPSHOT` and never released. Low-medium risk; do it as its own change.
-- **`functional` release-prep** — de-SNAPSHOT, bump vavr (0.10.0), doc the public surface.
-  Open decision for the human: promote `fibers` to its own Maven module (it's cleanly
-  isolated — depends only on `category`) vs. leave it.
+- **Dependency modernization** — assertj 3.4.1 and junit 4 are old. Low-medium risk; do
+  it as its own change.
+- **Release** — DONE (October 2026): `functional` (as `functional-runtime`/`-types`/
+  `-algebra`/`-laws`/`-algebra-laws`), `logic` and `pldb` are 0.1.0 on Maven Central under
+  `org.clauseway`; masters are `0.1.1-SNAPSHOT`, cross-repo dependencies are literal
+  released versions.
 - **Constraint-propagation redesign** — DONE, all of it (July 2026): Phases 1–2,
   the capability API (Steps 1–3.5), and the uniform store boundary
   (`constraint-kernel.md` records the shape). The Neq→FD bridge was DROPPED (optimization-

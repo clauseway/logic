@@ -18,9 +18,9 @@ Query.of(Logic.appendo(xs, ys, zs)
 // ((), (1,2,3,4,5,6)), ((1), (2,3,4,5,6)), ... all seven splits
 ```
 
-This is a research/learning project (see [Status](#status)) — but a serious
-one: the engine's guarantees are theorems of two algebras, and the test suite
-checks the algebra's laws alongside the code.
+Pre-1.0 (see [Status](#status)): the shape is settled, the API is not yet
+frozen. A serious engine regardless: its guarantees are theorems of two
+algebras, and the test suite checks the algebra's laws alongside the code.
 
 ## Why this engine
 
@@ -125,29 +125,30 @@ The engine's core claims are algebraic, and the code enforces them mechanically:
   fixpoint. `docs/reference/table-completion.md` and
   `docs/reference/group-seal.md` tell that story end to end.
 
-## Building
+## Getting it
 
-`logic` sits in the Clauseway family: [`functional`](../functional) beneath
-it (continuations, fibers, schedulers, the algebra and its law kits),
-[`pldb`](../pldb) beside it — the data boundary: relations as functions
-over real backends (SQL with constraint and nogood pushdown, a coverage
-cache, and a transactional write face) — and [`apps/library`](../apps/library)
-as the worked example whose friction ledger drives the design. All are Maven
-projects, Java 8, Apache-2.0, currently `-SNAPSHOT`. vavr is consumed as a
-relocated artifact (`clauseway-vavr`, built once from `logic/vavr/`):
-
-```bash
-cd functional && mvn install
-cd ../logic   && mvn -f vavr/pom.xml install && mvn install
-```
+Java 8, Apache-2.0, on Maven Central:
 
 ```xml
 <dependency>
     <groupId>org.clauseway</groupId>
     <artifactId>logic</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
 </dependency>
 ```
+
+That brings the sibling [`functional`](../functional) beneath it
+(continuations, fibers, schedulers, the algebra and its law kits) and vavr
+1.0.1 relocated under `org.clauseway.vavr` (`clauseway-vavr`, built from
+`logic/vavr/`) — no other runtime dependencies. Beside it in the Clauseway
+family: [`pldb`](../pldb), the data boundary — relations as functions over
+real backends (SQL with constraint and nogood pushdown, a coverage cache,
+and a transactional write face) — and [`apps/library`](../apps/library),
+the worked example whose friction ledger drives the design.
+
+From source: `mvn install` here; `functional` resolves from Central at the
+version in the POM. To build against a local `functional` change, point the
+dependency at its `-SNAPSHOT` and `mvn install` there first.
 
 ## A tour
 
@@ -406,11 +407,12 @@ seams, backlog.
 
 ## Status
 
-A research/learning project, built with viability as a constraint rather than a
-goal: the designs are the kind that could be real (honest concurrency, measured
-claims, no toy shortcuts), but there is no release and APIs move freely.
+0.1.0 on Maven Central — pre-1.0: the shape is settled, the API carries no
+compatibility guarantee until 1.0 and may move between minor versions. Built
+with viability as a constraint rather than a goal: the designs are the kind
+that could be real (honest concurrency, measured claims, no toy shortcuts).
 Java 8, Apache-2.0, no runtime dependencies beyond the relocated vavr
-(`clauseway-vavr`) and the sibling `functional` library. ~870 tests, including
+(`clauseway-vavr`) and the sibling `functional` library. ~920 tests, including
 law suites for every declared algebraic instance and a parallel stress test on
 tabling's completion machinery. If you're reading this as a source of ideas
 rather than a dependency, `docs/` is the interesting part.
