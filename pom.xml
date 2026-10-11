@@ -6,7 +6,7 @@
 
 	<groupId>org.clauseway</groupId>
 	<artifactId>logic</artifactId>
-	<version>0.1.0</version>
+	<version>0.1.1-SNAPSHOT</version>
 
 	<name>Clauseway Logic</name>
 	<description>A relational programming engine for Java 8: miniKanren with constraints, nogoods, tabling, weighted inference and a composable query front door.</description>
