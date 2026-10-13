@@ -4,6 +4,7 @@ import static org.clauseway.logic.constraints.Constraints.unify;
 
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.unification.structures.LList;
+import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.LVar;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -63,6 +64,16 @@ public class Matche {
 	public static <A> Case<LList<A>> llist(Function4<Unifiable<A>, Unifiable<A>, Unifiable<A>, Unifiable<LList<A>>, Goal> f) {
 		return l -> Logic.<A, A, A, LList<A>> exist((a, b, c, d) -> unify(l, LList.of(a, LList.of(b, LList.of(c, d))))
 				.and(f.apply(a, b, c, d)));
+	}
+
+	/** The none arm. */
+	public static <A> Case<LOption<A>> loption(Supplier<Goal> f) {
+		return o -> unify(o, LOption.none()).and(f.get());
+	}
+
+	/** The some arm, handed the value. */
+	public static <A> Case<LOption<A>> loption(Function<Unifiable<A>, Goal> f) {
+		return o -> Logic.<A> exist(a -> unify(o, LOption.some(a)).and(f.apply(a)));
 	}
 
 	// the callback speaks java.util.List; the vavr List above is the fold's own

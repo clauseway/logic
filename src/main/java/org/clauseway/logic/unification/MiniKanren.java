@@ -34,6 +34,7 @@ import org.clauseway.functional.Types;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.functional.tuples.Tuple2;
 import org.clauseway.logic.unification.structures.LList;
+import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.structures.LTree;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.LVal;
@@ -195,6 +196,13 @@ public class MiniKanren {
 				.map(w -> (LTree<T>) w);
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> Optional<LOption<T>> asLOption(Object v) {
+		return Optional.ofNullable(v)
+				.filter(LOption.class::isInstance)
+				.map(w -> (LOption<T>) w);
+	}
+
 	public static <T> MFiber<Substitutions> unify(Substitutions s, Term<T> lhs, Term<T> rhs) {
 		return unify(MiniKanren::extend, s, lhs, rhs);
 	}
@@ -242,7 +250,7 @@ public class MiniKanren {
 	@RequiredArgsConstructor
 	public static class Decomposition {
 		public enum Kind {
-			TUPLE, LLIST, LTREE
+			TUPLE, LLIST, LTREE, LOPTION
 		}
 		Kind kind;
 		Iterable<Term<?>> members;
@@ -253,18 +261,15 @@ public class MiniKanren {
 	 * level deep, held lazily — no rebuild, no collector. Empty when the term is
 	 * not structural (variables, plain values, empty LList/LTree — the empties
 	 * are equality atoms). Structure is carried by the engine's own types —
-	 * tuples through their structural contract, LList and LTree natively —
-	 * and every foreign value, collections included, is an equality atom.
+	 * tuples through their structural contract, LList, LTree and LOption
+	 * natively — and every foreign value, collections included, is an
+	 * equality atom.
 	 */
 	static Optional<Decomposition> decompose(Term<?> v) {
 		if (!v.isVal()) {
 			return Optional.empty();
 		}
 		Object w = v.get();
-		if (w == null) {
-			// a null payload is an equality atom, never structure
-			return Optional.empty();
-		}
 		return Optionals.firstPresent(
 				() -> tupleAsIterable(w)
 						.map(it -> new Decomposition(Decomposition.Kind.TUPLE, wrapAll(it))),
@@ -275,7 +280,11 @@ public class MiniKanren {
 				() -> Types.cast(w, LTree.class)
 						.filter(t -> !t.isEmpty())
 						.map(t -> new Decomposition(Decomposition.Kind.LTREE,
-								Arrays.<Term<?>> asList(t.getValue(), t.getChildren()))));
+								Arrays.<Term<?>> asList(t.getValue(), t.getChildren()))),
+				() -> Types.cast(w, LOption.class)
+						.filter(o -> !o.isNone())
+						.map(o -> new Decomposition(Decomposition.Kind.LOPTION,
+								Arrays.<Term<?>> asList(o.getValue()))));
 	}
 
 	private static Iterable<Term<?>> wrapAll(Iterable<Object> items) {
@@ -297,7 +306,7 @@ public class MiniKanren {
 
 	/**
 	 * The term's structural members — the same decomposition the unifier and
-	 * walkAll recognize (tuples, LList, LTree) — read-only: no
+	 * walkAll recognize (tuples, LList, LTree, LOption) — read-only: no
 	 * rebuild, no collector needed. Empty when the term is not structural.
 	 */
 	public static Optional<Iterable<Term<?>>> members(Term<?> v) {
@@ -305,7 +314,7 @@ public class MiniKanren {
 	}
 
 	/**
-	 * Rebuild the structure of a term (tuple, LList or LTree)
+	 * Rebuild the structure of a term (tuple, LList, LTree or LOption)
 	 * with each component passed through the mapper. Empty when the term
 	 * is not structural.
 	 */
@@ -334,6 +343,14 @@ public class MiniKanren {
 										defer(() -> mapper.apply(c.getValue().getObjectTerm())),
 										defer(() -> mapper.apply(c.getChildren().getObjectTerm())))
 								.map(vc -> LTree.of(vc._1, MiniKanren.castTerm(vc._2)).get())
+								.map(w -> (T) w)
+								.map(LVal::lval)
+								.map(MiniKanren::<T>castTerm)),
+				() -> v.asVal()
+						.flatMap(MiniKanren::<T>asLOption)
+						.filter(not(LOption::isNone))
+						.map(o -> defer(() -> mapper.apply(o.getValue().getObjectTerm()))
+								.map(w -> LOption.some(w).get())
 								.map(w -> (T) w)
 								.map(LVal::lval)
 								.map(MiniKanren::<T>castTerm)));

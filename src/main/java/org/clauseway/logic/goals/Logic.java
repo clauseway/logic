@@ -238,7 +238,6 @@ public class Logic {
 	public static Goal ground(Unifiable<?> v) {
 		return (Knowledge s) -> Cont.defer(() ->
 				MiniKanren.walkAll(s.substitution(), v)
-						// isVal, not asVal presence: a NULL-bound term is ground
 						.map(u -> u.isVal() ?
 								Cont.<Knowledge, Nothing> just(s) :
 								k -> Fiber.done(Nothing.nothing())));
@@ -248,7 +247,6 @@ public class Logic {
 		return s -> Cont.defer(() ->
 				MiniKanren.walkAll(s.substitution(), v1)
 						.map(v -> {
-							// isVal, not asVal presence: a NULL payload projects as null
 							if (!v.isVal()) {
 								throw Exceptions.format(IllegalArgumentException::new,
 										"Cannot project %s. No value bound.", v).get();

@@ -14,8 +14,11 @@ import java.util.Optional;
 public class LVal<T> implements Unifiable<T>, Reified<T> {
 	T value;
 
-	/** A null payload is a VALUE — it equals itself and nothing else. */
+	/** A null is not a value; absence is a term, {@code LOption.none()}. */
 	public static <T> Unifiable<T> lval(T v) {
+		if (v == null) {
+			throw new IllegalArgumentException("lval(null): a null is not a value — absence is LOption.none()");
+		}
 		return new LVal<>(v);
 	}
 
@@ -26,9 +29,7 @@ public class LVal<T> implements Unifiable<T>, Reified<T> {
 
 	@Override
 	public Optional<T> asVal() {
-		// empty for a null payload — a bound NULL is still a VALUE, so
-		// bindness is isVal()/get(), never this face's presence
-		return Optional.ofNullable(value);
+		return Optional.of(value);
 	}
 
 	@Override
