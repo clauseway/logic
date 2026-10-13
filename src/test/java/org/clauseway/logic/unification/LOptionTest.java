@@ -67,6 +67,16 @@ public class LOptionTest {
 	}
 
 	@Test
+	public void javaAbsenceEntersAsNoneAndRoundTrips() {
+		assertThat(LOption.ofNullable((String) null)).isEqualTo(none());
+		assertThat(LOption.ofNullable("a")).isEqualTo(some(lval("a")));
+		assertThat(LOption.of(Optional.<String> empty())).isEqualTo(none());
+		assertThat(LOption.of(Optional.of("a"))).isEqualTo(some(lval("a")));
+		assertThat(LOption.of(Optional.of("a")).get().toOptional()).contains("a");
+		assertThat(LOption.<String> none().get().toOptional()).isEmpty();
+	}
+
+	@Test
 	public void matcheTakesOneArmPerConstructor() {
 		Unifiable<LOption<String>> voyage = lvar();
 		Unifiable<String> status = lvar();

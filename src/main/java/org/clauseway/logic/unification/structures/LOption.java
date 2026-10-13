@@ -26,6 +26,15 @@ public class LOption<T> {
 		return (Unifiable<LOption<T>>) NONE;
 	}
 
+	/** Java's absence as the term: a null is none(), anything else some(). */
+	public static <T> Unifiable<LOption<T>> ofNullable(T value) {
+		return value == null ? none() : some(LVal.lval(value));
+	}
+
+	public static <T> Unifiable<LOption<T>> of(Optional<T> value) {
+		return ofNullable(value.orElse(null));
+	}
+
 	public boolean isNone() {
 		return this == NONE.get();
 	}
