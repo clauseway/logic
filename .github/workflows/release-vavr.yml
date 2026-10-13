@@ -1,0 +1,39 @@
+# Releases clauseway-vavr (logic/vavr) at the version its own POM names, on
+# the button only: it changes when vavr does, not with the engine. Deploy
+# stages a signed bundle; the Portal's Publish button stays manual.
+name: Release clauseway-vavr
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and sign the bundle; upload nothing
+        type: boolean
+        default: false
+
+concurrency:
+  group: release-vavr
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+          cache: maven
+          server-id: central
+          server-username: CENTRAL_USERNAME
+          server-password: CENTRAL_TOKEN
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Deploy (stages a bundle; nothing publishes without the Portal button)
+        run: mvn -B -ntp clean deploy -P release -f vavr/pom.xml ${{ inputs.dry_run && '-DskipPublishing=true' || '' }}
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
