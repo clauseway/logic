@@ -25,6 +25,8 @@ rating pass can stop at any section boundary and still be useful.
 - [x] **Cont** — the stack-safe continuation monad goals are built from. *(functional README)*
 - [x] **Term / Unifiable / Reified** — structural root / solver input / solver output; `instantiate` is the only Reified→Unifiable bridge. *(CLAUDE.md)*
 - [x] **LVar / LVal** — logic variable / wrapped value. *(unification/)*
+- [x] **LOption** — the engine's optional: a two-constructor structure, `some(term)` / `none()`, unified and reified like `LList`; absence is a term, never a null (`lval(null)` refuses). A `Unifiable<LOption<T>>` head declares an outer join; a `Unifiable<T>` head means never absent. *(absence-is-a-constructor)*
+- [x] **structural contract** — what tuple, `LList`, `LTree` and `LOption` share: a kind, members, and a rebuild from members; `MiniKanren.decompose`/`mapStructure` are its two faces. Hunch stage. *(structure-is-one-contract)*
 - [x] **Any** — a canonical slot name (`_.n`), pure position: what a slot looks like inside a term; alpha-normal keys, the ∀-binder marking; ontic — certified unconstrained. Retires *Hole* (the rename shipped with the Name ratification). *(unification/)*
 - [x] **walk / walkAll** — resolve a term through substitutions, shallow / deep. *(unification/)*
 - [x] **reify** — render an answer against canonical names; constrained stores attach their residuals. *(unification/)*

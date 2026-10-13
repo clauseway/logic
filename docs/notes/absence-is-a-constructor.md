@@ -86,7 +86,12 @@ through the existing projection rule; and null leaves the engine
 entirely, because `None` is a term. What it does NOT buy: a derived rule
 is still better written partial — holding when the thing exists — than
 total over an `LOption` head; the structure makes the total form legal
-and visible, not preferable.
+and visible, not preferable. The total form has a name: it is the left
+outer join of the key over its partial rules — `rule(k, v) ∧ out =
+some(v)`, or `¬∃v. rule(k, v) ∧ out = none()` — which is where NULL came
+from in the first place (Codd, 1979: the marker exists to give outer join
+an absent cell). The constructor is that cell. An `LOption` in a head
+declares the outer join; a `.nullable()` on an arg hid it in the body.
 
 Cheapest way to kill it: a backend that cannot tell an absent cell from a
 present one at decode time without a per-column declaration. pldb's
