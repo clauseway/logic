@@ -31,6 +31,10 @@ jobs:
           server-password: CENTRAL_TOKEN
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Maven 3.9.11 — the runner's 3.10 writes resolver bookkeeping into the publishing plugin's staging directory and the Portal rejects the bundle
+        run: |
+          curl -fsSL "https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-3.9.11/bin" >> "$GITHUB_PATH"
       - name: Deploy (stages a bundle; nothing publishes without the Portal button)
         run: mvn -B -ntp clean deploy -P release -f vavr/pom.xml ${{ inputs.dry_run && '-DskipPublishing=true' || '' }}
         env:
