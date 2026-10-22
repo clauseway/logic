@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Value;
 import org.clauseway.functional.tuples.Tuple;
+import org.clauseway.functional.tuples.Tuple2;
 import org.clauseway.logic.finitedomain.Ints;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Query;
@@ -32,13 +33,13 @@ public class StructuralTest {
 		Term<Integer> y;
 
 		@Override
-		public Iterable<?> members() {
+		public Iterable<? extends Term<?>> members() {
 			return Arrays.asList(x, y);
 		}
 
 		@Override
 		@SuppressWarnings("unchecked")
-		public Point withMembers(Object[] members) {
+		public Point withMembers(Term<?>[] members) {
 			return new Point((Term<Integer>) members[0], (Term<Integer>) members[1]);
 		}
 	}
@@ -50,13 +51,13 @@ public class StructuralTest {
 		Term<Integer> to;
 
 		@Override
-		public Iterable<?> members() {
+		public Iterable<? extends Term<?>> members() {
 			return Arrays.asList(from, to);
 		}
 
 		@Override
 		@SuppressWarnings("unchecked")
-		public Span withMembers(Object[] members) {
+		public Span withMembers(Term<?>[] members) {
 			return new Span((Term<Integer>) members[0], (Term<Integer>) members[1]);
 		}
 	}
@@ -133,6 +134,42 @@ public class StructuralTest {
 				.map(Reified::get)
 				.collect(Collectors.toList());
 		assertThat(answers).containsExactly(7);
+	}
+
+	@Test
+	public void aSignedValueNestsInATupleAndATupleInASignedValue() {
+		Unifiable<Integer> x = lvar();
+		Unifiable<Tuple2<Unifiable<Point>, Unifiable<String>>> pair = lval(Tuple.of(point(x, lval(2)), lval("p")));
+		List<Integer> answers = Query.of(pair.unifies(lval(Tuple.of(point(lval(1), lval(2)), lval("p"))))).solve(x)
+				.map(Reified::get)
+				.collect(Collectors.toList());
+		assertThat(answers).containsExactly(1);
+
+		Unifiable<Point> inner = lvar();
+		Unifiable<Segment> s = lvar();
+		Reified<Segment> answer = Query.of(s.unifies(lval(new Segment(inner, lval("s"))))
+				.and(inner.unifies(point(lval(3), lval(4)))))
+				.solve(s).findFirst().get();
+		assertThat(answer.isGround()).isTrue();
+		assertThat(answer.get().getStart().get().getX().get()).isEqualTo(3);
+	}
+
+	/** A signed value with a signed member. */
+	@Value
+	static class Segment implements Structural<Segment> {
+		Term<Point> start;
+		Term<String> label;
+
+		@Override
+		public Iterable<? extends Term<?>> members() {
+			return Arrays.asList(start, label);
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public Segment withMembers(Term<?>[] members) {
+			return new Segment((Term<Point>) members[0], (Term<String>) members[1]);
+		}
 	}
 
 	/** The arm's body: the point's members added, once the arm has bound them. */

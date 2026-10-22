@@ -300,7 +300,12 @@ public class MiniKanren {
 
 	@SuppressWarnings("unchecked")
 	private static Iterable<Object> signedMembers(Structural<?> signed) {
-		return (Iterable<Object>) signed.members();
+		return (Iterable<Object>) (Iterable<?>) signed.members();
+	}
+
+	/** A signed value rebuilt from mapped members, which are all terms since its members were. */
+	private static Object rebuildSigned(Structural<?> signed, Object[] members) {
+		return signed.withMembers(Arrays.copyOf(members, members.length, Term[].class));
 	}
 
 	private static Iterable<Term<?>> wrapAll(Iterable<Object> items) {
@@ -344,7 +349,8 @@ public class MiniKanren {
 						.map(t -> MiniKanren.<T> mapMembers(tupleMembers((Tuple) t), ((Tuple) t)::withMembers, mapper)),
 				() -> v.asVal()
 						.filter(Structural.class::isInstance)
-						.map(s -> MiniKanren.<T> mapMembers(signedMembers((Structural<?>) s), ((Structural<?>) s)::withMembers, mapper)),
+						.map(s -> MiniKanren.<T> mapMembers(signedMembers((Structural<?>) s),
+								members -> rebuildSigned((Structural<?>) s, members), mapper)),
 				() -> v.asVal()
 						.flatMap(MiniKanren::<T>asLList)
 						.filter(not(LList::isEmpty))
