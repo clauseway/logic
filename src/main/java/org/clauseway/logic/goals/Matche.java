@@ -226,12 +226,16 @@ public class Matche {
 						.and(f.apply(t1, t2, t3, t4, t5, t6, t7, t8)));
 	}
 
-	/** The arm for a signed value: a fresh copy of the prototype's kind, unified with the scrutinee and handed over with its members bound. */
-	public static <R extends Structural<R>> Case<R> structure(R prototype, Function<R, Goal> f) {
-		return u -> Goal.defer(() -> {
-			R fresh = prototype.fresh();
-			return unify(u, LVal.lval(fresh)).and(f.apply(fresh));
-		});
+	/**
+	 * The arm for a signed value: the scrutinee unified with the pattern as
+	 * given, then the pattern handed to the body with its members bound. A
+	 * member left a variable is a hole; a member given as a value must match.
+	 * The pattern's variables are the caller's, minted once where the goal is
+	 * built, not per application as the list and option arms mint theirs;
+	 * {@code kind.fresh()} is the all-holes pattern.
+	 */
+	public static <R extends Structural<R>> Case<R> structure(R pattern, Function<R, Goal> f) {
+		return u -> unify(u, LVal.lval(pattern)).and(f.apply(pattern));
 	}
 
 	public static <T> Case<T> variable(Supplier<Goal> sup) {

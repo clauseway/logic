@@ -129,7 +129,7 @@ public class StructuralTest {
 		Unifiable<Point> p = lvar();
 		Unifiable<Integer> sum = lvar();
 		List<Integer> answers = Query.of(p.unifies(point(lval(3), lval(4)))
-				.and(matche(p, structure(new Point(lval(0), lval(0)), q -> added(q, sum)))))
+				.and(matche(p, structure(new Point(lval(0), lval(0)).fresh(), q -> added(q, sum)))))
 				.solve(sum)
 				.map(Reified::get)
 				.collect(Collectors.toList());
@@ -152,6 +152,17 @@ public class StructuralTest {
 				.solve(s).findFirst().get();
 		assertThat(answer.isGround()).isTrue();
 		assertThat(answer.get().getStart().get().getX().get()).isEqualTo(3);
+	}
+
+	/** A pattern with a value among its members matches only what carries that value. */
+	@Test
+	public void thePatternParticipates_aValueMemberMustMatch() {
+		Unifiable<Point> p = lvar();
+		Unifiable<Integer> seen = lvar();
+		Goal onTheAxis = matche(p, structure(new Point(lvar(), lval(0)), q -> seen.unifies((Unifiable<Integer>) q.getX())));
+		assertThat(Query.of(p.unifies(point(lval(5), lval(0))).and(onTheAxis)).solve(seen)
+				.map(Reified::get).collect(Collectors.toList())).containsExactly(5);
+		assertThat(Query.of(p.unifies(point(lval(5), lval(1))).and(onTheAxis)).solve(seen).count()).isZero();
 	}
 
 	/** A signed value with a signed member. */
