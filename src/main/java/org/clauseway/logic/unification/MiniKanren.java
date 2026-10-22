@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Spliterators;
 import java.util.function.Function;
@@ -36,6 +37,7 @@ import org.clauseway.functional.tuples.Tuple2;
 import org.clauseway.logic.unification.structures.LList;
 import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.structures.LTree;
+import org.clauseway.logic.unification.structures.Structural;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.LVal;
 import org.clauseway.logic.unification.terms.LVar;
@@ -141,7 +143,7 @@ public class MiniKanren {
 			Substitutions s,
 			Decomposition l,
 			Decomposition r) {
-		if (l.getKind() != r.getKind()) {
+		if (l.getKind() != r.getKind() || !Objects.equals(l.getSignature(), r.getSignature())) {
 			return none();
 		}
 		switch (l.getKind()) {
@@ -250,10 +252,16 @@ public class MiniKanren {
 	@RequiredArgsConstructor
 	public static class Decomposition {
 		public enum Kind {
-			TUPLE, LLIST, LTREE, LOPTION
+			TUPLE, LLIST, LTREE, LOPTION, SIGNED
 		}
 		Kind kind;
 		Iterable<Term<?>> members;
+		/** The signed kind's type: two signed values are one kind only when their classes are; null for the engine's own kinds. */
+		Class<?> signature;
+
+		Decomposition(Kind kind, Iterable<Term<?>> members) {
+			this(kind, members, null);
+		}
 	}
 
 	/**
@@ -262,8 +270,8 @@ public class MiniKanren {
 	 * not structural (variables, plain values, empty LList/LTree — the empties
 	 * are equality atoms). Structure is carried by the engine's own types —
 	 * tuples through their structural contract, LList, LTree and LOption
-	 * natively — and every foreign value, collections included, is an
-	 * equality atom.
+	 * natively, a user's value by signing {@link Structural} — and every
+	 * foreign value, collections included, is an equality atom.
 	 */
 	static Optional<Decomposition> decompose(Term<?> v) {
 		if (!v.isVal()) {
@@ -284,7 +292,15 @@ public class MiniKanren {
 				() -> Types.cast(w, LOption.class)
 						.filter(o -> !o.isNone())
 						.map(o -> new Decomposition(Decomposition.Kind.LOPTION,
-								Arrays.<Term<?>> asList(o.getValue()))));
+								Arrays.<Term<?>> asList(o.getValue()))),
+				() -> Types.cast(w, Structural.class)
+						.map(s -> new Decomposition(Decomposition.Kind.SIGNED,
+								wrapAll(signedMembers(s)), s.getClass())));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static Iterable<Object> signedMembers(Structural<?> signed) {
+		return (Iterable<Object>) signed.members();
 	}
 
 	private static Iterable<Term<?>> wrapAll(Iterable<Object> items) {
@@ -314,9 +330,9 @@ public class MiniKanren {
 	}
 
 	/**
-	 * Rebuild the structure of a term (tuple, LList, LTree or LOption)
-	 * with each component passed through the mapper. Empty when the term
-	 * is not structural.
+	 * Rebuild the structure of a term (tuple, LList, LTree, LOption or a
+	 * signed value) with each component passed through the mapper. Empty
+	 * when the term is not structural.
 	 */
 	@SuppressWarnings("unchecked")
 	private static <T> Optional<Fiber<Term<T>>> mapStructure(
@@ -325,7 +341,10 @@ public class MiniKanren {
 		return Optionals.firstPresent(
 				() -> v.asVal()
 						.filter(Tuple.class::isInstance)
-						.map(t -> MiniKanren.mapTuple((Tuple) t, mapper)),
+						.map(t -> MiniKanren.<T> mapMembers(tupleMembers((Tuple) t), ((Tuple) t)::withMembers, mapper)),
+				() -> v.asVal()
+						.filter(Structural.class::isInstance)
+						.map(s -> MiniKanren.<T> mapMembers(signedMembers((Structural<?>) s), ((Structural<?>) s)::withMembers, mapper)),
 				() -> v.asVal()
 						.flatMap(MiniKanren::<T>asLList)
 						.filter(not(LList::isEmpty))
@@ -356,10 +375,12 @@ public class MiniKanren {
 								.map(MiniKanren::<T>castTerm)));
 	}
 
-	private static <T> Fiber<Term<T>> mapTuple(
-			Tuple tuple,
+	/** The members through the mapper, then the structure rebuilt from them: the tuple family's rebuild and a signed value's are one. */
+	private static <T> Fiber<Term<T>> mapMembers(
+			Iterable<Object> members,
+			Function<Object[], Object> rebuild,
 			Function<Term<Object>, Fiber<Term<Object>>> mapper) {
-		return toJavaStream(tupleMembers(tuple))
+		return toJavaStream(members)
 				// the mapper accepts Term,
 				// but some elements may be regular types.
 				// We're wrapping those types in a Val
@@ -378,7 +399,7 @@ public class MiniKanren {
 								}),
 						Exceptions.throwingBiOp(UnsupportedOperationException::new))
 				.map(ArrayList::toArray)
-				.map(tuple::withMembers)
+				.map(rebuild)
 				.map(LVal::lval)
 				.map(MiniKanren::castTerm);
 	}

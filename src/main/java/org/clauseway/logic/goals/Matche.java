@@ -5,6 +5,8 @@ import static org.clauseway.logic.constraints.Constraints.unify;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.unification.structures.LList;
 import org.clauseway.logic.unification.structures.LOption;
+import org.clauseway.logic.unification.structures.Structural;
+import org.clauseway.logic.unification.terms.LVal;
 import org.clauseway.logic.unification.terms.LVar;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -222,6 +224,14 @@ public class Matche {
 		return t -> Logic.<T1, T2, T3, T4, T5, T6, T7, T8> exist((t1, t2, t3, t4, t5, t6, t7, t8) ->
 				unify(t, Tuple.of(t1, t2, t3, t4, t5, t6, t7, t8))
 						.and(f.apply(t1, t2, t3, t4, t5, t6, t7, t8)));
+	}
+
+	/** The arm for a signed value: a fresh copy of the prototype's kind, unified with the scrutinee and handed over with its members bound. */
+	public static <R extends Structural<R>> Case<R> structure(R prototype, Function<R, Goal> f) {
+		return u -> Goal.defer(() -> {
+			R fresh = prototype.fresh();
+			return unify(u, LVal.lval(fresh)).and(f.apply(fresh));
+		});
 	}
 
 	public static <T> Case<T> variable(Supplier<Goal> sup) {
