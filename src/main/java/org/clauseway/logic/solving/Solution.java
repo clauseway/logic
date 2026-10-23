@@ -1,6 +1,6 @@
 package org.clauseway.logic.solving;
 
-// ABOUTME: One solution row of a select: Reified cells keyed by the selected
+// ABOUTME: One solution of a select: Reified cells keyed by the selected
 // ABOUTME: variables, under the derivation's Condition -- a view over Answer.
 
 import org.clauseway.functional.tuples.Tuple;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
  * rows onward.
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public final class Row {
+public final class Solution {
 
 	private final List<Unifiable<?>> keys;
 	private final Answer<Unifiable<?>> answer;
