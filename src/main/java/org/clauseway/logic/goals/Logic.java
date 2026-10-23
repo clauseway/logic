@@ -101,11 +101,16 @@ public class Logic {
 				.named(s -> s.format(x) + " ⊂ " + formatLList(s, lst));
 	}
 
+	/**
+	 * A truth table as a goal: one branch per row. Every unification is
+	 * against a boolean atom, which cannot contain a variable, so the
+	 * occurs check is skipped.
+	 */
 	public static Goal booleanGoal(
 			Unifiable<Boolean> l, Unifiable<Boolean> r, Unifiable<Boolean> out,
 			Array<Tuple3<Boolean, Boolean, Boolean>> table) {
 		return table.map(b -> b.apply((bl, br, bo) ->
-						(Goal) l.unifies(bl).and(r.unifies(br)).and(out.unifies(bo))))
+						(Goal) l.unifiesNc(bl).and(r.unifiesNc(br)).and(out.unifiesNc(bo))))
 				.reduce(Goal::or);
 	}
 
@@ -136,12 +141,12 @@ public class Logic {
 	}
 
 	/**
-	 * Logical negation. The unchecked unification is safe here: a boolean
-	 * atom cannot contain a variable, so no cycle can close.
+	 * Logical negation. Every unification is against a boolean atom, which
+	 * cannot contain a variable, so the occurs check is skipped.
 	 */
 	public static Goal nego(Unifiable<Boolean> l, Unifiable<Boolean> r) {
-		return l.unifies(true).and(r.unifiesNc(false))
-				.or(l.unifies(false).and(r.unifies(true)));
+		return l.unifiesNc(true).and(r.unifiesNc(false))
+				.or(l.unifiesNc(false).and(r.unifiesNc(true)));
 	}
 
 	public static Goal anyo(Unifiable<LList<Boolean>> lst, Unifiable<Boolean> out) {
