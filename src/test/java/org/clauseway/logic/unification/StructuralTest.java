@@ -269,4 +269,13 @@ public class StructuralTest {
 				.collect(Collectors.toList());
 		assertThat(answers).containsExactly(6);
 	}
+	/** A member unified with the value that holds it: the occurs check refuses the cycle at the binding. */
+	@Test
+	public void aMemberDoesNotUnifyWithTheValueThatHoldsIt() {
+		Unifiable<Integer> head = lvar();
+		Unifiable<LOption<Cons>> tail = lvar();
+		Unifiable<Cons> lst = cons(head, tail);
+		assertThat(Query.of(tail.unifies(some(lst))).solve(lst).count()).isZero();
+	}
+
 }
