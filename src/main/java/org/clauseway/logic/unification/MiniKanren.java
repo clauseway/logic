@@ -52,6 +52,12 @@ import org.clauseway.logic.unification.terms.Unifiable;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MiniKanren {
 
+	/**
+	 * The binding made without the occurs check. The one extender that can
+	 * close a cycle, and the only way a substitution ever holds one; nothing
+	 * downstream (walk, reify, occurs) guards against it, so it is reached only
+	 * through {@link #unifyPrefixUnsafe}.
+	 */
 	private static <T> Option<Substitutions> extendNoCheck(Substitutions s, LVar<T> lhs, Term<T> rhs) {
 		return Option.some(s.extend(lhs, rhs));
 	}
@@ -219,6 +225,12 @@ public class MiniKanren {
 		return unifyPrefix(MiniKanren::extend, s, lhs, rhs);
 	}
 
+	/**
+	 * {@link #unifyPrefix} without the occurs check. Unsafe means exactly
+	 * this: if a variable on one side occurs inside the other, the binding is
+	 * made anyway, the substitution becomes cyclic, and any later walk of it
+	 * runs forever. The caller promises that cannot happen.
+	 */
 	public static <T> MFiber<Prefix> unifyPrefixUnsafe(Substitutions s, Term<T> lhs, Term<T> rhs) {
 		return unifyPrefix(MiniKanren::extendNoCheck, s, lhs, rhs);
 	}

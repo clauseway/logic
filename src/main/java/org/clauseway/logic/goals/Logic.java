@@ -136,7 +136,8 @@ public class Logic {
 	}
 
 	/**
-	 * Logical negation
+	 * Logical negation. The unchecked unification is safe here: a boolean
+	 * atom cannot contain a variable, so no cycle can close.
 	 */
 	public static Goal nego(Unifiable<Boolean> l, Unifiable<Boolean> r) {
 		return l.unifies(true).and(r.unifiesNc(false))
