@@ -5,7 +5,10 @@ package org.clauseway.logic.unification;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.goals.Matche.matche;
+import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.goals.Matche.structure;
+import static org.clauseway.logic.unification.structures.LOption.none;
+import static org.clauseway.logic.unification.structures.LOption.some;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 
@@ -18,6 +21,7 @@ import org.clauseway.functional.tuples.Tuple2;
 import org.clauseway.logic.finitedomain.Ints;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Query;
+import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.structures.Structural;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
@@ -186,5 +190,83 @@ public class StructuralTest {
 	/** The arm's body: the point's members added, once the arm has bound them. */
 	private static Goal added(Point q, Unifiable<Integer> sum) {
 		return Ints.addo((Unifiable<Integer>) q.getX(), (Unifiable<Integer>) q.getY(), sum);
+	}
+	// -- a kind that contains its own kind ----------------------------------
+
+	/** A list as its own kind: a head and a tail that is none at the end, some(cons) otherwise. */
+	@Value
+	static class Cons implements Structural<Cons> {
+		Term<Integer> head;
+		Term<LOption<Cons>> tail;
+
+		@Override
+		public Iterable<? extends Term<?>> members() {
+			return Arrays.asList(head, tail);
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public Cons withMembers(Term<?>[] members) {
+			return new Cons((Term<Integer>) members[0], (Term<LOption<Cons>>) members[1]);
+		}
+	}
+
+	private static Unifiable<Cons> cons(Term<Integer> head, Term<LOption<Cons>> tail) {
+		return lval(new Cons(head, tail));
+	}
+
+	private static Unifiable<Cons> list(Term<Integer> last) {
+		return cons(lval(1), some(cons(lval(2), some(cons(last, none())))));
+	}
+
+	/** The sum of the list: the head plus the sum of the tail, a recursion through the kind's own member. */
+	private static Goal sumo(Unifiable<Cons> list, Unifiable<Integer> total) {
+		return matche(list, structure(new Cons(lvar(), lvar()), c -> {
+			Unifiable<Integer> head = (Unifiable<Integer>) c.getHead();
+			Unifiable<LOption<Cons>> tail = (Unifiable<LOption<Cons>>) c.getTail();
+			return tail.unifies(none()).and(total.unifies(head))
+					.or(defer(() -> {
+						Unifiable<Cons> rest = lvar();
+						Unifiable<Integer> sub = lvar();
+						return tail.unifies(some(rest)).and(sumo(rest, sub)).and(Ints.addo(head, sub, total));
+					}));
+		}));
+	}
+
+	@Test
+	public void aValueOfItsOwnKindUnifiesThroughItsDepth() {
+		Unifiable<Integer> x = lvar();
+		List<Integer> answers = Query.of(list(x).unifies(list(lval(3)))).solve(x)
+				.map(Reified::get)
+				.collect(Collectors.toList());
+		assertThat(answers).containsExactly(3);
+		assertThat(unifies(list(lval(3)), cons(lval(1), some(cons(lval(2), none()))))).isFalse();
+	}
+
+	@Test
+	public void aValueOfItsOwnKindReifiesToItsDepth() {
+		Unifiable<Cons> whole = lvar();
+		Unifiable<Integer> x = lvar();
+		Reified<Cons> answer = Query.of(whole.unifies(list(x)).and(x.unifies(3))).solve(whole).findFirst().get();
+		assertThat(answer.isGround()).isTrue();
+		Cons third = answer.get().getTail().get().getValue().get().getTail().get().getValue().get();
+		assertThat(third.getHead().get()).isEqualTo(3);
+		assertThat(third.getTail().get().isNone()).isTrue();
+	}
+
+	/** A binding that would put a value inside itself through a signed member is refused, not built. */
+	@Test
+	public void theOccursCheckSeesThroughASignedMember() {
+		Unifiable<Cons> c = lvar();
+		assertThat(Query.of(c.unifies(cons(lval(1), some(c)))).solve(c).count()).isZero();
+	}
+
+	@Test
+	public void aRecursiveRuleWalksTheKindWithStructureArms() {
+		Unifiable<Integer> total = lvar();
+		List<Integer> answers = Query.of(sumo(list(lval(3)), total)).solve(total)
+				.map(Reified::get)
+				.collect(Collectors.toList());
+		assertThat(answers).containsExactly(6);
 	}
 }
