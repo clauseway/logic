@@ -1,4 +1,4 @@
-# The solving front door — Query, Selection, Solution, Mapper
+# The solving front door — Query, Selection, Solution, Selector
 
 **Status: AS BUILT** (September 2026, the solving arc; §§4–5 amended October 2026 for the mapped reading). Authoritative for
 the `solving` package's faces; read alongside `condition.md` (the guard
@@ -20,7 +20,7 @@ Query          configure: the goal + the slots that seed the root
   .solve(out)  read:      classic — Reified per derivation, residues
                           rendered into the term (Constrained)
   .select(vars...)        the selection: Selection<Solution> → stream() → Solution
-  .select(mapper)         the mapped reading: Selection<D> → stream() → D
+  .select(selector)         the mapped reading: Selection<D> → stream() → D
 ```
 
 `run()` is the one primitive; every other face is a consumer of it. It is
@@ -109,7 +109,7 @@ The distinct reading needs exhaustion, so its stream computes at the
 derivation view survives whole at `run()`.
 
 `Selection<D>` is typed by what it streams. `select(vars...)` streams the
-solution itself; `select(mapper)` streams the value a `Mapper<D>` builds
+solution itself; `select(selector)` streams the value a `Selector<D>` builds
 from each solution (§5). The two switches are the same on both and keep
 the type; `stream()` is the one terminal.
 
@@ -129,7 +129,7 @@ and is never smoothed into an empty. An unselected key refuses.
 `getCondition()` is the knowledge the solution holds under; `answer()`
 is the whole seam artifact for anything that ships rows onward.
 
-A `Mapper<D>` is a Java value's two faces at the boundary:
+A `Selector<D>` is a Java value's two faces at the boundary:
 
 ```java
 Iterable<? extends Unifiable<?>> keys();   // the variables it is built from
@@ -139,13 +139,13 @@ D map(Solution solution);                   // the value one solution builds
 The engine is honest about its two directions — a goal takes
 `Unifiable`, an answer is `Reified` — and Java has no such distinction,
 so the merge is the variable itself: the same key enters the goal and
-reads the answer. `Query.select(mapper)` selects the keys and streams
+reads the answer. `Query.select(selector)` selects the keys and streams
 `map` over every solution, passing each through `decided()` first. A
 Java value has no place for an open cell, so a wide solution is refused
-before the mapper sees it, naming the key and the cell. The solutions
+before the selector sees it, naming the key and the cell. The solutions
 reading is the identity mapping, so there is one pipeline, not two.
 
-pldb's `Schema<D>` is a Mapper that also names its keys' columns, and
+pldb's `Schema<D>` is a Selector that also names its keys' columns, and
 that is the whole of the Java interop story: a row type is variables in,
 value out, and the engine never rebuilds it — which is why a Schema is
 not a `Structural`. A user type that is a term, travelling inside a
@@ -187,7 +187,7 @@ the one explicit guard-dropping bridge.
   `Condition`, `Residues`, `JoinMap`, `capture` — never the faces.
 
 The package holds two strata knowingly: the vocabulary (below tabling —
-it never imports upward) and the faces (`Query`/`Selection`/`Solution`/`Mapper`,
+it never imports upward) and the faces (`Query`/`Selection`/`Solution`/`Selector`,
 above everything — they import tabling and weight). The package-granularity
 cycle with tabling and weight is accepted; the discipline lives at class
 level.
@@ -199,7 +199,7 @@ level.
 | `root()` | explicit slot value on an occupied family; two claimants of the table slot (`weighted` × `tabled`); a repeated instrument slot |
 | `enforced` / `capture` | pending suspensions — the owed condition cannot ride the answer |
 | `Solution.get` | a variable the select did not name |
-| `Solution.decided` / `select(mapper)` | a cell the solution left open — a mapper never sees one |
+| `Solution.decided` / `select(selector)` | a cell the solution left open — a selector never sees one |
 | a refusing table | a tabled call under a plain weighted ring |
 
 ## 9. Lineage
@@ -222,6 +222,6 @@ rebuilds with Anys), then `Term` members with a cast at every use in a
 rule body (honest, heavy), before the human named the actual shape: the
 engine's inputs and outputs differ in meaning and Java's do not, so the
 Java side needs one type that is both, and that type is the variable
-read through a `Solution`. `Mapper` landed in `solving` as part of the
+read through a `Solution`. `Selector` landed in `solving` as part of the
 Query API, `Selection` became `Selection<D>`, `solutions()` became
-`stream()`, and pldb's `Schema` became a Mapper with columns.
+`stream()`, and pldb's `Schema` became a Selector with columns.

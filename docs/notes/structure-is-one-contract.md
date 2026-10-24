@@ -3,7 +3,7 @@
 - **status**: argued (October 2026, the human's observation on the fourth
   instance landing; the cargo port supplied the fifth, a user's row type,
   and the design was settled in conversation on October 22 — see the
-  closing paragraph; pldb's `schema-is-a-mapper.md` records where the
+  closing paragraph; pldb's `schema-is-a-selector.md` records where the
   row types ended up, which is NOT here)
 - **evidence held**: derivation — four structure kinds (tuple, `LList`,
   `LTree`, `LOption`) are each wired by hand in the same three places
@@ -101,8 +101,8 @@ Amended October 24. The fifth instance moved. `Delivery` and the port's
 other row types do NOT sign this contract: a row is variables in and a
 Java value out, and the engine never rebuilds it, so signing the
 contract only forced `Term` members on a type whose members are
-unified one by one in rule bodies (pldb's `schema-is-a-mapper.md`;
-logic's `Mapper`). Obligation (3)'s receipt is the port's
+unified one by one in rule bodies (pldb's `schema-is-a-selector.md`;
+logic's `Selector`). Obligation (3)'s receipt is the port's
 `CandidateLeg`, a leg the route finder carries INSIDE a list term: it
 is built with variables, reified with its members as Anys, and read
 through `Term`; its members enter a goal through `Term.unifiable()`,

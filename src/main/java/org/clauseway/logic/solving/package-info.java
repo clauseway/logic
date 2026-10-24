@@ -10,8 +10,8 @@
  * {@code Cont} primitive, {@code solve(out)} the reified reading, {@code stream()}
  * the lazy pull of every derived state, and {@code select(vars)} opens a
  * {@link org.clauseway.logic.solving.Selection} whose {@code stream()} delivers
- * {@link org.clauseway.logic.solving.Solution}s, or {@code select(mapper)} for the
- * values a {@link org.clauseway.logic.solving.Mapper} builds from them. The answer
+ * {@link org.clauseway.logic.solving.Solution}s, or {@code select(selector)} for the
+ * values a {@link org.clauseway.logic.solving.Selector} builds from them. The answer
  * vocabulary lives beside it:
  * {@link org.clauseway.logic.solving.Answer} (a reified image under a
  * {@link org.clauseway.logic.solving.Condition}) is the dual of

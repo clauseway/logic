@@ -1,6 +1,6 @@
 package org.clauseway.logic.solving;
 
-// ABOUTME: Pins the mapped reading of a select: a Mapper names the variables it
+// ABOUTME: Pins the mapped reading of a select: a Selector names the variables it
 // ABOUTME: needs and maps each solution into Java; an open cell is refused before map.
 
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -17,7 +17,7 @@ import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.junit.Test;
 
-public class MapperTest {
+public class SelectorTest {
 
 	@Value
 	private static class Point {
@@ -26,7 +26,7 @@ public class MapperTest {
 	}
 
 	/** A point's two coordinates as the variables a goal binds, mapped into the value. */
-	private static class PointMapper implements Mapper<Point> {
+	private static class PointSelector implements Selector<Point> {
 		final Unifiable<Integer> x = lvar();
 		final Unifiable<Integer> y = lvar();
 		final AtomicInteger mapped = new AtomicInteger();
@@ -51,7 +51,7 @@ public class MapperTest {
 
 	@Test
 	public void aMapperMapsEverySolutionIntoJava() {
-		PointMapper point = new PointMapper();
+		PointSelector point = new PointSelector();
 		List<Point> points = all(Query.of(
 				point.x.unifies(1).and(point.y.unifies(2))
 						.or(point.x.unifies(3).and(point.y.unifies(4))))
@@ -61,7 +61,7 @@ public class MapperTest {
 
 	@Test
 	public void theMappedSelectionKeepsItsSwitches() {
-		PointMapper point = new PointMapper();
+		PointSelector point = new PointSelector();
 		Goal twice = point.x.unifies(1).and(point.y.unifies(2));
 		assertThat(all(Query.of(twice.or(twice)).select(point).stream())).hasSize(1);
 		assertThat(all(Query.of(twice.or(twice)).select(point).all().stream())).hasSize(2);
@@ -69,7 +69,7 @@ public class MapperTest {
 
 	@Test
 	public void anOpenCellIsRefusedBeforeTheMapperSeesIt() {
-		PointMapper point = new PointMapper();
+		PointSelector point = new PointSelector();
 		assertThatThrownBy(() -> all(Query.of(point.x.unifies(1)).select(point).stream()))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("open")

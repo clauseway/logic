@@ -43,7 +43,7 @@ import lombok.RequiredArgsConstructor;
  * closes the driver. The distinct reading needs exhaustion, so its stream
  * is computed at the call; the all reading stays lazy. What streams is the
  * solution itself for {@link Query#select(Unifiable, Unifiable...)}, or the
- * value a {@link Mapper} builds from it for {@link Query#select(Mapper)}.
+ * value a {@link Selector} builds from it for {@link Query#select(Selector)}.
  *
  * @param <D> what one solution streams as
  */
