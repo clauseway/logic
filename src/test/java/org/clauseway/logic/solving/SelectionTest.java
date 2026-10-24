@@ -32,7 +32,7 @@ public class SelectionTest {
 	@Test
 	public void aRowPerSolutionWithTypedCells() {
 		Unifiable<Integer> x = lvar();
-		List<Solution> rows = rows(Query.of(x.unifies(1).or(x.unifies(2))).select(x).solutions());
+		List<Solution> rows = rows(Query.of(x.unifies(1).or(x.unifies(2))).select(x).stream());
 		assertThat(rows).hasSize(2);
 		assertThat(rows.stream()
 				.map(row -> row.get(x).get())
@@ -47,7 +47,7 @@ public class SelectionTest {
 		List<Solution> rows = rows(Query.of(
 				x.unifies(1).and(y.unifies(2))
 						.or(x.unifies(3).and(y.unifies(4))))
-				.select(x, y).solutions());
+				.select(x, y).stream());
 		assertThat(rows).hasSize(2);
 		for (Solution row : rows) {
 			int cellX = row.get(x).get();
@@ -60,7 +60,7 @@ public class SelectionTest {
 	public void getRefusesAVariableTheSelectDidNotName() {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> stranger = lvar();
-		List<Solution> rows = rows(Query.of(x.unifies(1)).select(x).solutions());
+		List<Solution> rows = rows(Query.of(x.unifies(1)).select(x).stream());
 		assertThatThrownBy(() -> rows.get(0).get(stranger))
 				.isInstanceOf(IllegalArgumentException.class);
 	}
@@ -68,7 +68,7 @@ public class SelectionTest {
 	@Test
 	public void distinctIsTheDefault() {
 		Unifiable<Integer> x = lvar();
-		List<Solution> rows = rows(Query.of(x.unifies(1).or(x.unifies(1))).select(x).solutions());
+		List<Solution> rows = rows(Query.of(x.unifies(1).or(x.unifies(1))).select(x).stream());
 		assertThat(rows).hasSize(1);
 		assertThat(rows.get(0).getCondition()).isSameAs(Condition.ONE);
 	}
@@ -76,14 +76,14 @@ public class SelectionTest {
 	@Test
 	public void allKeepsTheDerivations() {
 		Unifiable<Integer> x = lvar();
-		List<Solution> rows = rows(Query.of(x.unifies(1).or(x.unifies(1))).select(x).all().solutions());
+		List<Solution> rows = rows(Query.of(x.unifies(1).or(x.unifies(1))).select(x).all().stream());
 		assertThat(rows).hasSize(2);
 	}
 
 	@Test
 	public void enforcedIsTheDefaultAndLabelsLikeSolve() {
 		Unifiable<Long> x = lvar();
-		List<Solution> rows = rows(Query.of(dom(x, Longs.range(1, 4))).select(x).solutions());
+		List<Solution> rows = rows(Query.of(dom(x, Longs.range(1, 4))).select(x).stream());
 		assertThat(rows).hasSize(3);
 		assertThat(rows.stream()
 				.map(row -> row.get(x).get())
@@ -95,7 +95,7 @@ public class SelectionTest {
 	@Test
 	public void rawKeepsTheRegionTheDerivationDenotes() {
 		Unifiable<Long> x = lvar();
-		List<Solution> rows = rows(Query.of(dom(x, Longs.range(1, 4))).select(x).raw().solutions());
+		List<Solution> rows = rows(Query.of(dom(x, Longs.range(1, 4))).select(x).raw().stream());
 		assertThat(rows).hasSize(1);
 		Reified<Long> cell = rows.get(0).get(x);
 		assertThat(cell.isVal()).isFalse();
@@ -105,7 +105,7 @@ public class SelectionTest {
 	@Test
 	public void aResidueSurvivingEnforcementGuardsTheRow() {
 		Unifiable<Integer> x = lvar();
-		List<Solution> rows = rows(Query.of(exclude(x.unifies(3))).select(x).solutions());
+		List<Solution> rows = rows(Query.of(exclude(x.unifies(3))).select(x).stream());
 		assertThat(rows).hasSize(1);
 		assertThat(rows.get(0).get(x).isVal()).isFalse();
 		assertThat(rows.get(0).getCondition().isOne()).isFalse();
@@ -115,7 +115,7 @@ public class SelectionTest {
 	public void guardedDerivationsOfOneImageFoldTheirConditions() {
 		Unifiable<Integer> x = lvar();
 		List<Solution> rows = rows(Query.of(exclude(x.unifies(3)).or(exclude(x.unifies(4))))
-				.select(x).solutions());
+				.select(x).stream());
 		assertThat(rows).hasSize(1);
 		assertThat(rows.get(0).getCondition().conjuncts().size()).isEqualTo(2);
 	}
@@ -125,7 +125,7 @@ public class SelectionTest {
 		Unifiable<Integer> pending = lvar();
 		Unifiable<Integer> x = lvar();
 		Goal goal = project(pending, v -> Goal.success()).and(x.unifies(1));
-		assertThatThrownBy(() -> rows(Query.of(goal).select(x).solutions()))
+		assertThatThrownBy(() -> rows(Query.of(goal).select(x).stream()))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("suspensions");
 	}
@@ -133,6 +133,6 @@ public class SelectionTest {
 	@Test
 	public void anEmptyQuestionStreamsNothing() {
 		Unifiable<Integer> x = lvar();
-		assertThat(rows(Query.of(x.unifies(1).and(x.unifies(2))).select(x).solutions())).isEmpty();
+		assertThat(rows(Query.of(x.unifies(1).and(x.unifies(2))).select(x).stream())).isEmpty();
 	}
 }

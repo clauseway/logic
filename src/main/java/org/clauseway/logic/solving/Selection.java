@@ -2,7 +2,7 @@ package org.clauseway.logic.solving;
 
 // ABOUTME: The middle of the select pipeline, where the user chooses the
 // ABOUTME: reading: extraction (enforced default, raw explicit) and
-// ABOUTME: multiplicity (distinct default, all explicit); solutions() streams.
+// ABOUTME: multiplicity (distinct default, all explicit); stream() delivers.
 
 import static org.clauseway.logic.unification.terms.LVal.lval;
 
@@ -16,6 +16,7 @@ import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Unifiable;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -38,30 +39,39 @@ import lombok.RequiredArgsConstructor;
  * derivation, duplicates included — the derivation view, streamed lazily.</li>
  * </ul>
  *
- * {@link #solutions()} streams under the query's driver; closing the stream
+ * {@link #stream()} delivers under the query's driver; closing the stream
  * closes the driver. The distinct reading needs exhaustion, so its stream
- * is computed at the call; the all reading stays lazy.
+ * is computed at the call; the all reading stays lazy. What streams is the
+ * solution itself for {@link Query#select(Unifiable, Unifiable...)}, or the
+ * value a {@link Mapper} builds from it for {@link Query#select(Mapper)}.
+ *
+ * @param <D> what one solution streams as
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public final class Selection {
+public final class Selection<D> {
 
 	private final Query query;
 	private final List<Unifiable<?>> keys;
 	private final boolean raw;
 	private final boolean bag;
+	private final Function<Solution, D> reading;
 
 	/** Capture regions instead of enforcing: the produce seam's reading. */
-	public Selection raw() {
-		return new Selection(query, keys, true, bag);
+	public Selection<D> raw() {
+		return new Selection<>(query, keys, true, bag, reading);
 	}
 
 	/** One row per derivation, duplicates included: the derivation view. */
-	public Selection all() {
-		return new Selection(query, keys, raw, true);
+	public Selection<D> all() {
+		return new Selection<>(query, keys, raw, true, reading);
 	}
 
 	/** The rows, under the chosen reading. */
-	public Stream<Solution> solutions() {
+	public Stream<D> stream() {
+		return solutions().map(reading);
+	}
+
+	private Stream<Solution> solutions() {
 		Unifiable<Object> anchor = lval(Tuple.ofAll(
 				keys.stream().map(Unifiable::getObjectTerm).toArray()));
 		Cont<Answer<Unifiable<?>>, Nothing> answers = Cont.suspend(k -> query.run()

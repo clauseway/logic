@@ -219,11 +219,24 @@ public final class Query {
 	 * {@link Selection} with the reading still open — extraction and
 	 * multiplicity are chosen there before {@link Selection#rows()} streams.
 	 */
-	public Selection select(Unifiable<?> key, Unifiable<?>... keys) {
-		return new Selection(this,
+	public Selection<Solution> select(Unifiable<?> key, Unifiable<?>... keys) {
+		return new Selection<>(this,
 				Stream.concat(Stream.of(key), Arrays.stream(keys))
 						.collect(Collectors.toList()),
-				false, false);
+				false, false, Function.identity());
+	}
+
+	/**
+	 * The mapped reading: the mapper's keys are the selected variables, and
+	 * every solution streams as the value the mapper builds from it. A
+	 * solution with an open cell is refused before the mapper sees it.
+	 */
+	public <D> Selection<D> select(Mapper<D> mapper) {
+		return new Selection<>(this,
+				StreamSupport.stream(mapper.keys().spliterator(), false)
+						.<Unifiable<?>> map(key -> key)
+						.collect(Collectors.toList()),
+				false, false, solution -> mapper.map(solution.decided()));
 	}
 
 	/**

@@ -38,6 +38,22 @@ public final class Solution {
 		return (Reified<T>) ((Tuple) answer.getReified().get()).get(at + 1);
 	}
 
+	/**
+	 * This solution with every cell decided, or a refusal naming the first
+	 * open one: the gate a reading into Java passes through, since a Java
+	 * value has no place for a cell the solution left open.
+	 */
+	public Solution decided() {
+		for (Unifiable<?> key : keys) {
+			Reified<?> cell = get(key);
+			if (!cell.isGround()) {
+				throw new IllegalStateException("the cell at " + key + " is open: " + cell
+						+ " — a reading into Java needs every selected cell decided");
+			}
+		}
+		return this;
+	}
+
 	public Condition getCondition() {
 		return answer.getCondition();
 	}
