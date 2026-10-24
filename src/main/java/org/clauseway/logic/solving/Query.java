@@ -234,8 +234,7 @@ public final class Query {
 	public <D> Selection<D> select(Mapper<D> mapper) {
 		return new Selection<>(this,
 				StreamSupport.stream(mapper.keys().spliterator(), false)
-						.<Unifiable<?>> map(key -> key)
-						.collect(Collectors.toList()),
+						.collect(Collectors.<Unifiable<?>> toList()),
 				false, false, solution -> mapper.map(solution.decided()));
 	}
 
