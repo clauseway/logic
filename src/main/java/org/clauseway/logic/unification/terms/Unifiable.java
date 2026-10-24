@@ -45,6 +45,11 @@ public interface Unifiable<T> extends Term<T> {
 	}
 
 	@SuppressWarnings("unchecked")
+	@Override
+	default Unifiable<T> unifiable() {
+		return this;
+	}
+
 	default Unifiable<Object> getObjectUnifiable() {
 		return (Unifiable<Object>) this;
 	}
