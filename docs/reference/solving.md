@@ -1,6 +1,6 @@
-# The solving front door — Query, Selection, Row
+# The solving front door — Query, Selection, Solution, Mapper
 
-**Status: AS BUILT** (September 2026, the solving arc). Authoritative for
+**Status: AS BUILT** (September 2026, the solving arc; §§4–5 amended October 2026 for the mapped reading). Authoritative for
 the `solving` package's faces; read alongside `condition.md` (the guard
 algebra) and `constraint-kernel.md` (what enforce and the stores do).
 
@@ -19,7 +19,8 @@ Query          configure: the goal + the slots that seed the root
   .stream()               lazy Stream of worlds — the pull harvest
   .solve(out)  read:      classic — Reified per derivation, residues
                           rendered into the term (Constrained)
-  .select(vars...)        the row pipeline: Selection → rows() → Row
+  .select(vars...)        the selection: Selection<Solution> → stream() → Solution
+  .select(mapper)         the mapped reading: Selection<D> → stream() → D
 ```
 
 `run()` is the one primitive; every other face is a consumer of it. It is
@@ -94,9 +95,9 @@ row with the domain in the condition).
 
 ## 4. The readings — Selection
 
-`select(vars...)` names the projection and returns a `Selection` with the
-reading still open, because different consumers want different answers
-from the same question:
+`select(vars...)` names the projection and returns a `Selection<Solution>`
+with the reading still open, because different consumers want different
+answers from the same question:
 
 - **extraction** — enforced (default) or `raw()` (regions as derived).
 - **multiplicity** — distinct (default: alpha-equal images fold in a
@@ -104,23 +105,52 @@ from the same question:
   per derivation).
 
 The distinct reading needs exhaustion, so its stream computes at the
-`rows()` call; `all()` stays lazy. Folding by default loses nothing: the
+`stream()` call; `all()` stays lazy. Folding by default loses nothing: the
 derivation view survives whole at `run()`.
 
-## 5. Row
+`Selection<D>` is typed by what it streams. `select(vars...)` streams the
+solution itself; `select(mapper)` streams the value a `Mapper<D>` builds
+from each solution (§5). The two switches are the same on both and keep
+the type; `stream()` is the one terminal.
+
+## 5. Solution, and the mapped reading
 
 One solution's cells, read by the variable itself:
 
 ```java
 <T> Reified<T> get(Term<T> key)   // the key carries the type
+Solution decided()                // every cell decided, or a refusal
 ```
 
 The cell comes back in output vocabulary — a decided cell is a value
 (`isVal()`/`get()`), a cell the solution left open is its `Any`, so
 wideness is a visible fact (couplings between wide cells stay visible)
 and is never smoothed into an empty. An unselected key refuses.
-`getCondition()` is the knowledge the row holds under; `answer()` is the
-whole seam artifact for anything that ships rows onward.
+`getCondition()` is the knowledge the solution holds under; `answer()`
+is the whole seam artifact for anything that ships rows onward.
+
+A `Mapper<D>` is a Java value's two faces at the boundary:
+
+```java
+Iterable<? extends Unifiable<?>> keys();   // the variables it is built from
+D map(Solution solution);                   // the value one solution builds
+```
+
+The engine is honest about its two directions — a goal takes
+`Unifiable`, an answer is `Reified` — and Java has no such distinction,
+so the merge is the variable itself: the same key enters the goal and
+reads the answer. `Query.select(mapper)` selects the keys and streams
+`map` over every solution, passing each through `decided()` first. A
+Java value has no place for an open cell, so a wide solution is refused
+before the mapper sees it, naming the key and the cell. The solutions
+reading is the identity mapping, so there is one pipeline, not two.
+
+pldb's `Schema<D>` is a Mapper that also names its keys' columns, and
+that is the whole of the Java interop story: a row type is variables in,
+value out, and the engine never rebuilds it — which is why a Schema is
+not a `Structural`. A user type that is a term, travelling inside a
+list or unified as a whole, signs the structural contract instead, with
+`Term` members and `Term.unifiable()` as the door into a goal.
 
 ## 6. Answer and Call, the duals
 
@@ -157,8 +187,8 @@ the one explicit guard-dropping bridge.
   `Condition`, `Residues`, `JoinMap`, `capture` — never the faces.
 
 The package holds two strata knowingly: the vocabulary (below tabling —
-it never imports upward) and the faces (`Query`/`Selection`/`Row`, above
-everything — they import tabling and weight). The package-granularity
+it never imports upward) and the faces (`Query`/`Selection`/`Solution`/`Mapper`,
+above everything — they import tabling and weight). The package-granularity
 cycle with tabling and weight is accepted; the discipline lives at class
 level.
 
@@ -168,7 +198,8 @@ level.
 |---|---|
 | `root()` | explicit slot value on an occupied family; two claimants of the table slot (`weighted` × `tabled`); a repeated instrument slot |
 | `enforced` / `capture` | pending suspensions — the owed condition cannot ride the answer |
-| `Row.get` | a variable the select did not name |
+| `Solution.get` | a variable the select did not name |
+| `Solution.decided` / `select(mapper)` | a cell the solution left open — a mapper never sees one |
 | a refusing table | a tabled call under a plain weighted ring |
 
 ## 9. Lineage
@@ -177,9 +208,20 @@ One arc (September 2026): `Package` → `Knowledge`; the vocabulary move
 into `solving`; `Answer<R>` promoted as `Call<R>`'s dual with pldb
 re-layered on it; the Query skeleton; an ask stage built, corrected to
 enforce (the reify-parity challenge), reshaped twice (`AnswerSet`,
-solve-once-ask-many) and torn down for the `select`/`Row` pipeline; the
+solve-once-ask-many) and torn down for the `select`/`Row` pipeline (`Row`
+renamed `Solution` in October); the
 slot list with the open `slot(Packaged)` door; the weighted slot folding
 `Weights`' three hand-built roots; the door cutover (eight `Goal.solve`
 faces deleted, ~495 call sites across logic/pldb/library migrated); the
 `Question`/`GoalProducer` rewire. Nine hand-assembled roots existed when
 the arc opened; zero remain.
+
+October 2026, the mapped reading: the cargo port's row types went
+through `Structural` with `Unifiable` members (unsound — the reifier
+rebuilds with Anys), then `Term` members with a cast at every use in a
+rule body (honest, heavy), before the human named the actual shape: the
+engine's inputs and outputs differ in meaning and Java's do not, so the
+Java side needs one type that is both, and that type is the variable
+read through a `Solution`. `Mapper` landed in `solving` as part of the
+Query API, `Selection` became `Selection<D>`, `solutions()` became
+`stream()`, and pldb's `Schema` became a Mapper with columns.
