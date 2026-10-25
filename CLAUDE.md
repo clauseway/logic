@@ -25,20 +25,28 @@ tests.
    model. The answer diagnoses the miss — no engagement with the section means the
    reading skimmed; a coherent-but-wrong model built from the prose means the DOC
    licensed it, and the fix is making the implicit explicit before the commit.
-5. **Git discipline.** Work on a branch (`git checkout -b <name>`), commit with explicit
-   paths (`git add <path> ...`), NEVER `git add -A` (it once swept a stray debug line into
-   a commit). Merge to master with `git checkout master && git merge --ff-only <branch>`,
-   then `git push`. End commit messages with the Co-Authored-By trailer.
+5. **Git discipline.** Work on a branch off `develop` (`git checkout -b <name> develop`),
+   commit with explicit paths (`git add <path> ...`), NEVER `git add -A` (it once swept a
+   stray debug line into a commit). A branch lands in `develop` through a pull request
+   Tom merges, never a local merge; `develop` lands in `master` the same way, and that
+   merge IS the release. Push only when asked. End commit messages with the trailers.
+   Every merge to `develop` publishes the POM's `-SNAPSHOT` to the Central Portal's
+   snapshot repository (`snapshot.yml`); the merge to `master` releases the POM's version
+   minus `-SNAPSHOT`, once, by tag (`release.yml`). Central allows a handful of releases
+   a month across all three artifacts, so a release is a milestone Tom names, never a
+   step to make a merge legal. The first branch after a release bumps `develop`'s POM to
+   the next `-SNAPSHOT` (0.x.y: x breaking, y features and fixes).
 6. **Java 8 only.** No `var` in main, no records, no switch-expressions. vavr tuples and
    functions max out at arity 8, accessors are 1-indexed (`._1`).
    **Always import at the top level — NEVER inline-qualify** (`io.vavr.Function2 f`
    is wrong; import it). The only excuse is a genuine simple-name clash in the same
    file (e.g. `java.util.stream.Stream` vs vavr's `Stream`).
-7. **`functional` is a separate repo and a Maven dependency**, resolved from Central at
-   the released version in the POM. It lives at `../functional`; to build against a local
-   change there, point the dependency at functional's `-SNAPSHOT`, `mvn -q install` there,
-   and restore the released version before merging. Schedulers, fibers, `Cont`, `Nothing`
-   all live there.
+7. **`functional` is a separate repo and a Maven dependency**, resolved from Central. On
+   `master` the POM names a released version; on `develop` it may name functional's
+   `-SNAPSHOT`, which functional's own `develop` publishes and this POM's `<repositories>`
+   block resolves. The `develop` → `master` pull request restores the released version.
+   It lives at `../functional`; `mvn -q install` there only for a change not yet merged to
+   its `develop`. Schedulers, fibers, `Cont`, `Nothing` all live there.
 8. **Vocabulary is gated.** Docs may only use terms listed in `docs/glossary.md`. A new
    term or an imported theorem enters by the human's explicit adoption — proposed in
    conversation first, ratified, then given its one-line glossary entry (imports marked
@@ -167,8 +175,9 @@ arguments show their current (deep-walked) values. See `debug/Trace.java`, `debu
   it as its own change.
 - **Release** — DONE (October 2026): `functional` (as `functional-runtime`/`-types`/
   `-algebra`/`-laws`/`-algebra-laws`), `logic` and `pldb` are 0.1.0 on Maven Central under
-  `org.clauseway`; masters are `0.1.1-SNAPSHOT`, cross-repo dependencies are literal
-  released versions.
+  `org.clauseway`; masters carry the next version as `-SNAPSHOT`, cross-repo dependencies
+  on `master` are literal released versions. Since October 2026 `develop` publishes
+  snapshots and `master` releases on merge (rule 5).
 - **Constraint-propagation redesign** — DONE, all of it (July 2026): Phases 1–2,
   the capability API (Steps 1–3.5), and the uniform store boundary
   (`constraint-kernel.md` records the shape). The Neq→FD bridge was DROPPED (optimization-
