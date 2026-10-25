@@ -36,8 +36,12 @@ public class Constrained<T> implements Reified<T> {
 		return that.asVar();
 	}
 
+	/** The value, when the term is one; an answer under residuals denotes a region and refuses as itself. */
 	@Override
 	public T get() {
+		if (!that.isVal()) {
+			throw new IllegalStateException(this + " is an answer under residuals, not a value");
+		}
 		return that.get();
 	}
 
