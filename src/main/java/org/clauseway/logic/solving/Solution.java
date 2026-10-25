@@ -1,6 +1,6 @@
 package org.clauseway.logic.solving;
 
-// ABOUTME: One solution row of a select: Reified cells keyed by the selected
+// ABOUTME: One solution of a select: Reified cells keyed by the selected
 // ABOUTME: variables, under the derivation's Condition -- a view over Answer.
 
 import org.clauseway.functional.tuples.Tuple;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
  * rows onward.
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public final class Row {
+public final class Solution {
 
 	private final List<Unifiable<?>> keys;
 	private final Answer<Unifiable<?>> answer;
@@ -36,6 +36,22 @@ public final class Row {
 					"not a selected variable: " + key + " — this row's columns are " + keys);
 		}
 		return (Reified<T>) ((Tuple) answer.getReified().get()).get(at + 1);
+	}
+
+	/**
+	 * This solution with every cell decided, or a refusal naming the first
+	 * open one: the gate a reading into Java passes through, since a Java
+	 * value has no place for a cell the solution left open.
+	 */
+	public Solution decided() {
+		for (Unifiable<?> key : keys) {
+			Reified<?> cell = get(key);
+			if (!cell.isGround()) {
+				throw new IllegalStateException("the cell at " + key + " is open: " + cell
+						+ " — a reading into Java needs every selected cell decided");
+			}
+		}
+		return this;
 	}
 
 	public Condition getCondition() {

@@ -20,6 +20,11 @@ import lombok.Value;
 public class Unification<T> implements Posting {
 	Term<T> u;
 	Term<T> v;
+	/**
+	 * True skips the occurs check: the unifier extends the substitution
+	 * without looking for the variable inside its value. Sound only when the
+	 * caller knows no cycle can close; see {@link org.clauseway.logic.unification.terms.Unifiable#unifiesNc}.
+	 */
 	boolean noCheck;
 
 	@Override

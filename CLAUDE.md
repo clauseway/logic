@@ -11,7 +11,7 @@ tests.
 1. **TDD.** Write a failing test first, watch it fail, then make it pass. For a bug, first
    write a test that reproduces it.
 2. **The test suite is your safety net.** `mvn test` must end in `BUILD SUCCESS`. Never
-   commit or merge with a red suite. Count today: ~920 tests. If the count drops, you
+   commit or merge with a red suite. Count today: ~946 tests. If the count drops, you
    deleted or emptied a test — don't.
 3. **Test output must be pristine.** No `System.out.println` in tests or in `src/main`.
    Assert results; don't print them. (One intentional exception is documented below.)
@@ -75,7 +75,9 @@ Small, local, well-tested changes elsewhere don't need to ask.
   **immutable/persistent** — this is why backtracking is free (each branch keeps its own).
 - **`Term` / `Unifiable` / `Reified`** (`unification/`): `Term` is the structural root;
   `Unifiable` is solver input (`LVar`, `LVal`); `Reified` is solver output. `solve` takes
-  `Unifiable` and yields `Reified`.
+  `Unifiable` and yields `Reified`. A user type that is a term signs `Structural<R>` with
+  `Term` members, and `Term.unifiable()` is a member's door into a goal (a reified name
+  refuses).
 - **Schedulers** (in `functional`) drive the search: `BreadthFirstScheduler` (default, fair),
   `DepthFirstScheduler` (Prolog order, used by tracing), `RoundRobin`, `ForkJoin`,
   `UnfairBreadthFirst`. All are drivers over `FiberStep`; they differ only in which frame
@@ -107,9 +109,11 @@ Small, local, well-tested changes elsewhere don't need to ask.
 - **The front door** (`solving/`): `Query.of(goal)` + slots (`from`/`tabled`/`on`/
   `weighted`/`traced`/`profiled`/`optimized`/`slot(Packaged)`) seeds the root — defaults
   FILL ABSENT FAMILIES ONLY, explicit-on-occupied refuses. `run()` is the Cont primitive
-  every face consumes; `solve(out)` the classic reified reading; `select(vars).rows()`
-  the conditional row pipeline (Selection: enforced/raw × distinct/all; Row: typed keyed
-  get). `Goal` has NO solve methods. Engine internals (tabling) never ride the door —
+  every face consumes; `solve(out)` the classic reified reading; `select(vars).stream()`
+  the selection (`Selection<D>`: enforced/raw × distinct/all; `Solution`: typed keyed
+  get, `decided()` the gate into Java); `select(selector).stream()` the mapped reading — a
+  `Selector<D>` names its keys and maps a decided Solution into a Java value, which is the
+  whole Java interop story (pldb's `Schema` is one). `Goal` has NO solve methods. Engine internals (tabling) never ride the door —
   they consume solving's vocabulary (`Call`/`Answer`/`Condition`/`Residues`/`capture`).
   Details: `docs/reference/solving.md`.
 

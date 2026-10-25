@@ -13,6 +13,10 @@
  * {@code org.clauseway.logic.unification.terms.LVal}; their static factories
  * return {@code Unifiable} so they can be unified directly. The empty list and
  * the empty tree are equality atoms, not structure.
+ * {@link org.clauseway.logic.unification.structures.Structural} is the
+ * contract a user's own compound value signs to be taken apart the same
+ * way: its kind is its class, its members are in a fixed order, and only
+ * a signed value is structure — a foreign value stays an equality atom.
  * {@code org.clauseway.logic.unification.MiniKanren#members} is where the
  * unifier, walk and reification recognize these two shapes alongside
  * tuples; the pattern-matching goals over lists live in
