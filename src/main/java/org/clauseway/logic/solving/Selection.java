@@ -52,18 +52,19 @@ public final class Selection<D> {
 
 	private final Query query;
 	private final List<Unifiable<?>> keys;
+	private final List<String> names;
 	private final boolean raw;
 	private final boolean bag;
 	private final Function<Solution, D> reading;
 
 	/** Capture regions instead of enforcing: the produce seam's reading. */
 	public Selection<D> raw() {
-		return new Selection<>(query, keys, true, bag, reading);
+		return new Selection<>(query, keys, names, true, bag, reading);
 	}
 
 	/** One row per derivation, duplicates included: the derivation view. */
 	public Selection<D> all() {
-		return new Selection<>(query, keys, raw, true, reading);
+		return new Selection<>(query, keys, names, raw, true, reading);
 	}
 
 	/** The rows, under the chosen reading. */
@@ -77,7 +78,7 @@ public final class Selection<D> {
 		Cont<Answer<Unifiable<?>>, Nothing> answers = Cont.suspend(k -> query.run()
 				.apply(world -> extracted(world, anchor, k)));
 		if (bag) {
-			return Query.harvest(answers, query.factory()).map(a -> new Solution(keys, a));
+			return Query.harvest(answers, query.factory()).map(a -> new Solution(keys, names, a));
 		}
 		try (Stream<Answer<Unifiable<?>>> all = Query.harvest(answers, query.factory())) {
 			JoinMap<Reified<?>, Condition> folded = all.reduce(
@@ -86,7 +87,7 @@ public final class Selection<D> {
 					Exceptions.throwingBiOp(UnsupportedOperationException::new));
 			return IntStream.range(0, folded.size())
 					.mapToObj(folded::get)
-					.map(entry -> new Solution(keys,
+					.map(entry -> new Solution(keys, names,
 							Answer.of(anchor, entry._1, entry._2)))
 					.collect(Collectors.toList())
 					.stream();

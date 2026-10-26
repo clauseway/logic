@@ -72,8 +72,8 @@ public class SolutionTest {
 				.hasMessageContaining(rendering);
 		assertThatThrownBy(row::decided)
 				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining(x.toString())
-				.hasMessageContaining(rendering);
+				.hasMessageContaining("not decided at [" + x + "]")
+				.hasMessageContaining(row.toString());
 	}
 
 	/** Reading a free cell as a value refuses by its slot name. */
@@ -90,5 +90,31 @@ public class SolutionTest {
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining(y.toString())
 				.hasMessageContaining(rendering);
+	}
+
+	/** The refusal renders the whole solution: every cell by its key, in the select's order, under the residuals. */
+	@Test
+	public void theRefusalRendersTheWholeSolutionUnderItsResiduals() {
+		Unifiable<Integer> x = lvar();
+		Unifiable<Integer> y = lvar();
+		Unifiable<Integer> z = lvar();
+		Solution row = one(Query.of(x.unifies(1).and(exclude(y.unifies(2)))).select(x, y, z));
+		assertThat(row.toString())
+				.startsWith("(" + x + ": {1}, " + y + ": _.")
+				.contains(", " + z + ": _.")
+				.contains(") : ¬(")
+				.contains("2");
+		assertThatThrownBy(row::decided)
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("not decided")
+				.hasMessageContaining(row.toString());
+	}
+
+	/** A decided solution renders as its cells alone. */
+	@Test
+	public void aDecidedSolutionRendersWithoutResiduals() {
+		Unifiable<Integer> x = lvar();
+		Solution row = one(Query.of(x.unifies(1)).select(x));
+		assertThat(row.toString()).isEqualTo("(" + x + ": {1})");
 	}
 }

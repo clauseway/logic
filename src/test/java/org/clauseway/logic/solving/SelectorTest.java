@@ -43,6 +43,14 @@ public class SelectorTest {
 		}
 	}
 
+	/** The point selector naming its keys as a row type would. */
+	private static class NamedPointSelector extends PointSelector {
+		@Override
+		public Iterable<String> names() {
+			return Arrays.asList("x", "y");
+		}
+	}
+
 	private static <D> List<D> all(Stream<D> stream) {
 		try (Stream<D> rows = stream) {
 			return rows.collect(Collectors.toList());
@@ -75,6 +83,16 @@ public class SelectorTest {
 				.hasMessageContaining("not decided")
 				.hasMessageContaining(point.y.toString());
 		assertThat(point.mapped.get()).isZero();
+	}
+
+	/** The refusal shows every cell by the name the selector gives its key. */
+	@Test
+	public void theRefusalNamesTheCellsAsTheSelectorDoes() {
+		NamedPointSelector point = new NamedPointSelector();
+		assertThatThrownBy(() -> all(Query.of(point.x.unifies(1)).select(point).stream()))
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("not decided")
+				.hasMessageContaining("(x: {1}, y: _.");
 	}
 
 	@Test
