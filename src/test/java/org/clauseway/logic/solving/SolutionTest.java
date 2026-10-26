@@ -70,9 +70,9 @@ public class SolutionTest {
 		assertThatThrownBy(() -> row.get(x).get())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining(rendering);
-		assertThatThrownBy(row::decided)
+		assertThatThrownBy(row::ground)
 				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("not decided at [" + x + "]")
+				.hasMessageContaining("not ground at [" + x + "]")
 				.hasMessageContaining(row.toString());
 	}
 
@@ -86,7 +86,7 @@ public class SolutionTest {
 		assertThatThrownBy(() -> row.get(y).get())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining(rendering);
-		assertThatThrownBy(row::decided)
+		assertThatThrownBy(row::ground)
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining(y.toString())
 				.hasMessageContaining(rendering);
@@ -104,13 +104,13 @@ public class SolutionTest {
 				.contains(", " + z + ": _.")
 				.contains(") : ¬(")
 				.contains("2");
-		assertThatThrownBy(row::decided)
+		assertThatThrownBy(row::ground)
 				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("not decided")
+				.hasMessageContaining("not ground")
 				.hasMessageContaining(row.toString());
 	}
 
-	/** A decided solution renders as its cells alone. */
+	/** A ground solution renders as its cells alone. */
 	@Test
 	public void aDecidedSolutionRendersWithoutResiduals() {
 		Unifiable<Integer> x = lvar();

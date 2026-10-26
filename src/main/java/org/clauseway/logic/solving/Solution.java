@@ -21,10 +21,10 @@ import org.clauseway.vavr.collection.List;
 /**
  * One row of a {@link Selection}: the selected variables' cells from one
  * solution, read by the variable itself — the key carries the type, the
- * cell comes back in output vocabulary. A decided cell is a value
- * ({@code isVal()}/{@code get()}); a cell the solution did not decide is
- * the slot name the reifier gave it, under the answer's residuals about
- * it — a fact of the answer, never smoothed into an empty.
+ * cell comes back in output vocabulary. A ground cell is a value
+ * ({@code isVal()}/{@code get()}); a cell that is not ground is the
+ * slot name the reifier gave it, under the answer's residuals about it —
+ * a symbolic answer over many ground ones, never smoothed into an empty.
  * {@link #getCondition} is the knowledge this row holds under;
  * {@link #answer} is the whole boundary artifact for anything that ships
  * rows onward. The solution renders whole, shaped as the select named
@@ -77,18 +77,18 @@ public final class Solution {
 	}
 
 	/**
-	 * This solution with every cell decided, or a refusal naming the cells
+	 * This solution with every cell ground, or a refusal naming the cells
 	 * that are not and rendering the solution whole: the gate a reading
 	 * into Java passes through, since a Java value has no place for a slot
 	 * name or a residual.
 	 */
-	public Solution decided() {
-		java.util.List<String> undecided = IntStream.range(0, keys.size())
+	public Solution ground() {
+		java.util.List<String> symbolic = IntStream.range(0, keys.size())
 				.filter(at -> !cell(at).isGround())
 				.mapToObj(names::get)
 				.collect(Collectors.toList());
-		if (!undecided.isEmpty()) {
-			throw new IllegalStateException("not decided at " + undecided + ": " + this
+		if (!symbolic.isEmpty()) {
+			throw new IllegalStateException("not ground at " + symbolic + ": " + this
 					+ " — a reading into Java needs a value in every selected cell");
 		}
 		return this;

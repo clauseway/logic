@@ -230,7 +230,7 @@ public final class Query {
 	/**
 	 * The mapped reading: the selector's keys are the selected variables, and
 	 * every solution streams as the value the selector builds from it. A
-	 * solution with an open cell is refused before the selector sees it.
+	 * solution with a cell that is not ground is refused before the selector sees it.
 	 */
 	public <D> Selection<D> select(Selector<D> selector) {
 		return new Selection<>(this,
@@ -238,7 +238,7 @@ public final class Query {
 						.collect(Collectors.<Unifiable<?>> toList()),
 				StreamSupport.stream(selector.names().spliterator(), false)
 						.collect(Collectors.toList()),
-				false, false, solution -> selector.map(solution.decided()));
+				false, false, solution -> selector.map(solution.ground()));
 	}
 
 	/**

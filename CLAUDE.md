@@ -111,8 +111,8 @@ Small, local, well-tested changes elsewhere don't need to ask.
   FILL ABSENT FAMILIES ONLY, explicit-on-occupied refuses. `run()` is the Cont primitive
   every face consumes; `solve(out)` the classic reified reading; `select(vars).stream()`
   the selection (`Selection<D>`: enforced/raw × distinct/all; `Solution`: typed keyed
-  get, `decided()` the gate into Java); `select(selector).stream()` the mapped reading — a
-  `Selector<D>` names its keys and maps a decided Solution into a Java value, which is the
+  get, `ground()` the gate into Java); `select(selector).stream()` the mapped reading — a
+  `Selector<D>` names its keys and maps a ground Solution into a Java value, which is the
   whole Java interop story (pldb's `Schema` is one). `Goal` has NO solve methods. Engine internals (tabling) never ride the door —
   they consume solving's vocabulary (`Call`/`Answer`/`Condition`/`Residues`/`capture`).
   Details: `docs/reference/solving.md`.
