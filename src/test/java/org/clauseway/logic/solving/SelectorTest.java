@@ -1,7 +1,7 @@
 package org.clauseway.logic.solving;
 
 // ABOUTME: Pins the mapped reading of a select: a Selector names the variables it
-// ABOUTME: needs and maps each solution into Java; an open cell is refused before map.
+// ABOUTME: needs and maps each solution into Java; a cell that is not ground is refused before map.
 
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +43,14 @@ public class SelectorTest {
 		}
 	}
 
+	/** The point selector naming its keys as a row type would. */
+	private static class NamedPointSelector extends PointSelector {
+		@Override
+		public Iterable<String> names() {
+			return Arrays.asList("x", "y");
+		}
+	}
+
 	private static <D> List<D> all(Stream<D> stream) {
 		try (Stream<D> rows = stream) {
 			return rows.collect(Collectors.toList());
@@ -72,9 +80,19 @@ public class SelectorTest {
 		PointSelector point = new PointSelector();
 		assertThatThrownBy(() -> all(Query.of(point.x.unifies(1)).select(point).stream()))
 				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("open")
+				.hasMessageContaining("not ground")
 				.hasMessageContaining(point.y.toString());
 		assertThat(point.mapped.get()).isZero();
+	}
+
+	/** The refusal shows every cell by the name the selector gives its key. */
+	@Test
+	public void theRefusalNamesTheCellsAsTheSelectorDoes() {
+		NamedPointSelector point = new NamedPointSelector();
+		assertThatThrownBy(() -> all(Query.of(point.x.unifies(1)).select(point).stream()))
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("not ground")
+				.hasMessageContaining("(x: {1}, y: _.");
 	}
 
 	@Test

@@ -220,7 +220,7 @@ public interface Posting extends Goal, Bounded, Postable {
 
 		@Override
 		public String toString() {
-			return "state(" + item + ")";
+			return item.toString();
 		}
 	}
 

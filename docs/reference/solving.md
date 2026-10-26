@@ -118,21 +118,34 @@ the type; `stream()` is the one terminal.
 One solution's cells, read by the variable itself:
 
 ```java
-<T> Reified<T> get(Term<T> key)   // the key carries the type
-Solution decided()                // every cell decided, or a refusal
+<T> Reified<T> get(Unifiable<T> key)   // the key carries the type
+Solution ground()                 // every cell ground, or a refusal
 ```
 
-The cell comes back in output vocabulary — a decided cell is a value
-(`isVal()`/`get()`), a cell the solution left open is its `Any`, so
-wideness is a visible fact (couplings between wide cells stay visible)
-and is never smoothed into an empty. An unselected key refuses.
+The cell comes back in output vocabulary, stated as the reifier would
+state it — a ground cell is a value (`isVal()`/`get()`); a cell the
+solution did not decide is its slot name (`Any`), or that name under
+the answer's residuals about it (`Constrained`) when the answer is one
+region, so a coupling between cells stays visible and is never smoothed
+into an empty. A row folded from several regions shows the name alone;
+the regions are `getCondition()`. Reading a name or a constrained cell
+as a value refuses by its rendering. An unselected key refuses.
 `getCondition()` is the knowledge the solution holds under; `answer()`
 is the whole seam artifact for anything that ships rows onward.
+
+A solution renders whole, shaped as the select named it: every cell
+under its name in the select's order, then the residuals when there are
+any — `(x: {1}, y: _.0) : ¬(_.0 ≡ {2})`, regions ∨-joined, each region's
+atoms ∧-joined. A wide row is still an answer, a symbolic one over
+many ground results; `ground()` refuses with that rendering, naming the
+cells that are not ground first, so one message shows every such cell
+and what holds it, not the first one met.
 
 A `Selector<D>` is a Java value's two faces at the boundary:
 
 ```java
 Iterable<? extends Unifiable<?>> keys();   // the variables it is built from
+Iterable<String> names();                  // what a solution shows the keys by; the keys unless overridden
 D map(Solution solution);                   // the value one solution builds
 ```
 
@@ -140,12 +153,14 @@ The engine is honest about its two directions — a goal takes
 `Unifiable`, an answer is `Reified` — and Java has no such distinction,
 so the merge is the variable itself: the same key enters the goal and
 reads the answer. `Query.select(selector)` selects the keys and streams
-`map` over every solution, passing each through `decided()` first. A
-Java value has no place for an open cell, so a wide solution is refused
-before the selector sees it, naming the key and the cell. The solutions
-reading is the identity mapping, so there is one pipeline, not two.
+`map` over every solution, passing each through `ground()` first. A
+Java value has no place for a slot name or a residual, so a solution
+with a cell that is not ground is refused before the selector sees it, the
+solution rendered whole with each cell under the name the selector gives
+its key. The solutions reading is the identity mapping, so there is one
+pipeline, not two.
 
-pldb's `Schema<D>` is a Selector that also names its keys' columns, and
+pldb's `Schema<D>` is a Selector whose names are its columns, and
 that is the whole of the Java interop story: a row type is variables in,
 value out, and the engine never rebuilds it — which is why a Schema is
 not a `Structural`. A user type that is a term, travelling inside a
@@ -199,7 +214,8 @@ level.
 | `root()` | explicit slot value on an occupied family; two claimants of the table slot (`weighted` × `tabled`); a repeated instrument slot |
 | `enforced` / `capture` | pending suspensions — the owed condition cannot ride the answer |
 | `Solution.get` | a variable the select did not name |
-| `Solution.decided` / `select(selector)` | a cell the solution left open — a selector never sees one |
+| `Solution.ground` / `select(selector)` | a cell that is not ground: those cells named, the solution rendered whole under its residuals — a selector never sees one |
+| `Any.get` / `Constrained.get` | a slot name, or a cell under residuals, read as a value — refused by its rendering |
 | a refusing table | a tabled call under a plain weighted ring |
 
 ## 9. Lineage

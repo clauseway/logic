@@ -30,6 +30,12 @@ public class Any<T> implements Reified<T>, Name<T> {
 		return Optional.of(this);
 	}
 
+	/** A slot name has no value: reading one as a value is refused by name. */
+	@Override
+	public T get() {
+		throw new IllegalStateException(this + " is a slot name, not a value");
+	}
+
 	@Override
 	public String toString() {
 		return "_." + number;

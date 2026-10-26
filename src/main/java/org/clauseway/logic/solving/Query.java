@@ -220,22 +220,25 @@ public final class Query {
 	 * multiplicity are chosen there before {@link Selection#rows()} streams.
 	 */
 	public Selection<Solution> select(Unifiable<?> key, Unifiable<?>... keys) {
-		return new Selection<>(this,
-				Stream.concat(Stream.of(key), Arrays.stream(keys))
-						.collect(Collectors.toList()),
+		java.util.List<Unifiable<?>> selected = Stream.concat(Stream.of(key), Arrays.stream(keys))
+				.collect(Collectors.toList());
+		return new Selection<>(this, selected,
+				selected.stream().map(Object::toString).collect(Collectors.toList()),
 				false, false, Function.identity());
 	}
 
 	/**
 	 * The mapped reading: the selector's keys are the selected variables, and
 	 * every solution streams as the value the selector builds from it. A
-	 * solution with an open cell is refused before the selector sees it.
+	 * solution with a cell that is not ground is refused before the selector sees it.
 	 */
 	public <D> Selection<D> select(Selector<D> selector) {
 		return new Selection<>(this,
 				StreamSupport.stream(selector.keys().spliterator(), false)
 						.collect(Collectors.<Unifiable<?>> toList()),
-				false, false, solution -> selector.map(solution.decided()));
+				StreamSupport.stream(selector.names().spliterator(), false)
+						.collect(Collectors.toList()),
+				false, false, solution -> selector.map(solution.ground()));
 	}
 
 	/**
