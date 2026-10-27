@@ -69,10 +69,10 @@ public final class Selection<D> {
 
 	/** The rows, under the chosen reading. */
 	public Stream<D> stream() {
-		return solutions().map(reading);
+		return rows().map(reading);
 	}
 
-	private Stream<Row> solutions() {
+	private Stream<Row> rows() {
 		Unifiable<Object> anchor = lval(Tuple.ofAll(
 				keys.stream().map(Unifiable::getObjectTerm).toArray()));
 		Cont<Answer<Unifiable<?>>, Nothing> answers = Cont.suspend(k -> query.run()
