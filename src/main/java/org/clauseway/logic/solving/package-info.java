@@ -1,5 +1,5 @@
 // ABOUTME: The solving entry point: Query seeds a root Knowledge through slots and runs a
-// ABOUTME: goal; Selection/Solution read answers, Answer/Call/Condition/Residues name them.
+// ABOUTME: goal; Selection/Row read answers, Answer/Call/Condition/Residues name them.
 
 /**
  * Running a goal and reading its answers. {@link org.clauseway.logic.solving.Query}
@@ -10,7 +10,7 @@
  * {@code Cont} primitive, {@code solve(out)} the reified reading, {@code stream()}
  * the lazy pull of every derived state, and {@code select(vars)} opens a
  * {@link org.clauseway.logic.solving.Selection} whose {@code stream()} delivers
- * {@link org.clauseway.logic.solving.Solution}s, or {@code select(selector)} for the
+ * {@link org.clauseway.logic.solving.Row}s, or {@code select(selector)} for the
  * values a {@link org.clauseway.logic.solving.Selector} builds from them. The answer
  * vocabulary lives beside it:
  * {@link org.clauseway.logic.solving.Answer} (a reified image under a

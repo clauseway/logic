@@ -17,7 +17,7 @@ import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.junit.Test;
 
-public class SolutionTest {
+public class RowTest {
 
 	private static <D> List<D> all(Stream<D> stream) {
 		try (Stream<D> rows = stream) {
@@ -25,8 +25,8 @@ public class SolutionTest {
 		}
 	}
 
-	private static Solution one(Selection<Solution> selection) {
-		List<Solution> rows = all(selection.stream());
+	private static Row one(Selection<Row> selection) {
+		List<Row> rows = all(selection.stream());
 		assertThat(rows).hasSize(1);
 		return rows.get(0);
 	}
@@ -35,7 +35,7 @@ public class SolutionTest {
 	@Test
 	public void aCellUnderAResidualIsConstrainedByIt() {
 		Unifiable<Integer> x = lvar();
-		Solution row = one(Query.of(exclude(x.unifies(1))).select(x));
+		Row row = one(Query.of(exclude(x.unifies(1))).select(x));
 		Reified<Integer> cell = row.get(x);
 		assertThat(cell).isInstanceOf(Constrained.class);
 		assertThat(cell.isGround()).isFalse();
@@ -47,7 +47,7 @@ public class SolutionTest {
 	public void aResidualRidesOnlyTheCellsItMentions() {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		Solution row = one(Query.of(exclude(x.unifies(1)).and(y.unifies(2))).select(x, y));
+		Row row = one(Query.of(exclude(x.unifies(1)).and(y.unifies(2))).select(x, y));
 		assertThat(row.get(x)).isInstanceOf(Constrained.class);
 		assertThat(row.get(y).get()).isEqualTo(2);
 	}
@@ -57,7 +57,7 @@ public class SolutionTest {
 	public void aFreeCellIsItsSlotName() {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		Solution row = one(Query.of(x.unifies(1)).select(x, y));
+		Row row = one(Query.of(x.unifies(1)).select(x, y));
 		assertThat(row.get(y)).isInstanceOf(Any.class);
 	}
 
@@ -65,7 +65,7 @@ public class SolutionTest {
 	@Test
 	public void aConstrainedCellRefusesToBeAValueByItsRendering() {
 		Unifiable<Integer> x = lvar();
-		Solution row = one(Query.of(exclude(x.unifies(1))).select(x));
+		Row row = one(Query.of(exclude(x.unifies(1))).select(x));
 		String rendering = row.get(x).toString();
 		assertThatThrownBy(() -> row.get(x).get())
 				.isInstanceOf(IllegalStateException.class)
@@ -81,7 +81,7 @@ public class SolutionTest {
 	public void aFreeCellRefusesToBeAValueByItsSlotName() {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		Solution row = one(Query.of(x.unifies(1)).select(x, y));
+		Row row = one(Query.of(x.unifies(1)).select(x, y));
 		String rendering = row.get(y).toString();
 		assertThatThrownBy(() -> row.get(y).get())
 				.isInstanceOf(IllegalStateException.class)
@@ -98,7 +98,7 @@ public class SolutionTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Unifiable<Integer> z = lvar();
-		Solution row = one(Query.of(x.unifies(1).and(exclude(y.unifies(2)))).select(x, y, z));
+		Row row = one(Query.of(x.unifies(1).and(exclude(y.unifies(2)))).select(x, y, z));
 		assertThat(row.toString())
 				.startsWith("(" + x + ": {1}, " + y + ": _.")
 				.contains(", " + z + ": _.")
@@ -114,7 +114,7 @@ public class SolutionTest {
 	@Test
 	public void aDecidedSolutionRendersWithoutResiduals() {
 		Unifiable<Integer> x = lvar();
-		Solution row = one(Query.of(x.unifies(1)).select(x));
+		Row row = one(Query.of(x.unifies(1)).select(x));
 		assertThat(row.toString()).isEqualTo("(" + x + ": {1})");
 	}
 }

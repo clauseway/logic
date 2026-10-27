@@ -1,4 +1,4 @@
-# The solving front door — Query, Selection, Solution, Selector
+# The solving front door — Query, Selection, Row, Selector
 
 **Status: AS BUILT** (September 2026, the solving arc; §§4–5 amended October 2026 for the mapped reading). Authoritative for
 the `solving` package's faces; read alongside `condition.md` (the guard
@@ -19,7 +19,7 @@ Query          configure: the goal + the slots that seed the root
   .stream()               lazy Stream of worlds — the pull harvest
   .solve(out)  read:      classic — Reified per derivation, residues
                           rendered into the term (Constrained)
-  .select(vars...)        the selection: Selection<Solution> → stream() → Solution
+  .select(vars...)        the selection: Selection<Row> → stream() → Row
   .select(selector)         the mapped reading: Selection<D> → stream() → D
 ```
 
@@ -95,7 +95,7 @@ row with the domain in the condition).
 
 ## 4. The readings — Selection
 
-`select(vars...)` names the projection and returns a `Selection<Solution>`
+`select(vars...)` names the projection and returns a `Selection<Row>`
 with the reading still open, because different consumers want different
 answers from the same question:
 
@@ -113,13 +113,13 @@ solution itself; `select(selector)` streams the value a `Selector<D>` builds
 from each solution (§5). The two switches are the same on both and keep
 the type; `stream()` is the one terminal.
 
-## 5. Solution, and the mapped reading
+## 5. Row, and the mapped reading
 
 One solution's cells, read by the variable itself:
 
 ```java
 <T> Reified<T> get(Unifiable<T> key)   // the key carries the type
-Solution ground()                 // every cell ground, or a refusal
+Row ground()                 // every cell ground, or a refusal
 ```
 
 The cell comes back in output vocabulary, stated as the reifier would
@@ -146,7 +146,7 @@ A `Selector<D>` is a Java value's two faces at the boundary:
 ```java
 Iterable<? extends Unifiable<?>> keys();   // the variables it is built from
 Iterable<String> names();                  // what a solution shows the keys by; the keys unless overridden
-D map(Solution solution);                   // the value one solution builds
+D map(Row row);                        // the value one row builds
 ```
 
 The engine is honest about its two directions — a goal takes
@@ -202,7 +202,7 @@ the one explicit guard-dropping bridge.
   `Condition`, `Residues`, `JoinMap`, `capture` — never the faces.
 
 The package holds two strata knowingly: the vocabulary (below tabling —
-it never imports upward) and the faces (`Query`/`Selection`/`Solution`/`Selector`,
+it never imports upward) and the faces (`Query`/`Selection`/`Row`/`Selector`,
 above everything — they import tabling and weight). The package-granularity
 cycle with tabling and weight is accepted; the discipline lives at class
 level.
@@ -213,8 +213,8 @@ level.
 |---|---|
 | `root()` | explicit slot value on an occupied family; two claimants of the table slot (`weighted` × `tabled`); a repeated instrument slot |
 | `enforced` / `capture` | pending suspensions — the owed condition cannot ride the answer |
-| `Solution.get` | a variable the select did not name |
-| `Solution.ground` / `select(selector)` | a cell that is not ground: those cells named, the solution rendered whole under its residuals — a selector never sees one |
+| `Row.get` | a variable the select did not name |
+| `Row.ground` / `select(selector)` | a cell that is not ground: those cells named, the solution rendered whole under its residuals — a selector never sees one |
 | `Any.get` / `Constrained.get` | a slot name, or a cell under residuals, read as a value — refused by its rendering |
 | a refusing table | a tabled call under a plain weighted ring |
 
@@ -225,7 +225,7 @@ into `solving`; `Answer<R>` promoted as `Call<R>`'s dual with pldb
 re-layered on it; the Query skeleton; an ask stage built, corrected to
 enforce (the reify-parity challenge), reshaped twice (`AnswerSet`,
 solve-once-ask-many) and torn down for the `select`/`Row` pipeline (`Row`
-renamed `Solution` in October); the
+was `Solution` for a few days in October); the
 slot list with the open `slot(Packaged)` door; the weighted slot folding
 `Weights`' three hand-built roots; the door cutover (eight `Goal.solve`
 faces deleted, ~495 call sites across logic/pldb/library migrated); the
@@ -238,6 +238,6 @@ rebuilds with Anys), then `Term` members with a cast at every use in a
 rule body (honest, heavy), before the human named the actual shape: the
 engine's inputs and outputs differ in meaning and Java's do not, so the
 Java side needs one type that is both, and that type is the variable
-read through a `Solution`. `Selector` landed in `solving` as part of the
+read through a `Row`. `Selector` landed in `solving` as part of the
 Query API, `Selection` became `Selection<D>`, `solutions()` became
 `stream()`, and pldb's `Schema` became a Selector with columns.

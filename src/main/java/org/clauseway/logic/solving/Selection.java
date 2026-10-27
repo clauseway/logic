@@ -55,7 +55,7 @@ public final class Selection<D> {
 	private final List<String> names;
 	private final boolean raw;
 	private final boolean bag;
-	private final Function<Solution, D> reading;
+	private final Function<Row, D> reading;
 
 	/** Capture regions instead of enforcing: the produce seam's reading. */
 	public Selection<D> raw() {
@@ -69,16 +69,16 @@ public final class Selection<D> {
 
 	/** The rows, under the chosen reading. */
 	public Stream<D> stream() {
-		return solutions().map(reading);
+		return rows().map(reading);
 	}
 
-	private Stream<Solution> solutions() {
+	private Stream<Row> rows() {
 		Unifiable<Object> anchor = lval(Tuple.ofAll(
 				keys.stream().map(Unifiable::getObjectTerm).toArray()));
 		Cont<Answer<Unifiable<?>>, Nothing> answers = Cont.suspend(k -> query.run()
 				.apply(world -> extracted(world, anchor, k)));
 		if (bag) {
-			return Query.harvest(answers, query.factory()).map(a -> new Solution(keys, names, a));
+			return Query.harvest(answers, query.factory()).map(a -> new Row(keys, names, a));
 		}
 		try (Stream<Answer<Unifiable<?>>> all = Query.harvest(answers, query.factory())) {
 			JoinMap<Reified<?>, Condition> folded = all.reduce(
@@ -87,7 +87,7 @@ public final class Selection<D> {
 					Exceptions.throwingBiOp(UnsupportedOperationException::new));
 			return IntStream.range(0, folded.size())
 					.mapToObj(folded::get)
-					.map(entry -> new Solution(keys, names,
+					.map(entry -> new Row(keys, names,
 							Answer.of(anchor, entry._1, entry._2)))
 					.collect(Collectors.toList())
 					.stream();

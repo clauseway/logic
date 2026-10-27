@@ -1,7 +1,7 @@
 package org.clauseway.logic.solving;
 
 // ABOUTME: Pins the mapped reading of a select: a Selector names the variables it
-// ABOUTME: needs and maps each solution into Java; a cell that is not ground is refused before map.
+// ABOUTME: needs and maps each row into Java; a cell that is not ground is refused before map.
 
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,9 +37,9 @@ public class SelectorTest {
 		}
 
 		@Override
-		public Point map(Solution solution) {
+		public Point map(Row row) {
 			mapped.incrementAndGet();
-			return new Point(solution.get(x).get(), solution.get(y).get());
+			return new Point(row.get(x).get(), row.get(y).get());
 		}
 	}
 
@@ -98,7 +98,7 @@ public class SelectorTest {
 	@Test
 	public void theVariablesReadingIsTheSolutionItself() {
 		Unifiable<Integer> x = lvar();
-		List<Solution> rows = all(Query.of(x.unifies(1)).select(x).stream());
+		List<Row> rows = all(Query.of(x.unifies(1)).select(x).stream());
 		assertThat(rows).hasSize(1);
 		assertThat(rows.get(0).get(x).get()).isEqualTo(1);
 	}
