@@ -1,6 +1,6 @@
 package org.clauseway.logic.solving;
 
-// ABOUTME: One solution of a select: Reified cells keyed by the selected
+// ABOUTME: One row of a select: Reified cells keyed by the selected
 // ABOUTME: variables, under the derivation's Condition -- a view over Answer.
 
 import java.util.Set;
@@ -31,7 +31,7 @@ import org.clauseway.vavr.collection.List;
  * it: {@code (name: cell, ...)}, under the residuals when there are any.
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public final class Solution {
+public final class Row {
 
 	private final java.util.List<Unifiable<?>> keys;
 	private final java.util.List<String> names;
@@ -82,7 +82,7 @@ public final class Solution {
 	 * into Java passes through, since a Java value has no place for a slot
 	 * name or a residual.
 	 */
-	public Solution ground() {
+	public Row ground() {
 		java.util.List<String> symbolic = IntStream.range(0, keys.size())
 				.filter(at -> !cell(at).isGround())
 				.mapToObj(names::get)

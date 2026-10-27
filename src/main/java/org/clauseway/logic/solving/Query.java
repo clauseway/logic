@@ -219,7 +219,7 @@ public final class Query {
 	 * {@link Selection} with the reading still open — extraction and
 	 * multiplicity are chosen there before {@link Selection#rows()} streams.
 	 */
-	public Selection<Solution> select(Unifiable<?> key, Unifiable<?>... keys) {
+	public Selection<Row> select(Unifiable<?> key, Unifiable<?>... keys) {
 		java.util.List<Unifiable<?>> selected = Stream.concat(Stream.of(key), Arrays.stream(keys))
 				.collect(Collectors.toList());
 		return new Selection<>(this, selected,
@@ -238,7 +238,7 @@ public final class Query {
 						.collect(Collectors.<Unifiable<?>> toList()),
 				StreamSupport.stream(selector.names().spliterator(), false)
 						.collect(Collectors.toList()),
-				false, false, solution -> selector.map(solution.ground()));
+				false, false, row -> selector.map(row.ground()));
 	}
 
 	/**
