@@ -110,9 +110,9 @@ Small, local, well-tested changes elsewhere don't need to ask.
   `weighted`/`traced`/`profiled`/`optimized`/`slot(Packaged)`) seeds the root — defaults
   FILL ABSENT FAMILIES ONLY, explicit-on-occupied refuses. `run()` is the Cont primitive
   every face consumes; `solve(out)` the classic reified reading; `select(vars).stream()`
-  the selection (`Selection<D>`: enforced/raw × distinct/all; `Solution`: typed keyed
+  the selection (`Selection<D>`: enforced/raw × distinct/all; `Row`: typed keyed
   get, `ground()` the gate into Java); `select(selector).stream()` the mapped reading — a
-  `Selector<D>` names its keys and maps a ground Solution into a Java value, which is the
+  `Selector<D>` names its keys and maps a ground Row into a Java value, which is the
   whole Java interop story (pldb's `Schema` is one). `Goal` has NO solve methods. Engine internals (tabling) never ride the door —
   they consume solving's vocabulary (`Call`/`Answer`/`Condition`/`Residues`/`capture`).
   Details: `docs/reference/solving.md`.
