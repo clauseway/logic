@@ -11,10 +11,11 @@ import org.clauseway.logic.unification.terms.Unifiable;
  * A Java value's two faces at the engine's boundary: {@link #keys} are the
  * variables it is built from, which a goal binds, and {@link #map} builds it
  * from one row over them. {@link Query#select(Selector)} selects the keys
- * and maps every row; a row with a cell that is not ground is
- * refused before {@code map} sees it, because a Java value has no place for one, and the
+ * and maps every row; a cell that is not ground refuses at
+ * {@link Row#get}, because a Java value has no place for one, and the
  * refusal shows the whole row with each cell under the name
- * {@link #names} gives its key.
+ * {@link #names} gives its key. {@link Selection#rows()} keeps the rows
+ * unmapped, for a reading this one is not.
  *
  * @param <D> the value a row maps into
  */
@@ -30,6 +31,6 @@ public interface Selector<D> {
 				.collect(Collectors.toList());
 	}
 
-	/** The value one row over the keys builds; every cell is ground. */
+	/** The value one row over the keys builds; {@link Row#get} at every cell it needs. */
 	D map(Row row);
 }

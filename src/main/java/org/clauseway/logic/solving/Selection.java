@@ -2,7 +2,7 @@ package org.clauseway.logic.solving;
 
 // ABOUTME: The middle of the select pipeline, where the user chooses the
 // ABOUTME: reading: extraction (enforced default, raw explicit) and
-// ABOUTME: multiplicity (distinct default, all explicit); stream() delivers.
+// ABOUTME: multiplicity (distinct default, all explicit); stream() delivers values, rows() rows.
 
 import static org.clauseway.logic.unification.terms.LVal.lval;
 
@@ -43,7 +43,9 @@ import lombok.RequiredArgsConstructor;
  * closes the driver. The distinct reading needs exhaustion, so its stream
  * is computed at the call; the all reading stays lazy. What streams is the
  * solution itself for {@link Query#select(Unifiable, Unifiable...)}, or the
- * value a {@link Selector} builds from it for {@link Query#select(Selector)}.
+ * value a {@link Selector} builds from it for {@link Query#select(Selector)};
+ * {@link #rows()} is the same selection unmapped, for a reading the
+ * selector's is not.
  *
  * @param <D> what one solution streams as
  */
@@ -72,7 +74,8 @@ public final class Selection<D> {
 		return rows().map(reading);
 	}
 
-	private Stream<Row> rows() {
+	/** The rows unmapped, under the chosen reading. */
+	public Stream<Row> rows() {
 		Unifiable<Object> anchor = lval(Tuple.ofAll(
 				keys.stream().map(Unifiable::getObjectTerm).toArray()));
 		Cont<Answer<Unifiable<?>>, Nothing> answers = Cont.suspend(k -> query.run()

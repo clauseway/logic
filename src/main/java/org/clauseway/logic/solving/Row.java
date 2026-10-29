@@ -1,8 +1,9 @@
 package org.clauseway.logic.solving;
 
-// ABOUTME: One row of a select: Reified cells keyed by the selected
-// ABOUTME: variables, under the derivation's Condition -- a view over Answer.
+// ABOUTME: One row of a select: cells keyed by the selected variables, under the derivation's
+// ABOUTME: Condition -- a view over Answer; get(key) is the gate into Java, cell(key) the reifier's reading.
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -20,15 +21,16 @@ import org.clauseway.vavr.collection.List;
 
 /**
  * One row of a {@link Selection}: the selected variables' cells from one
- * solution, read by the variable itself — the key carries the type, the
- * cell comes back in output vocabulary. A ground cell is a value
- * ({@code isVal()}/{@code get()}); a cell that is not ground is the
- * slot name the reifier gave it, under the answer's residuals about it —
- * a symbolic answer over many ground ones, never smoothed into an empty.
- * {@link #getCondition} is the knowledge this row holds under;
- * {@link #answer} is the whole boundary artifact for anything that ships
- * rows onward. The solution renders whole, shaped as the select named
- * it: {@code (name: cell, ...)}, under the residuals when there are any.
+ * solution, read by the variable itself — the key carries the type.
+ * {@link #get} is the reading into Java: the cell's value, or a refusal
+ * when the cell is not ground, since a Java value has no place for a slot
+ * name or a residual. {@link #cell} is the reifier's reading: a value, the
+ * slot name the reifier gave a free cell, or that name under the answer's
+ * residuals about it — a symbolic answer over many ground ones, never
+ * smoothed into an empty. {@link #getCondition} is the knowledge this row
+ * holds under; {@link #answer} is the whole boundary artifact for anything
+ * that ships rows onward. The row renders whole, shaped as the select
+ * named it: {@code (name: cell, ...)}, under the residuals when there are any.
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public final class Row {
@@ -38,24 +40,47 @@ public final class Row {
 	private final Answer<Unifiable<?>> answer;
 
 	/**
+	 * The value at {@code key}: the gate into Java. Refuses a cell that is
+	 * not ground, rendering the row whole, and a variable the select did
+	 * not name.
+	 */
+	public <T> T get(Unifiable<T> key) {
+		int at = at(key);
+		Reified<T> cell = slot(at);
+		if (!cell.isGround()) {
+			throw new IllegalStateException(notGround(Collections.singletonList(names.get(at))));
+		}
+		return cell.get();
+	}
+
+	/**
 	 * The cell at {@code key}, stated as the reifier would: a value, a slot
 	 * name, or that name under the residuals about it ({@link Constrained})
 	 * when the answer is one region. A row folded from several regions
 	 * shows its name alone; the regions are {@link #getCondition()}.
 	 * Refuses a variable the select did not name.
 	 */
-	public <T> Reified<T> get(Unifiable<T> key) {
+	public <T> Reified<T> cell(Unifiable<T> key) {
+		return about(slot(at(key)), answer.getCondition());
+	}
+
+	private int at(Unifiable<?> key) {
 		int at = keys.indexOf(key);
 		if (at < 0) {
 			throw new IllegalArgumentException(
 					"not a selected variable: " + key + " — this row's columns are " + keys);
 		}
-		return about(cell(at), answer.getCondition());
+		return at;
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> Reified<T> cell(int at) {
+	private <T> Reified<T> slot(int at) {
 		return (Reified<T>) ((Tuple) answer.getReified().get()).get(at + 1);
+	}
+
+	private String notGround(java.util.List<String> symbolic) {
+		return "not ground at " + symbolic + ": " + this
+				+ " — a reading into Java needs a value in every selected cell";
 	}
 
 	/** The cell under the one region's residuals that mention a name in it; the cell alone when none does. */
@@ -77,19 +102,17 @@ public final class Row {
 	}
 
 	/**
-	 * This solution with every cell ground, or a refusal naming the cells
-	 * that are not and rendering the solution whole: the gate a reading
-	 * into Java passes through, since a Java value has no place for a slot
-	 * name or a residual.
+	 * This row with every cell ground, or a refusal naming the cells that
+	 * are not and rendering the row whole: {@link #get}'s check over every
+	 * cell at once, for a reading that wants the whole row or nothing.
 	 */
 	public Row ground() {
 		java.util.List<String> symbolic = IntStream.range(0, keys.size())
-				.filter(at -> !cell(at).isGround())
+				.filter(at -> !slot(at).isGround())
 				.mapToObj(names::get)
 				.collect(Collectors.toList());
 		if (!symbolic.isEmpty()) {
-			throw new IllegalStateException("not ground at " + symbolic + ": " + this
-					+ " — a reading into Java needs a value in every selected cell");
+			throw new IllegalStateException(notGround(symbolic));
 		}
 		return this;
 	}
@@ -107,7 +130,7 @@ public final class Row {
 	@Override
 	public String toString() {
 		String cells = IntStream.range(0, keys.size())
-				.mapToObj(at -> names.get(at) + ": " + cell(at))
+				.mapToObj(at -> names.get(at) + ": " + slot(at))
 				.collect(Collectors.joining(", ", "(", ")"));
 		Condition condition = answer.getCondition();
 		return condition.isOne() ? cells : cells + " : "
