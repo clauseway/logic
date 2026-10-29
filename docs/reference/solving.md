@@ -20,7 +20,8 @@ Query          configure: the goal + the slots that seed the root
   .solve(out)  read:      classic — Reified per derivation, residues
                           rendered into the term (Constrained)
   .select(vars...)        the selection: Selection<Row> → stream() → Row
-  .select(selector)         the mapped reading: Selection<D> → stream() → D
+  .select(selector)         the mapped reading: Selection<D> → stream() → D,
+                            or rows() → Row, the same selection unmapped
 ```
 
 `run()` is the one primitive; every other face is a consumer of it. It is
@@ -111,25 +112,29 @@ derivation view survives whole at `run()`.
 `Selection<D>` is typed by what it streams. `select(vars...)` streams the
 solution itself; `select(selector)` streams the value a `Selector<D>` builds
 from each solution (§5). The two switches are the same on both and keep
-the type; `stream()` is the one terminal.
+the type; `stream()` delivers, and `rows()` delivers the rows unmapped,
+for a reading the selector's is not — a sort key, a fact, a second value
+off the same keys — so none of those needs a door of its own.
 
 ## 5. Row, and the mapped reading
 
 One solution's cells, read by the variable itself:
 
 ```java
-<T> Reified<T> get(Unifiable<T> key)   // the key carries the type
-Row ground()                 // every cell ground, or a refusal
+<T> T get(Unifiable<T> key)            // the value, or a refusal: the gate into Java
+<T> Reified<T> cell(Unifiable<T> key)  // the cell as the reifier states it
+Row ground()                           // every cell ground, or a refusal
 ```
 
-The cell comes back in output vocabulary, stated as the reifier would
-state it — a ground cell is a value (`isVal()`/`get()`); a cell the
-solution did not decide is its slot name (`Any`), or that name under
+`get` is the reading into Java. A Java value has no place for a slot
+name or a residual, so a cell that is not ground refuses, by column and
+with the row rendered whole. `cell` comes back in output vocabulary,
+stated as the reifier would state it — a ground cell is a value; a cell
+the solution did not decide is its slot name (`Any`), or that name under
 the answer's residuals about it (`Constrained`) when the answer is one
 region, so a coupling between cells stays visible and is never smoothed
 into an empty. A row folded from several regions shows the name alone;
-the regions are `getCondition()`. Reading a name or a constrained cell
-as a value refuses by its rendering. An unselected key refuses.
+the regions are `getCondition()`. An unselected key refuses at either.
 `getCondition()` is the knowledge the solution holds under; `answer()`
 is the whole seam artifact for anything that ships rows onward.
 
@@ -137,9 +142,9 @@ A solution renders whole, shaped as the select named it: every cell
 under its name in the select's order, then the residuals when there are
 any — `(x: {1}, y: _.0) : ¬(_.0 ≡ {2})`, regions ∨-joined, each region's
 atoms ∧-joined. A wide row is still an answer, a symbolic one over
-many ground results; `ground()` refuses with that rendering, naming the
-cells that are not ground first, so one message shows every such cell
-and what holds it, not the first one met.
+many ground results; `get` refuses with that rendering, and `ground()`
+is the same check over every cell at once, naming the cells that are
+not ground first, for a reading that wants the whole row or nothing.
 
 A `Selector<D>` is a Java value's two faces at the boundary:
 
@@ -152,13 +157,23 @@ D map(Row row);                        // the value one row builds
 The engine is honest about its two directions — a goal takes
 `Unifiable`, an answer is `Reified` — and Java has no such distinction,
 so the merge is the variable itself: the same key enters the goal and
-reads the answer. `Query.select(selector)` selects the keys and streams
-`map` over every solution, passing each through `ground()` first. A
-Java value has no place for a slot name or a residual, so a solution
-with a cell that is not ground is refused before the selector sees it, the
-solution rendered whole with each cell under the name the selector gives
-its key. The solutions reading is the identity mapping, so there is one
-pipeline, not two.
+reads the answer, and the `Row` in between is the keyed `Unifiable` to
+`Reified` mapping, the one place the engine's half ends and the user's
+begins. `Query.select(selector)` selects the keys and streams `map` over
+every solution; `map` reads through `get`, so a cell that is not ground
+refuses where the mapper touches it, the solution rendered whole with
+each cell under the name the selector gives its key. The solutions
+reading is the identity mapping, so there is one pipeline, not two, and
+`rows()` is that pipeline with the map left off.
+
+That is the difference between the two tiers a user type can sign. A
+`Structural` is rebuilt by the reifier, with whatever the answer holds —
+a value, an `Any`, a `Constrained` — so its members must be `Term`, and
+it is a term: it nests, unifies and travels in a list. A Selector's
+value is built by the user's `map`, through `get`, which refuses
+anything that is not a value, so its keys are `Unifiable` and the value
+has ordinary Java fields. The map is the half the engine cannot write:
+it does not know the target and could not fill it if it did.
 
 pldb's `Schema<D>` is a Selector whose names are its columns, and
 that is the whole of the Java interop story: a row type is variables in,
@@ -213,9 +228,9 @@ level.
 |---|---|
 | `root()` | explicit slot value on an occupied family; two claimants of the table slot (`weighted` × `tabled`); a repeated instrument slot |
 | `enforced` / `capture` | pending suspensions — the owed condition cannot ride the answer |
-| `Row.get` | a variable the select did not name |
-| `Row.ground` / `select(selector)` | a cell that is not ground: those cells named, the solution rendered whole under its residuals — a selector never sees one |
-| `Any.get` / `Constrained.get` | a slot name, or a cell under residuals, read as a value — refused by its rendering |
+| `Row.get` / `Row.cell` | a variable the select did not name |
+| `Row.get` / `Row.ground` | a cell that is not ground, read into Java: the cell (every such cell, for `ground`) named, the solution rendered whole under its residuals; a selector's map meets it at the cell it reads |
+| `Any.get` / `Constrained.get` | a slot name, or a cell under residuals, read as a value off `cell` — refused by its rendering |
 | a refusing table | a tabled call under a plain weighted ring |
 
 ## 9. Lineage
@@ -240,4 +255,9 @@ engine's inputs and outputs differ in meaning and Java's do not, so the
 Java side needs one type that is both, and that type is the variable
 read through a `Row`. `Selector` landed in `solving` as part of the
 Query API, `Selection` became `Selection<D>`, `solutions()` became
-`stream()`, and pldb's `Schema` became a Selector with columns.
+`stream()`, and pldb's `Schema` became a Selector with columns. Then
+`Row.get` became the gate itself and `rows()` a terminal beside
+`stream()`, after a day in which the map had come off the Selector: the
+fault that day was chasing — every reading that was not the type's
+needing a door of its own — was the typed stream being the only
+terminal, not where the map lived.

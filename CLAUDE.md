@@ -110,10 +110,12 @@ Small, local, well-tested changes elsewhere don't need to ask.
   `weighted`/`traced`/`profiled`/`optimized`/`slot(Packaged)`) seeds the root — defaults
   FILL ABSENT FAMILIES ONLY, explicit-on-occupied refuses. `run()` is the Cont primitive
   every face consumes; `solve(out)` the classic reified reading; `select(vars).stream()`
-  the selection (`Selection<D>`: enforced/raw × distinct/all; `Row`: typed keyed
-  get, `ground()` the gate into Java); `select(selector).stream()` the mapped reading — a
-  `Selector<D>` names its keys and maps a ground Row into a Java value, which is the
-  whole Java interop story (pldb's `Schema` is one). `Goal` has NO solve methods. Engine internals (tabling) never ride the door —
+  the selection (`Selection<D>`: enforced/raw × distinct/all; `Row.get` the typed gate
+  into Java, refusing a cell that is not ground with the row whole, `cell` the reifier's
+  reading); `select(selector).stream()` the mapped reading — a `Selector<D>` names its keys
+  and maps a Row into a Java value through `get`, which is the whole Java interop story
+  (pldb's `Schema` is one); `rows()` the same selection unmapped. The engine rebuilds a
+  Structural; a Selector's value is built by the user's map. `Goal` has NO solve methods. Engine internals (tabling) never ride the door —
   they consume solving's vocabulary (`Call`/`Answer`/`Condition`/`Residues`/`capture`).
   Details: `docs/reference/solving.md`.
 
