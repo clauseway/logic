@@ -36,7 +36,7 @@ public class RowTest {
 	public void aCellUnderAResidualIsConstrainedByIt() {
 		Unifiable<Integer> x = lvar();
 		Row row = one(Query.of(exclude(x.unifies(1))).select(x));
-		Reified<Integer> cell = row.get(x);
+		Reified<Integer> cell = row.cell(x);
 		assertThat(cell).isInstanceOf(Constrained.class);
 		assertThat(cell.isGround()).isFalse();
 		assertThat(cell.toString()).contains("¬(").contains("1");
@@ -48,8 +48,8 @@ public class RowTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Row row = one(Query.of(exclude(x.unifies(1)).and(y.unifies(2))).select(x, y));
-		assertThat(row.get(x)).isInstanceOf(Constrained.class);
-		assertThat(row.get(y).get()).isEqualTo(2);
+		assertThat(row.cell(x)).isInstanceOf(Constrained.class);
+		assertThat(row.get(y)).isEqualTo(2);
 	}
 
 	/** A cell no residual mentions is the slot name the reifier gave it. */
@@ -58,18 +58,18 @@ public class RowTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Row row = one(Query.of(x.unifies(1)).select(x, y));
-		assertThat(row.get(y)).isInstanceOf(Any.class);
+		assertThat(row.cell(y)).isInstanceOf(Any.class);
 	}
 
-	/** Reading a constrained cell as a value refuses with the cell as the reifier rendered it. */
+	/** Reading a constrained cell as a value refuses by column, rendering the row whole under its residuals. */
 	@Test
-	public void aConstrainedCellRefusesToBeAValueByItsRendering() {
+	public void aConstrainedCellRefusesToBeAValueWithTheWholeRow() {
 		Unifiable<Integer> x = lvar();
 		Row row = one(Query.of(exclude(x.unifies(1))).select(x));
-		String rendering = row.get(x).toString();
-		assertThatThrownBy(() -> row.get(x).get())
+		assertThatThrownBy(() -> row.get(x))
 				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining(rendering);
+				.hasMessageContaining("not ground at [" + x + "]")
+				.hasMessageContaining(row.toString());
 		assertThatThrownBy(row::ground)
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("not ground at [" + x + "]")
@@ -82,8 +82,8 @@ public class RowTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Row row = one(Query.of(x.unifies(1)).select(x, y));
-		String rendering = row.get(y).toString();
-		assertThatThrownBy(() -> row.get(y).get())
+		String rendering = row.cell(y).toString();
+		assertThatThrownBy(() -> row.get(y))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining(rendering);
 		assertThatThrownBy(row::ground)

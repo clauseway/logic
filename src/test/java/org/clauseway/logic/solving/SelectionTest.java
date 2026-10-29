@@ -2,7 +2,7 @@ package org.clauseway.logic.solving;
 
 // ABOUTME: Pins the select pipeline: Selection's extraction and multiplicity
 // ABOUTME: switches (enforced+distinct default, raw/all explicit), Stream<Row>
-// ABOUTME: delivery, and Row's Reified-typed keyed get.
+// ABOUTME: delivery, and Row's keyed get and cell.
 
 import org.clauseway.logic.Utils;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
@@ -35,7 +35,7 @@ public class SelectionTest {
 		List<Row> rows = rows(Query.of(x.unifies(1).or(x.unifies(2))).select(x).stream());
 		assertThat(rows).hasSize(2);
 		assertThat(rows.stream()
-				.map(row -> row.get(x).get())
+				.map(row -> row.get(x))
 				.collect(Collectors.toList()))
 				.containsExactlyInAnyOrder(1, 2);
 	}
@@ -50,8 +50,8 @@ public class SelectionTest {
 				.select(x, y).stream());
 		assertThat(rows).hasSize(2);
 		for (Row row : rows) {
-			int cellX = row.get(x).get();
-			int cellY = row.get(y).get();
+			int cellX = row.get(x);
+			int cellY = row.get(y);
 			assertThat(cellY - cellX).isEqualTo(1);
 		}
 	}
@@ -86,7 +86,7 @@ public class SelectionTest {
 		List<Row> rows = rows(Query.of(dom(x, Longs.range(1, 4))).select(x).stream());
 		assertThat(rows).hasSize(3);
 		assertThat(rows.stream()
-				.map(row -> row.get(x).get())
+				.map(row -> row.get(x))
 				.collect(Collectors.toList()))
 				.containsExactlyInAnyOrder(1L, 2L, 3L);
 		assertThat(rows.stream().allMatch(row -> row.getCondition().isOne())).isTrue();
@@ -97,7 +97,7 @@ public class SelectionTest {
 		Unifiable<Long> x = lvar();
 		List<Row> rows = rows(Query.of(dom(x, Longs.range(1, 4))).select(x).raw().stream());
 		assertThat(rows).hasSize(1);
-		Reified<Long> cell = rows.get(0).get(x);
+		Reified<Long> cell = rows.get(0).cell(x);
 		assertThat(cell.isVal()).isFalse();
 		assertThat(rows.get(0).getCondition().isOne()).isFalse();
 	}
@@ -107,7 +107,7 @@ public class SelectionTest {
 		Unifiable<Integer> x = lvar();
 		List<Row> rows = rows(Query.of(exclude(x.unifies(3))).select(x).stream());
 		assertThat(rows).hasSize(1);
-		assertThat(rows.get(0).get(x).isVal()).isFalse();
+		assertThat(rows.get(0).cell(x).isVal()).isFalse();
 		assertThat(rows.get(0).getCondition().isOne()).isFalse();
 	}
 

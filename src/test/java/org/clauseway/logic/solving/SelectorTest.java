@@ -1,7 +1,7 @@
 package org.clauseway.logic.solving;
 
 // ABOUTME: Pins the mapped reading of a select: a Selector names the variables it
-// ABOUTME: needs and maps each row into Java; a cell that is not ground is refused before map.
+// ABOUTME: needs and maps each row into Java; a cell that is not ground is refused where map reads it.
 
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,7 +39,7 @@ public class SelectorTest {
 		@Override
 		public Point map(Row row) {
 			mapped.incrementAndGet();
-			return new Point(row.get(x).get(), row.get(y).get());
+			return new Point(row.get(x), row.get(y));
 		}
 	}
 
@@ -75,13 +75,27 @@ public class SelectorTest {
 		assertThat(all(Query.of(twice.or(twice)).select(point).all().stream())).hasSize(2);
 	}
 
+	/** The rows stream whatever the question answers; reading a cell that is not ground is what refuses. */
 	@Test
-	public void anOpenCellIsRefusedBeforeTheMapperSeesIt() {
+	public void aCellThatIsNotGroundRefusesWhereTheMapperReadsIt() {
 		PointSelector point = new PointSelector();
+		assertThat(all(Query.of(point.x.unifies(1)).select(point).rows())).hasSize(1);
 		assertThatThrownBy(() -> all(Query.of(point.x.unifies(1)).select(point).stream()))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("not ground")
 				.hasMessageContaining(point.y.toString());
+		assertThat(point.mapped.get()).isEqualTo(1);
+	}
+
+	/** The rows stay in hand beside the mapping: a second function over them reads what the mapper does not. */
+	@Test
+	public void rowsAreTheSameSelectionUnmapped() {
+		PointSelector point = new PointSelector();
+		List<Integer> xs = all(Query.of(
+				point.x.unifies(1).and(point.y.unifies(2))
+						.or(point.x.unifies(3).and(point.y.unifies(4))))
+				.select(point).rows().map(row -> row.get(point.x)));
+		assertThat(xs).containsExactlyInAnyOrder(1, 3);
 		assertThat(point.mapped.get()).isZero();
 	}
 
@@ -100,6 +114,6 @@ public class SelectorTest {
 		Unifiable<Integer> x = lvar();
 		List<Row> rows = all(Query.of(x.unifies(1)).select(x).stream());
 		assertThat(rows).hasSize(1);
-		assertThat(rows.get(0).get(x).get()).isEqualTo(1);
+		assertThat(rows.get(0).get(x)).isEqualTo(1);
 	}
 }
