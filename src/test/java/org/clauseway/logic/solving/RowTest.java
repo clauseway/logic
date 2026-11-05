@@ -110,6 +110,35 @@ public class RowTest {
 				.hasMessageContaining(row.toString());
 	}
 
+	/** A residual about a name the select did not name has no cell to ride; reading any cell into Java refuses, naming the condition. */
+	@Test
+	public void aConditionOnAnUnselectedNameRefusesEveryValue() {
+		Unifiable<Integer> x = lvar();
+		Unifiable<Integer> y = lvar();
+		Row row = one(Query.of(x.unifies(1).and(exclude(y.unifies(2)))).select(x));
+		assertThat(row.cell(x).isGround()).isTrue();
+		assertThat(row.getCondition().isOne()).isFalse();
+		assertThatThrownBy(() -> row.get(x))
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("holds only under")
+				.hasMessageContaining(row.getCondition().toString())
+				.hasMessageContaining(row.toString());
+		assertThatThrownBy(row::ground)
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("holds only under")
+				.hasMessageContaining(row.toString());
+	}
+
+	/** The same residual rides its own cell once that cell is selected, and the other cell reads. */
+	@Test
+	public void selectingTheNameGivesTheResidualItsCell() {
+		Unifiable<Integer> x = lvar();
+		Unifiable<Integer> y = lvar();
+		Row row = one(Query.of(x.unifies(1).and(exclude(y.unifies(2)))).select(x, y));
+		assertThat(row.get(x)).isEqualTo(1);
+		assertThat(row.cell(y)).isInstanceOf(Constrained.class);
+	}
+
 	/** A ground solution renders as its cells alone. */
 	@Test
 	public void aDecidedSolutionRendersWithoutResiduals() {
