@@ -24,7 +24,9 @@ import org.clauseway.vavr.collection.List;
  * solution, read by the variable itself — the key carries the type.
  * {@link #get} is the reading into Java: the cell's value, or a refusal
  * when the cell is not ground, since a Java value has no place for a slot
- * name or a residual. {@link #cell} is the reifier's reading: a value, the
+ * name or a residual, or when the row holds only under a residual about a
+ * name the select did not name, since no cell would carry it out.
+ * {@link #cell} is the reifier's reading: a value, the
  * slot name the reifier gave a free cell, or that name under the answer's
  * residuals about it — a symbolic answer over many ground ones, never
  * smoothed into an empty. {@link #getCondition} is the knowledge this row
@@ -50,6 +52,7 @@ public final class Row {
 		if (!cell.isGround()) {
 			throw new IllegalStateException(notGround(Collections.singletonList(names.get(at))));
 		}
+		refuseUnseenCondition();
 		return cell.get();
 	}
 
@@ -83,6 +86,32 @@ public final class Row {
 				+ " — a reading into Java needs a value in every selected cell";
 	}
 
+	/**
+	 * A residual about a name no selected cell mentions has no cell to ride,
+	 * so a reading into Java would drop it: refused, naming the condition.
+	 * A residual about a selected cell rides that cell and is refused there.
+	 */
+	private void refuseUnseenCondition() {
+		Condition condition = answer.getCondition();
+		if (condition.isOne()) {
+			return;
+		}
+		Set<Name<?>> seen = IntStream.range(0, keys.size())
+				.boxed()
+				.flatMap(at -> MiniKanren.namesIn(slot(at)))
+				.collect(Collectors.toSet());
+		boolean unseen = condition.conjuncts().toJavaStream()
+				.flatMap(Row::atoms)
+				.flatMap(atom -> atom.watched().toJavaStream())
+				.flatMap(MiniKanren::namesIn)
+				.anyMatch(name -> !seen.contains(name));
+		if (unseen) {
+			throw new IllegalStateException("holds only under " + condition
+					+ ", about a name the select did not name: " + this
+					+ " — a reading into Java needs a row that holds outright; select the name or read it raw");
+		}
+	}
+
 	/** The cell under the one region's residuals that mention a name in it; the cell alone when none does. */
 	private static <T> Reified<T> about(Reified<T> cell, Condition condition) {
 		if (condition.conjuncts().size() != 1) {
@@ -114,6 +143,7 @@ public final class Row {
 		if (!symbolic.isEmpty()) {
 			throw new IllegalStateException(notGround(symbolic));
 		}
+		refuseUnseenCondition();
 		return this;
 	}
 
@@ -133,11 +163,6 @@ public final class Row {
 				.mapToObj(at -> names.get(at) + ": " + slot(at))
 				.collect(Collectors.joining(", ", "(", ")"));
 		Condition condition = answer.getCondition();
-		return condition.isOne() ? cells : cells + " : "
-				+ condition.conjuncts().map(region ->
-						atoms(region)
-								.map(Atom::toString)
-								.collect(Collectors.joining(" ∧ ")))
-				.mkString(" ∨ ");
+		return condition.isOne() ? cells : cells + " : " + condition;
 	}
 }

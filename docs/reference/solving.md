@@ -135,6 +135,11 @@ the answer's residuals about it (`Constrained`) when the answer is one
 region, so a coupling between cells stays visible and is never smoothed
 into an empty. A row folded from several regions shows the name alone;
 the regions are `getCondition()`. An unselected key refuses at either.
+`get` also refuses a row that holds only under a residual about a name
+no selected cell mentions — a body variable, or a query variable left
+out of the select — naming the condition: no cell would carry that
+residual out, so the value alone would be the answer with its proviso
+dropped. Select the name, or read the row raw.
 `getCondition()` is the knowledge the solution holds under; `answer()`
 is the whole seam artifact for anything that ships rows onward.
 
@@ -230,6 +235,7 @@ level.
 | `enforced` / `capture` | pending suspensions — the owed condition cannot ride the answer |
 | `Row.get` / `Row.cell` | a variable the select did not name |
 | `Row.get` / `Row.ground` | a cell that is not ground, read into Java: the cell (every such cell, for `ground`) named, the solution rendered whole under its residuals; a selector's map meets it at the cell it reads |
+| `Row.get` / `Row.ground` | a row that holds only under a residual about a name the select did not name: the condition named, the solution rendered whole — no selected cell would carry that residual out, so the reading would drop it; select the name, or read it raw |
 | `Any.get` / `Constrained.get` | a slot name, or a cell under residuals, read as a value off `cell` — refused by its rendering |
 | a refusing table | a tabled call under a plain weighted ring |
 
