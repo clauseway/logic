@@ -68,7 +68,7 @@ public final class Renaming {
 	}
 
 
-	/** Leaving with existential minting: {@code seed} maps names to targets; every miss mints a fresh var. */
+	/** Leaving with existential minting: {@code seed} maps names to targets; every miss mints a fresh var, named as the missed one was. */
 	public static Renaming minting(Map<? extends Name<?>, ? extends Term<?>> seed) {
 		return new Renaming(named(seed), true);
 	}
@@ -96,7 +96,10 @@ public final class Renaming {
 	/** The term under this renaming — deep: every name mapped, one walk. */
 	public Fiber<Term<?>> apply(Term<?> term) {
 		if (mintOnMiss) {
-			MiniKanren.namesIn(term).forEach(name -> targets.computeIfAbsent(name, miss -> LVar.lvar()));
+			MiniKanren.namesIn(term).forEach(name ->
+					targets.computeIfAbsent(name, miss -> miss.asVar()
+							.<Term<?>>map(LVar::fresh)
+							.orElseGet(LVar::lvar)));
 		}
 		// walkAll rebuilds structure wholesale — an untouched term must pass by identity
 		return targets.isEmpty() || MiniKanren.namesIn(term).noneMatch(targets::containsKey)
