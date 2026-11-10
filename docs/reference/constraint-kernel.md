@@ -111,10 +111,13 @@ The two statement doors are GENERIC — nothing rides the call site:
   ripens suspensions touched by the bound variables. A Met carries the
   atoms that ARRIVED at a door — the statement's atom, an absorbed
   theory's atoms; the focus is caller-known arithmetic, never a computed
-  diff — and folds the OWNING family's focused normalize (every other
-  store answers unchanged). The shared store fold visits `Verifier`
-  families LAST (§3). Run-lane goals splice after quiescence, when the
-  agenda is removed.
+  diff — and folds the OWNING family's focused normalize, then every
+  `Verifier` on its whole theory: the literals a verifier holds are other
+  families' knowledge asleep in its atoms, and what arrived — narrowing
+  or not — can refute or entail a claim no binding touched. Every other
+  store answers unchanged: value families hear nothing of each other. The
+  shared store fold visits `Verifier` families LAST (§3). Run-lane goals
+  splice after quiescence, when the agenda is removed.
 - **Suspensions** are `(watched, ripe, body)`: parked persistently, re-examined
   when a watched chain binds, spliced through the run lane once ripe — fired
   once, forever. `ripe` is a `Predicate<Substitutions>` and MUST be monotone:
@@ -203,8 +206,11 @@ imposition read three ways — fail = refuted, unchanged = crossed off, new
 = owed). The crossed-off reading is package EQUALITY, so a trial
 presupposes a base where every value family has finished reacting to the
 current trigger; the driver honors this structurally — the store fold
-visits marked families after every unmarked one — and the trial base only
-strips the drain machinery (`Propagation.scratch`). Queued work needs no
+visits marked families after every unmarked one — and folds them on every
+`Met` in a value family as it does on every `Bind`, since an arrival
+changes what a trial reads whether or not the receiver narrowed anything
+(receipt: `VerifierWakeTest`); the trial base only strips the drain
+machinery (`Propagation.scratch`). Queued work needs no
 settling: verdicts against current knowledge are monotone, and a late
 cross-off re-verifies when the queued work lands as its own trigger.
 Verifiers are mutually unordered; one exists today.
@@ -356,7 +362,9 @@ dissolved).
 Deliberately foreclosed (do not resurrect without new evidence): the
 data-shaped Neq→FD bridge as store coupling (its legitimate successor is a
 cross-theory rewriter at the solve seam — pair-note territory), cross-store
-narrowing vocabulary, engine-level fixpoint unification
+narrowing vocabulary (the verifier fold on `Met` is not that vocabulary:
+value families still hear nothing of each other, and a verifier reads the
+live package by right), engine-level fixpoint unification
 (`fixpoint-machine.md` §4/§9), suspensions as store or theory citizens (the
 driver treats them specially for agenda-fixpoint safety — ruled August
 2026), and **rename-on-bind** (#138's reverted half, August 2026): keeping
