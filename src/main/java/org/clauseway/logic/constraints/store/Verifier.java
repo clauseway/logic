@@ -12,7 +12,11 @@ package org.clauseway.logic.constraints.store;
  * trigger — a claim about knowledge can only be judged against knowledge
  * in normal form. The driver honors the presupposition structurally: the
  * revision fold visits marked families AFTER every unmarked one, so a
- * trial never samples a mid-trigger un-revised base. Queued work needs no
+ * trial never samples a mid-trigger un-revised base, and a door that meets
+ * knowledge into a value family folds the marked families too, since the
+ * literals they hold are other families' knowledge asleep in their atoms
+ * and what arrived can refute or entail a claim no binding touched
+ * ({@code Propagation.Agenda.Met}). Queued work needs no
  * settling: verdicts against current knowledge are monotone — a late
  * cross-off re-verifies when the queued work lands as its own trigger —
  * and the trial base only strips the drain machinery
