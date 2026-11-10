@@ -212,4 +212,30 @@ public class RowTest {
 					.isEqualTo("(<x>: {1}) : ∃<a>,<b>,<c>,<d>,<e>,<f>. ¬(add(<a>, <b>, <c>) ∧ add(<d>, <e>, <f>))");
 		}
 	}
+
+	/**
+	 * A region renders its atoms in sorted order, so two runs print one condition the same
+	 * way. The families' map and a nogood theory's set are ordered by identity hashes; ten
+	 * rows over fresh variables cannot all agree with the sorted order by chance.
+	 */
+	@Test
+	public void aRegionRendersItsAtomsSorted() {
+		for (int fresh = 0; fresh < 10; fresh++) {
+			Unifiable<Integer> x = lvar("x");
+			Unifiable<Integer> y = lvar("y");
+			Unifiable<Integer> z = lvar("z");
+			Unifiable<Integer> a = lvar("a");
+			Unifiable<Integer> b = lvar("b");
+			Unifiable<Integer> c = lvar("c");
+			Unifiable<Integer> d = lvar("d");
+			Row row = one(Query.of(x.unifies(0)
+					.and(exclude(c.unifies(3)))
+					.and(exclude(a.unifies(1)))
+					.and(Ints.lss(y, z))
+					.and(exclude(d.unifies(4)))
+					.and(exclude(b.unifies(2)))).select(x));
+			assertThat(row.toString()).isEqualTo(
+					"(<x>: {0}) : ∃<y>,<z>,<a>,<b>,<c>,<d>. lss(<y>, <z>) ∧ ¬(<a> ≡ {1}) ∧ ¬(<b> ≡ {2}) ∧ ¬(<c> ≡ {3}) ∧ ¬(<d> ≡ {4})");
+		}
+	}
 }
