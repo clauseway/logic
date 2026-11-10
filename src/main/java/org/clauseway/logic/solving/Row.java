@@ -4,6 +4,7 @@ package org.clauseway.logic.solving;
 // ABOUTME: Condition -- a view over Answer; get(key) is the gate into Java, cell(key) the reifier's reading.
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -106,6 +107,8 @@ public final class Row {
 	/**
 	 * The names the condition mentions that no selected cell does: the
 	 * witnesses the answer carries, in the order the condition renders them.
+	 * An atom's watched surface may be a set whose order is the variables'
+	 * identity, so the rendering decides the order, not the surface.
 	 */
 	private Set<Name<?>> witnesses(Condition condition) {
 		if (condition.isOne()) {
@@ -115,11 +118,14 @@ public final class Row {
 				.boxed()
 				.flatMap(at -> MiniKanren.namesIn(slot(at)))
 				.collect(Collectors.toSet());
+		String rendering = condition.toString();
 		return condition.conjuncts().toJavaStream()
 				.flatMap(Row::atoms)
 				.flatMap(atom -> atom.watched().toJavaStream())
 				.flatMap(MiniKanren::namesIn)
 				.filter(name -> !seen.contains(name))
+				.distinct()
+				.sorted(Comparator.comparingInt(name -> rendering.indexOf(name.toString())))
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 

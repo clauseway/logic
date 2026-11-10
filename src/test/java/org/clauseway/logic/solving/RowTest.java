@@ -190,4 +190,26 @@ public class RowTest {
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("holds only under ∃<y>. ¬(<y> ≡ {2}),");
 	}
+
+	/**
+	 * The prefix lists the witnesses in the order the condition renders them. A nogood holds
+	 * its surface as a set whose order is the variables' identity, so one row could agree by
+	 * chance; ten rows over fresh variables cannot.
+	 */
+	@Test
+	public void witnessesListInTheOrderTheConditionRendersThem() {
+		for (int fresh = 0; fresh < 10; fresh++) {
+			Unifiable<Integer> x = lvar("x");
+			Unifiable<Integer> a = lvar("a");
+			Unifiable<Integer> b = lvar("b");
+			Unifiable<Integer> c = lvar("c");
+			Unifiable<Integer> d = lvar("d");
+			Unifiable<Integer> e = lvar("e");
+			Unifiable<Integer> f = lvar("f");
+			Row row = one(Query.of(x.unifies(1)
+					.and(exclude(Ints.addo(a, b, c).and(Ints.addo(d, e, f))))).select(x));
+			assertThat(row.toString())
+					.isEqualTo("(<x>: {1}) : ∃<a>,<b>,<c>,<d>,<e>,<f>. ¬(add(<a>, <b>, <c>) ∧ add(<d>, <e>, <f>))");
+		}
+	}
 }
