@@ -161,6 +161,7 @@ public final class Condition implements Semilattice<Condition> {
 						region.getTheories().values().toJavaStream()
 								.flatMap(t -> t.atoms().toJavaStream())
 								.map(Atom::toString)
+								.sorted()
 								.collect(Collectors.joining(" ∧ ")))
 				.mkString(" ∨ ");
 	}
