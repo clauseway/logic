@@ -146,7 +146,10 @@ is the whole seam artifact for anything that ships rows onward.
 A solution renders whole, shaped as the select named it: every cell
 under its name in the select's order, then the residuals when there are
 any — `(x: {1}, y: _.0) : ¬(_.0 ≡ {2})`, regions ∨-joined, each region's
-atoms ∧-joined. A wide row is still an answer, a symbolic one over
+atoms ∧-joined. A name the select did not name that a residual still
+mentions is a witness the answer carries; it is bound once, in front of
+the whole condition — `(x: {1}) : ∃<y>. ¬(<y> ≡ {2})` — so the reading
+"for some y" sits outside every negation in it. A wide row is still an answer, a symbolic one over
 many ground results; `get` refuses with that rendering, and `ground()`
 is the same check over every cell at once, naming the cells that are
 not ground first, for a reading that wants the whole row or nothing.

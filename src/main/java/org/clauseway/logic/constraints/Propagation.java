@@ -224,8 +224,7 @@ public final class Propagation {
 												.flatMap(revision -> revision.match(
 														MFiber::none,            // fail: branch dies
 														() -> MFiber.mdone(pkg), // unchanged
-														upd -> MFiber.mdone(queue(
-																landed(pkg, cs, upd), upd))))),
+														upd -> MFiber.mdone(queue(landed(pkg, cs, upd), upd))))),
 								Exceptions.throwingBiOp(UnsupportedOperationException::new))
 						.map(Cont::<Knowledge, Nothing>just)
 						.getOrElse(() -> Cont.complete(Nothing.nothing())));
@@ -480,7 +479,12 @@ public final class Propagation {
 		 * store re-normalizes from the ARRIVED atoms: the posted atom, or an
 		 * absorbed theory's. The one focused trigger; the focus may exceed
 		 * the true change (the door's identity guard already skipped the
-		 * empty case).
+		 * empty case). A {@link Verifier} folds too, on every arrival in a
+		 * value family: the literals it holds are other families' knowledge
+		 * asleep in its atoms, and a trial reads the live package, so what
+		 * arrived — narrowing or not — can refute or entail a claim no binding
+		 * touched. Its focus is its whole theory — what the arrival may have
+		 * affected, not what arrived.
 		 */
 		static final class Met extends Item {
 			final Class<?> family;
@@ -497,9 +501,11 @@ public final class Propagation {
 				return s -> reviseAll(s,
 						(cs, p) -> family == cs.getFactor().getClass() ?
 								getRevisionFiber("Propagation.Met", cs, p,
-										((Factor) cs.getFactor()).normalize(cs.getTheory(),
-												(LinkedHashSet) atoms, p)) :
-								Fiber.done(Revision.unchanged()));
+										((Factor) cs.getFactor()).normalize(cs.getTheory(), atoms, p)) :
+								cs.getFactor() instanceof Verifier ?
+										getRevisionFiber("Propagation.Met", cs, p,
+												((Factor) cs.getFactor()).normalize(cs.getTheory(), cs.getTheory().atoms(), p)) :
+										Fiber.done(Revision.unchanged()));
 			}
 
 			@Override

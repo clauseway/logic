@@ -4,6 +4,7 @@ package org.clauseway.logic.solving;
 // ABOUTME: Condition -- a view over Answer; get(key) is the gate into Java, cell(key) the reifier's reading.
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -32,7 +33,9 @@ import org.clauseway.vavr.collection.List;
  * smoothed into an empty. {@link #getCondition} is the knowledge this row
  * holds under; {@link #answer} is the whole boundary artifact for anything
  * that ships rows onward. The row renders whole, shaped as the select
- * named it: {@code (name: cell, ...)}, under the residuals when there are any.
+ * named it: {@code (name: cell, ...)}, under the residuals when there are
+ * any, with the names the select did not name bound once, existentially,
+ * in front of them — the witnesses the answer carries.
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public final class Row {
@@ -93,23 +96,42 @@ public final class Row {
 	 */
 	private void refuseUnseenCondition() {
 		Condition condition = answer.getCondition();
+		if (!witnesses(condition).isEmpty()) {
+			throw new IllegalStateException("holds only under " + rendered(condition)
+					+ ", about a name the select did not name: " + this
+					+ " — a reading into Java needs a row that holds outright; select the name or read it raw");
+		}
+	}
+
+	/**
+	 * The names the condition mentions that no selected cell does: the
+	 * witnesses the answer carries, in the order the condition renders them.
+	 */
+	private Set<Name<?>> witnesses(Condition condition) {
 		if (condition.isOne()) {
-			return;
+			return Collections.emptySet();
 		}
 		Set<Name<?>> seen = IntStream.range(0, keys.size())
 				.boxed()
 				.flatMap(at -> MiniKanren.namesIn(slot(at)))
 				.collect(Collectors.toSet());
-		boolean unseen = condition.conjuncts().toJavaStream()
+		return condition.conjuncts().toJavaStream()
 				.flatMap(Row::atoms)
 				.flatMap(atom -> atom.watched().toJavaStream())
 				.flatMap(MiniKanren::namesIn)
-				.anyMatch(name -> !seen.contains(name));
-		if (unseen) {
-			throw new IllegalStateException("holds only under " + condition
-					+ ", about a name the select did not name: " + this
-					+ " — a reading into Java needs a row that holds outright; select the name or read it raw");
+				.filter(name -> !seen.contains(name))
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+	}
+
+	/** The condition as the row states it: its witnesses bound once, existentially, outside the whole condition. */
+	private String rendered(Condition condition) {
+		Set<Name<?>> witnesses = witnesses(condition);
+		if (witnesses.isEmpty()) {
+			return condition.toString();
 		}
+		return witnesses.stream()
+				.map(Object::toString)
+				.collect(Collectors.joining(",", "∃", ". ")) + condition;
 	}
 
 	/** The cell under the one region's residuals that mention a name in it; the cell alone when none does. */
@@ -156,13 +178,16 @@ public final class Row {
 		return answer;
 	}
 
-	/** The cells by name, in the select's order, under the residuals when there are any: regions ∨-joined, each ∧-joined. */
+	/**
+	 * The cells by name, in the select's order, under the residuals when there
+	 * are any: regions ∨-joined, each ∧-joined, the witnesses bound in front.
+	 */
 	@Override
 	public String toString() {
 		String cells = IntStream.range(0, keys.size())
 				.mapToObj(at -> names.get(at) + ": " + slot(at))
 				.collect(Collectors.joining(", ", "(", ")"));
 		Condition condition = answer.getCondition();
-		return condition.isOne() ? cells : cells + " : " + condition;
+		return condition.isOne() ? cells : cells + " : " + rendered(condition);
 	}
 }
