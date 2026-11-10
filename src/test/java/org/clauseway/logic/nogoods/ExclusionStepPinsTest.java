@@ -43,7 +43,8 @@ import org.junit.Test;
  * 1597, rembero 218 (bare recursion; 232 through the nogood door — this pin
  * runs the library {@link Logic#rembero}, whose Matche dispatch and trace
  * label add 12 steps), labelled carve 118 — the nogood door holds within
- * ~3-7% on every shape.
+ * ~3-7% on every shape. A shape that still holds a claim when its answer
+ * is read pays the verifiers' one fold there, four steps.
  */
 public class ExclusionStepPinsTest {
 
@@ -107,7 +108,7 @@ public class ExclusionStepPinsTest {
 
 		// 4 vars over 1..4 all-different: 4! = 24 assignments
 		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(vars.get(0)).count()).isEqualTo(24L);
-		assertThat(steps(g, vars.get(0))).isEqualTo(1_617L);
+		assertThat(steps(g, vars.get(0))).isEqualTo(1_621L);
 	}
 
 	// ---- shape 2b: all-different at scale (the load regimes) ----
@@ -131,7 +132,7 @@ public class ExclusionStepPinsTest {
 		}
 
 		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(vars.get(0)).count()).isEqualTo(720L);
-		assertThat(steps(g, vars.get(0))).isEqualTo(62_513L);
+		assertThat(steps(g, vars.get(0))).isEqualTo(62_517L);
 	}
 
 	// ---- shape 2c: subsumption-heavy (the sweep's cost and its benefit) ----
@@ -159,7 +160,7 @@ public class ExclusionStepPinsTest {
 				.and(FiniteDomain.dom(y, dom(1, 2, 3, 4, 5, 6)));
 
 		assertThat(Query.of(g).on(TestSchedulers.factory()).solve(x).count()).isEqualTo(18L);
-		assertThat(steps(g, x)).isEqualTo(415L);
+		assertThat(steps(g, x)).isEqualTo(419L);
 	}
 
 	// ---- shape 3: rembero (recursion + nogoods) ----
@@ -186,6 +187,6 @@ public class ExclusionStepPinsTest {
 				.and(exclude(x.unifies(3)));
 
 		assertThat(answers(g, x)).containsExactly(0, 1, 2, 4, 5);
-		assertThat(steps(g, x)).isEqualTo(104L);
+		assertThat(steps(g, x)).isEqualTo(108L);
 	}
 }

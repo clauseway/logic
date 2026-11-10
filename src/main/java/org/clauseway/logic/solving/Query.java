@@ -17,6 +17,7 @@ import org.clauseway.functional.fibers.interpreter.ScopeProfiler;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.functional.fibers.schedulers.DepthFirstScheduler;
 import org.clauseway.logic.constraints.Constraints;
+import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.logic.debug.DebugStore;
 import org.clauseway.logic.debug.ProfilerStore;
 import org.clauseway.logic.debug.Trace;
@@ -207,11 +208,13 @@ public final class Query {
 
 	/**
 	 * The primitive: one emission per derivation, driven by the caller. The
-	 * solve runs under a {@link Barrier}: no pending search rides a raw package.
+	 * solve runs under a {@link Barrier}: no pending search rides a raw
+	 * package, and the verifiers have judged the settled one before it is
+	 * read ({@link Propagation#verifiedEach}).
 	 */
 	public Cont<Knowledge, Nothing> run() {
 		Goal entry = optimizer == null ? goal : goal.accept(optimizer);
-		return Barrier.of(entry).apply(root());
+		return Propagation.verifiedEach(Barrier.of(entry).apply(root()));
 	}
 
 	/**
