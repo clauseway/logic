@@ -138,7 +138,7 @@ Java 8, Apache-2.0, on Maven Central:
 <dependency>
     <groupId>org.clauseway</groupId>
     <artifactId>logic</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
 </dependency>
 ```
 
@@ -412,7 +412,7 @@ seams, backlog.
 
 ## Status
 
-0.2.0 on Maven Central — pre-1.0: the shape is settled, the API carries no
+0.3.0 on Maven Central — pre-1.0: the shape is settled, the API carries no
 compatibility guarantee until 1.0 and may move between minor versions. Built
 with viability as a constraint rather than a goal: the designs are the kind
 that could be real (honest concurrency, measured claims, no toy shortcuts).
