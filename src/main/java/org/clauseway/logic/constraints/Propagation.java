@@ -224,8 +224,7 @@ public final class Propagation {
 												.flatMap(revision -> revision.match(
 														MFiber::none,            // fail: branch dies
 														() -> MFiber.mdone(pkg), // unchanged
-														upd -> MFiber.mdone(queue(
-																landed(pkg, cs, upd), upd))))),
+														upd -> MFiber.mdone(queue(landed(pkg, cs, upd), upd))))),
 								Exceptions.throwingBiOp(UnsupportedOperationException::new))
 						.map(Cont::<Knowledge, Nothing>just)
 						.getOrElse(() -> Cont.complete(Nothing.nothing())));
@@ -291,6 +290,25 @@ public final class Propagation {
 			}
 			return Cont.just(current);
 		};
+	}
+
+	/**
+	 * The emissions as answers may read them: before each is handed on,
+	 * every {@link Verifier} with claims to judge has judged them against
+	 * the settled package ({@link Agenda.Verify}); an emission whose denied
+	 * claim is entailed dies. Straight through, at no cost in steps, when no
+	 * verifier holds a claim. The one door for the reading seams — a query's
+	 * run and a tabled body's delivery.
+	 */
+	public static Cont<Knowledge, Nothing> verifiedEach(Cont<Knowledge, Nothing> emissions) {
+		return k -> emissions.apply(p -> claimsToJudge(p) ?
+				enqueue(p, Agenda.Verify.ITEM).apply(k) :
+				k.apply(p));
+	}
+
+	private static boolean claimsToJudge(Knowledge p) {
+		return constraintStores(p).anyMatch(cs ->
+				cs.getFactor() instanceof Verifier && !cs.getTheory().isEmpty());
 	}
 
 	/** Answers may not leave while suspensions pend. */
@@ -480,7 +498,9 @@ public final class Propagation {
 		 * store re-normalizes from the ARRIVED atoms: the posted atom, or an
 		 * absorbed theory's. The one focused trigger; the focus may exceed
 		 * the true change (the door's identity guard already skipped the
-		 * empty case).
+		 * empty case). Every other store answers unchanged: what an arrival
+		 * means to a {@link Verifier} is judged once, when the answer is
+		 * read ({@link Verify}).
 		 */
 		static final class Met extends Item {
 			final Class<?> family;
@@ -497,14 +517,44 @@ public final class Propagation {
 				return s -> reviseAll(s,
 						(cs, p) -> family == cs.getFactor().getClass() ?
 								getRevisionFiber("Propagation.Met", cs, p,
-										((Factor) cs.getFactor()).normalize(cs.getTheory(),
-												(LinkedHashSet) atoms, p)) :
+										((Factor) cs.getFactor()).normalize(cs.getTheory(), atoms, p)) :
 								Fiber.done(Revision.unchanged()));
 			}
 
 			@Override
 			public String toString() {
 				return "met(" + family.getSimpleName() + " " + atoms + ")";
+			}
+		}
+
+		/**
+		 * An answer about to be read: every {@link Verifier} folds on its
+		 * whole theory against the settled package. The literals a verifier
+		 * holds are other families' knowledge asleep in its atoms, and a
+		 * trial reads the live package, so what arrived at a door — narrowing
+		 * or not — can refute or entail a claim no binding touched. Judged
+		 * once here rather than on every arrival: a ground answer is judged
+		 * at its bindings anyway, and a symbolic one is read once.
+		 */
+		static final class Verify extends Item {
+			static final Verify ITEM = new Verify();
+
+			private Verify() {
+			}
+
+			@Override
+			@SuppressWarnings({"unchecked", "rawtypes"})
+			Goal apply() {
+				return s -> reviseAll(s,
+						(cs, p) -> cs.getFactor() instanceof Verifier ?
+								getRevisionFiber("Propagation.Verify", cs, p,
+										((Factor) cs.getFactor()).normalize(cs.getTheory(), cs.getTheory().atoms(), p)) :
+								Fiber.done(Revision.unchanged()));
+			}
+
+			@Override
+			public String toString() {
+				return "verify";
 			}
 		}
 

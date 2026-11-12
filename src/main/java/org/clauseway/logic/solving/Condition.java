@@ -3,8 +3,10 @@ package org.clauseway.logic.solving;
 // ABOUTME: A cell value in the constraint semiring: an answer's proven regions as a
 // ABOUTME: DNF of residue conjuncts kept maximal by absorption; ground truth is 1.
 
+import java.util.stream.Collectors;
 import org.clauseway.functional.algebra.BoundedSemiring;
 import org.clauseway.functional.algebra.Semilattice;
+import org.clauseway.logic.constraints.store.Atom;
 import org.clauseway.vavr.collection.HashSet;
 import org.clauseway.vavr.collection.Vector;
 
@@ -154,6 +156,13 @@ public final class Condition implements Semilattice<Condition> {
 
 	@Override
 	public String toString() {
-		return isOne() ? "1" : conjuncts.isEmpty() ? "0" : conjuncts.toString();
+		return isOne() ? "1" : conjuncts.isEmpty() ? "0" : conjuncts
+				.map(region ->
+						region.getTheories().values().toJavaStream()
+								.flatMap(t -> t.atoms().toJavaStream())
+								.map(Atom::toString)
+								.sorted()
+								.collect(Collectors.joining(" ∧ ")))
+				.mkString(" ∨ ");
 	}
 }

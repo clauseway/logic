@@ -3,6 +3,7 @@ package org.clauseway.logic.lattice;
 // ABOUTME: The parked constraint schema whose examination is a fiber: it may defer
 // ABOUTME: or park awaiting a channel before answering its verdict.
 
+import java.util.Objects;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.constraints.store.Atom;
 import org.clauseway.logic.constraints.store.Doomed;
@@ -14,7 +15,6 @@ import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.vavr.collection.Array;
 import org.clauseway.vavr.collection.List;
 import org.clauseway.vavr.collection.Traversable;
-import java.util.Objects;
 
 /**
  * {@link Propagator}'s fiber-lane sibling: the same parked schema — watched
@@ -120,6 +120,6 @@ public abstract class ParkingPropagator<F extends Factor<F>> implements Atom<F>,
 
 	@Override
 	public String toString() {
-		return name() + watchedTerms;
+		return watchedTerms.mkString(name() + "(", ",", ")");
 	}
 }

@@ -1,7 +1,10 @@
 # Structure is one contract — constructor, members, rebuild — and a user's compound value can sign it
 
-- **status**: hunch (October 2026, the human's observation on the fourth
-  instance landing)
+- **status**: argued (October 2026, the human's observation on the fourth
+  instance landing; the cargo port supplied the fifth, a user's row type,
+  and the design was settled in conversation on October 22 — see the
+  closing paragraph; pldb's `schema-is-a-selector.md` records where the
+  row types ended up, which is NOT here)
 - **evidence held**: derivation — four structure kinds (tuple, `LList`,
   `LTree`, `LOption`) are each wired by hand in the same three places
   (`MiniKanren.decompose`, `MiniKanren.mapStructure`, `Matche`'s per-kind
@@ -74,3 +77,34 @@ defer. If keeping spines iterative turns out to need the contract to
 mark a member as the lazy one, the interface grows a notion it would
 rather not have, and the saving is three branches against one new
 concept. Measure that on a deep `LList` before extracting.
+
+Settled on October 22, 2026, with the fifth instance in hand. The fifth
+is not a kind the engine ships; it is the cargo port's `Delivery`, a row
+of eleven unifiables that already carries members-out and rebuild-from-
+members by hand and wants them from the engine. The contract is an
+interface a value's class signs, `Structural`: `members()` in a fixed
+order, one level deep, and `withMembers(Object[])` rebuilding the same
+kind. Its KIND for a signed value is its class — two signed values unify
+only when they are the same type, then member by member, so two
+unrelated types of equal arity never unify positionally, which is why a
+user type must not simply implement the tuple family's contract. The
+smallest change is a fifth branch beside the four, not their extraction:
+`decompose` gains the signed kind, `mapStructure` rebuilds it through
+`withMembers`, and `Matche` gains one arm, `structure(prototype, f)`,
+which mints a fresh copy, unifies the scrutinee with it and hands it
+over with its members named. Obligation (1)'s extraction of the four
+kinds into instances stays open, and the kill condition above still
+decides it. (4)'s boundary holds exactly as written — a row is not a
+cell.
+
+Amended October 24. The fifth instance moved. `Delivery` and the port's
+other row types do NOT sign this contract: a row is variables in and a
+Java value out, and the engine never rebuilds it, so signing the
+contract only forced `Term` members on a type whose members are
+unified one by one in rule bodies (pldb's `schema-is-a-selector.md`;
+logic's `Selector`). Obligation (3)'s receipt is the port's
+`CandidateLeg`, a leg the route finder carries INSIDE a list term: it
+is built with variables, reified with its members as Anys, and read
+through `Term`; its members enter a goal through `Term.unifiable()`,
+the door this contract needed and now has. The contract's one user
+type is the one that is a term.

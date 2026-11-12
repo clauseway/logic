@@ -48,4 +48,13 @@ public interface Term<T> extends Supplier<T> {
 	default Term<Object> getObjectTerm() {
 		return (Term<Object>) this;
 	}
+
+	/**
+	 * This term as something a goal may unify: a variable or a value is one
+	 * already, a reified name is not — an answer's free cell has no place in
+	 * a goal, and asking refuses.
+	 */
+	default Unifiable<T> unifiable() {
+		throw new IllegalStateException(this + " is a reified name, not a unifiable: an answer's free cell has no place in a goal");
+	}
 }

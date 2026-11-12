@@ -1,41 +1,178 @@
 package org.clauseway.logic.solving;
 
-// ABOUTME: One solution row of a select: Reified cells keyed by the selected
-// ABOUTME: variables, under the derivation's Condition -- a view over Answer.
+// ABOUTME: One row of a select: cells keyed by the selected variables, under the derivation's
+// ABOUTME: Condition -- a view over Answer; get(key) is the gate into Java, cell(key) the reifier's reading.
 
-import org.clauseway.functional.tuples.Tuple;
-import org.clauseway.logic.unification.terms.Reified;
-import org.clauseway.logic.unification.terms.Term;
-import org.clauseway.logic.unification.terms.Unifiable;
-import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import org.clauseway.functional.tuples.Tuple;
+import org.clauseway.logic.constraints.Constrained;
+import org.clauseway.logic.constraints.store.Atom;
+import org.clauseway.logic.unification.MiniKanren;
+import org.clauseway.logic.unification.terms.Name;
+import org.clauseway.logic.unification.terms.Reified;
+import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.vavr.collection.List;
 
 /**
  * One row of a {@link Selection}: the selected variables' cells from one
- * solution, read by the variable itself — the key carries the type, the
- * cell comes back in output vocabulary. A decided cell is a value
- * ({@code isVal()}/{@code get()}), a cell the solution left open is its
- * Any — wideness is a fact of the answer, never smoothed into an empty.
- * {@link #getCondition} is the knowledge this row holds under;
- * {@link #answer} is the whole boundary artifact for anything that ships
- * rows onward.
+ * solution, read by the variable itself — the key carries the type.
+ * {@link #get} is the reading into Java: the cell's value, or a refusal
+ * when the cell is not ground, since a Java value has no place for a slot
+ * name or a residual, or when the row holds only under a residual about a
+ * name the select did not name, since no cell would carry it out.
+ * {@link #cell} is the reifier's reading: a value, the
+ * slot name the reifier gave a free cell, or that name under the answer's
+ * residuals about it — a symbolic answer over many ground ones, never
+ * smoothed into an empty. {@link #getCondition} is the knowledge this row
+ * holds under; {@link #answer} is the whole boundary artifact for anything
+ * that ships rows onward. The row renders whole, shaped as the select
+ * named it: {@code (name: cell, ...)}, under the residuals when there are
+ * any, with the names the select did not name bound once, existentially,
+ * in front of them — the witnesses the answer carries.
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public final class Row {
 
-	private final List<Unifiable<?>> keys;
+	private final java.util.List<Unifiable<?>> keys;
+	private final java.util.List<String> names;
 	private final Answer<Unifiable<?>> answer;
 
-	/** The cell at {@code key}; refuses a variable the select did not name. */
-	@SuppressWarnings("unchecked")
-	public <T> Reified<T> get(Term<T> key) {
+	/**
+	 * The value at {@code key}: the gate into Java. Refuses a cell that is
+	 * not ground, rendering the row whole, and a variable the select did
+	 * not name.
+	 */
+	public <T> T get(Unifiable<T> key) {
+		int at = at(key);
+		Reified<T> cell = slot(at);
+		if (!cell.isGround()) {
+			throw new IllegalStateException(notGround(Collections.singletonList(names.get(at))));
+		}
+		refuseUnseenCondition();
+		return cell.get();
+	}
+
+	/**
+	 * The cell at {@code key}, stated as the reifier would: a value, a slot
+	 * name, or that name under the residuals about it ({@link Constrained})
+	 * when the answer is one region. A row folded from several regions
+	 * shows its name alone; the regions are {@link #getCondition()}.
+	 * Refuses a variable the select did not name.
+	 */
+	public <T> Reified<T> cell(Unifiable<T> key) {
+		return about(slot(at(key)), answer.getCondition());
+	}
+
+	private int at(Unifiable<?> key) {
 		int at = keys.indexOf(key);
 		if (at < 0) {
 			throw new IllegalArgumentException(
 					"not a selected variable: " + key + " — this row's columns are " + keys);
 		}
+		return at;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> Reified<T> slot(int at) {
 		return (Reified<T>) ((Tuple) answer.getReified().get()).get(at + 1);
+	}
+
+	private String notGround(java.util.List<String> symbolic) {
+		return "not ground at " + symbolic + ": " + this
+				+ " — a reading into Java needs a value in every selected cell";
+	}
+
+	/**
+	 * A residual about a name no selected cell mentions has no cell to ride,
+	 * so a reading into Java would drop it: refused, naming the condition.
+	 * A residual about a selected cell rides that cell and is refused there.
+	 */
+	private void refuseUnseenCondition() {
+		Condition condition = answer.getCondition();
+		if (!witnesses(condition).isEmpty()) {
+			throw new IllegalStateException("holds only under " + rendered(condition)
+					+ ", about a name the select did not name: " + this
+					+ " — a reading into Java needs a row that holds outright; select the name or read it raw");
+		}
+	}
+
+	/**
+	 * The names the condition mentions that no selected cell does: the
+	 * witnesses the answer carries, in the order the condition renders them.
+	 * An atom's watched surface may be a set whose order is the variables'
+	 * identity, so the rendering decides the order, not the surface.
+	 */
+	private Set<Name<?>> witnesses(Condition condition) {
+		if (condition.isOne()) {
+			return Collections.emptySet();
+		}
+		Set<Name<?>> seen = IntStream.range(0, keys.size())
+				.boxed()
+				.flatMap(at -> MiniKanren.namesIn(slot(at)))
+				.collect(Collectors.toSet());
+		String rendering = condition.toString();
+		return condition.conjuncts().toJavaStream()
+				.flatMap(Row::atoms)
+				.flatMap(atom -> atom.watched().toJavaStream())
+				.flatMap(MiniKanren::namesIn)
+				.filter(name -> !seen.contains(name))
+				.distinct()
+				.sorted(Comparator.comparingInt(name -> rendering.indexOf(name.toString())))
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+	}
+
+	/** The condition as the row states it: its witnesses bound once, existentially, outside the whole condition. */
+	private String rendered(Condition condition) {
+		Set<Name<?>> witnesses = witnesses(condition);
+		if (witnesses.isEmpty()) {
+			return condition.toString();
+		}
+		return witnesses.stream()
+				.map(Object::toString)
+				.collect(Collectors.joining(",", "∃", ". ")) + condition;
+	}
+
+	/** The cell under the one region's residuals that mention a name in it; the cell alone when none does. */
+	private static <T> Reified<T> about(Reified<T> cell, Condition condition) {
+		if (condition.conjuncts().size() != 1) {
+			return cell;
+		}
+		Set<Name<?>> mentioned = MiniKanren.namesIn(cell).collect(Collectors.toSet());
+		List<Atom<?>> about = atoms(condition.conjuncts().get(0))
+				.filter(atom -> atom.watched().exists(term -> MiniKanren.namesIn(term).anyMatch(mentioned::contains)))
+				.collect(List.collector());
+		return about.isEmpty() ? cell : Constrained.of(cell, about);
+	}
+
+	/** One region's residuals, flat. */
+	private static Stream<Atom<?>> atoms(Residues region) {
+		return region.getTheories().values().toJavaStream()
+				.flatMap(t -> t.atoms().toJavaStream());
+	}
+
+	/**
+	 * This row with every cell ground, or a refusal naming the cells that
+	 * are not and rendering the row whole: {@link #get}'s check over every
+	 * cell at once, for a reading that wants the whole row or nothing.
+	 */
+	public Row ground() {
+		java.util.List<String> symbolic = IntStream.range(0, keys.size())
+				.filter(at -> !slot(at).isGround())
+				.mapToObj(names::get)
+				.collect(Collectors.toList());
+		if (!symbolic.isEmpty()) {
+			throw new IllegalStateException(notGround(symbolic));
+		}
+		refuseUnseenCondition();
+		return this;
 	}
 
 	public Condition getCondition() {
@@ -47,8 +184,16 @@ public final class Row {
 		return answer;
 	}
 
+	/**
+	 * The cells by name, in the select's order, under the residuals when there
+	 * are any: regions ∨-joined, each ∧-joined, the witnesses bound in front.
+	 */
 	@Override
 	public String toString() {
-		return answer.toString();
+		String cells = IntStream.range(0, keys.size())
+				.mapToObj(at -> names.get(at) + ": " + slot(at))
+				.collect(Collectors.joining(", ", "(", ")"));
+		Condition condition = answer.getCondition();
+		return condition.isOne() ? cells : cells + " : " + rendered(condition);
 	}
 }

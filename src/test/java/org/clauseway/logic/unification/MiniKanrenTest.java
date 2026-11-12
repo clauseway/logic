@@ -63,6 +63,27 @@ public class MiniKanrenTest {
 	}
 
 	@Test
+	public void shouldRefuseAListTailUnifiedWithItsOwnList() {
+		// tail = (head . tail) — the member bound to the value that holds it
+		Unifiable<Integer> head = lvar();
+		Unifiable<LList<Integer>> tail = lvar();
+		Unifiable<LList<Integer>> list = LList.of(head, tail);
+		assertThat(runStream(list, tail.unifies(list)).count())
+				.isZero();
+	}
+
+	@Test
+	public void shouldRefuseATreesChildrenUnifiedWithItsOwnTree() {
+		// children = (tree) where tree = value:children — the cycle closes through
+		// the children list, one structure kind inside another
+		Unifiable<Integer> value = lvar();
+		Unifiable<LList<LTree<Integer>>> children = lvar();
+		Unifiable<LTree<Integer>> tree = LTree.of(value, children);
+		assertThat(runStream(tree, children.unifies(LList.of(tree))).count())
+				.isZero();
+	}
+
+	@Test
 	public void shouldFindX() {
 		Unifiable<Integer> x = lvar();
 		val subs = MiniKanren.unify(Substitutions.empty(), x, lval(3)).ground().get();
