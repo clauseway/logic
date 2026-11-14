@@ -11,7 +11,7 @@ tests.
 1. **TDD.** Write a failing test first, watch it fail, then make it pass. For a bug, first
    write a test that reproduces it.
 2. **The test suite is your safety net.** `mvn test` must end in `BUILD SUCCESS`. Never
-   commit or merge with a red suite. Count today: ~920 tests. If the count drops, you
+   commit or merge with a red suite. Count today: ~946 tests. If the count drops, you
    deleted or emptied a test — don't.
 3. **Test output must be pristine.** No `System.out.println` in tests or in `src/main`.
    Assert results; don't print them. (One intentional exception is documented below.)
@@ -25,20 +25,28 @@ tests.
    model. The answer diagnoses the miss — no engagement with the section means the
    reading skimmed; a coherent-but-wrong model built from the prose means the DOC
    licensed it, and the fix is making the implicit explicit before the commit.
-5. **Git discipline.** Work on a branch (`git checkout -b <name>`), commit with explicit
-   paths (`git add <path> ...`), NEVER `git add -A` (it once swept a stray debug line into
-   a commit). Merge to master with `git checkout master && git merge --ff-only <branch>`,
-   then `git push`. End commit messages with the Co-Authored-By trailer.
+5. **Git discipline.** Work on a branch off `develop` (`git checkout -b <name> develop`),
+   commit with explicit paths (`git add <path> ...`), NEVER `git add -A` (it once swept a
+   stray debug line into a commit). A branch lands in `develop` through a pull request
+   Tom merges, never a local merge; `develop` lands in `master` the same way, and that
+   merge IS the release. Push only when asked. End commit messages with the trailers.
+   Every merge to `develop` publishes the POM's `-SNAPSHOT` to the Central Portal's
+   snapshot repository (`snapshot.yml`); the merge to `master` releases the POM's version
+   minus `-SNAPSHOT`, once, by tag (`release.yml`). Central allows a handful of releases
+   a month across all three artifacts, so a release is a milestone Tom names, never a
+   step to make a merge legal. The first branch after a release bumps `develop`'s POM to
+   the next `-SNAPSHOT` (0.x.y: x breaking, y features and fixes).
 6. **Java 8 only.** No `var` in main, no records, no switch-expressions. vavr tuples and
    functions max out at arity 8, accessors are 1-indexed (`._1`).
    **Always import at the top level — NEVER inline-qualify** (`io.vavr.Function2 f`
    is wrong; import it). The only excuse is a genuine simple-name clash in the same
    file (e.g. `java.util.stream.Stream` vs vavr's `Stream`).
-7. **`functional` is a separate repo and a Maven dependency**, resolved from Central at
-   the released version in the POM. It lives at `../functional`; to build against a local
-   change there, point the dependency at functional's `-SNAPSHOT`, `mvn -q install` there,
-   and restore the released version before merging. Schedulers, fibers, `Cont`, `Nothing`
-   all live there.
+7. **`functional` is a separate repo and a Maven dependency**, resolved from Central. On
+   `master` the POM names a released version; on `develop` it may name functional's
+   `-SNAPSHOT`, which functional's own `develop` publishes and this POM's `<repositories>`
+   block resolves. The `develop` → `master` pull request restores the released version.
+   It lives at `../functional`; `mvn -q install` there only for a change not yet merged to
+   its `develop`. Schedulers, fibers, `Cont`, `Nothing` all live there.
 8. **Vocabulary is gated.** Docs may only use terms listed in `docs/glossary.md`. A new
    term or an imported theorem enters by the human's explicit adoption — proposed in
    conversation first, ratified, then given its one-line glossary entry (imports marked
@@ -67,7 +75,9 @@ Small, local, well-tested changes elsewhere don't need to ask.
   **immutable/persistent** — this is why backtracking is free (each branch keeps its own).
 - **`Term` / `Unifiable` / `Reified`** (`unification/`): `Term` is the structural root;
   `Unifiable` is solver input (`LVar`, `LVal`); `Reified` is solver output. `solve` takes
-  `Unifiable` and yields `Reified`.
+  `Unifiable` and yields `Reified`. A user type that is a term signs `Structural<R>` with
+  `Term` members, and `Term.unifiable()` is a member's door into a goal (a reified name
+  refuses).
 - **Schedulers** (in `functional`) drive the search: `BreadthFirstScheduler` (default, fair),
   `DepthFirstScheduler` (Prolog order, used by tracing), `RoundRobin`, `ForkJoin`,
   `UnfairBreadthFirst`. All are drivers over `FiberStep`; they differ only in which frame
@@ -99,9 +109,13 @@ Small, local, well-tested changes elsewhere don't need to ask.
 - **The front door** (`solving/`): `Query.of(goal)` + slots (`from`/`tabled`/`on`/
   `weighted`/`traced`/`profiled`/`optimized`/`slot(Packaged)`) seeds the root — defaults
   FILL ABSENT FAMILIES ONLY, explicit-on-occupied refuses. `run()` is the Cont primitive
-  every face consumes; `solve(out)` the classic reified reading; `select(vars).rows()`
-  the conditional row pipeline (Selection: enforced/raw × distinct/all; Row: typed keyed
-  get). `Goal` has NO solve methods. Engine internals (tabling) never ride the door —
+  every face consumes; `solve(out)` the classic reified reading; `select(vars).stream()`
+  the selection (`Selection<D>`: enforced/raw × distinct/all; `Row.get` the typed gate
+  into Java, refusing a cell that is not ground with the row whole, `cell` the reifier's
+  reading); `select(selector).stream()` the mapped reading — a `Selector<D>` names its keys
+  and maps a Row into a Java value through `get`, which is the whole Java interop story
+  (pldb's `Schema` is one); `rows()` the same selection unmapped. The engine rebuilds a
+  Structural; a Selector's value is built by the user's map. `Goal` has NO solve methods. Engine internals (tabling) never ride the door —
   they consume solving's vocabulary (`Call`/`Answer`/`Condition`/`Residues`/`capture`).
   Details: `docs/reference/solving.md`.
 
@@ -167,8 +181,9 @@ arguments show their current (deep-walked) values. See `debug/Trace.java`, `debu
   it as its own change.
 - **Release** — DONE (October 2026): `functional` (as `functional-runtime`/`-types`/
   `-algebra`/`-laws`/`-algebra-laws`), `logic` and `pldb` are 0.1.0 on Maven Central under
-  `org.clauseway`; masters are `0.1.1-SNAPSHOT`, cross-repo dependencies are literal
-  released versions.
+  `org.clauseway`; masters carry the next version as `-SNAPSHOT`, cross-repo dependencies
+  on `master` are literal released versions. Since October 2026 `develop` publishes
+  snapshots and `master` releases on merge (rule 5).
 - **Constraint-propagation redesign** — DONE, all of it (July 2026): Phases 1–2,
   the capability API (Steps 1–3.5), and the uniform store boundary
   (`constraint-kernel.md` records the shape). The Neq→FD bridge was DROPPED (optimization-

@@ -3,6 +3,7 @@ package org.clauseway.logic.lattice;
 // ABOUTME: The parked constraint schema: an abstract base owning the watched
 // ABOUTME: terms, the identity contract, matching, rename and the statement.
 
+import java.util.Objects;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.constraints.store.Atom;
 import org.clauseway.logic.constraints.store.Doomed;
@@ -14,7 +15,6 @@ import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.vavr.collection.Array;
 import org.clauseway.vavr.collection.List;
 import org.clauseway.vavr.collection.Traversable;
-import java.util.Objects;
 
 /**
  * The parked unit of the wake machinery (docs/reference/constraint-kernel.md
@@ -127,6 +127,6 @@ public abstract class Propagator<F extends Factor<F>> implements Atom<F>, Doomed
 
 	@Override
 	public String toString() {
-		return name() + watchedTerms;
+		return name() + watchedTerms.mkString("(", ", ", ")");
 	}
 }

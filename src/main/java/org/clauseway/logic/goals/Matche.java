@@ -5,6 +5,8 @@ import static org.clauseway.logic.constraints.Constraints.unify;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.logic.unification.structures.LList;
 import org.clauseway.logic.unification.structures.LOption;
+import org.clauseway.logic.unification.structures.Structural;
+import org.clauseway.logic.unification.terms.LVal;
 import org.clauseway.logic.unification.terms.LVar;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -222,6 +224,18 @@ public class Matche {
 		return t -> Logic.<T1, T2, T3, T4, T5, T6, T7, T8> exist((t1, t2, t3, t4, t5, t6, t7, t8) ->
 				unify(t, Tuple.of(t1, t2, t3, t4, t5, t6, t7, t8))
 						.and(f.apply(t1, t2, t3, t4, t5, t6, t7, t8)));
+	}
+
+	/**
+	 * The arm for a signed value: the scrutinee unified with the pattern as
+	 * given, then the pattern handed to the body with its members bound. A
+	 * member left a variable is a hole; a member given as a value must match.
+	 * The pattern's variables are the caller's, minted once where the goal is
+	 * built, not per application as the list and option arms mint theirs;
+	 * {@code kind.fresh()} is the all-holes pattern.
+	 */
+	public static <R extends Structural<R>> Case<R> structure(R pattern, Function<R, Goal> f) {
+		return u -> unify(u, LVal.lval(pattern)).and(f.apply(pattern));
 	}
 
 	public static <T> Case<T> variable(Supplier<Goal> sup) {

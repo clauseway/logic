@@ -26,11 +26,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Constraints {
 
+	/** Unification with the occurs check: a cycle-closing binding fails the goal. */
 	public static <T> Posting unify(Unifiable<T> u, Unifiable<T> v) {
 		return Unification.of(u, v, false)
 				.named(pkg -> pkg.format(u) + " ≡ " + pkg.format(v));
 	}
 
+	/**
+	 * Unification without the occurs check: the caller promises no cycle can
+	 * close; a broken promise builds a cyclic binding whose reification never
+	 * terminates. See {@link org.clauseway.logic.unification.terms.Unifiable#unifiesNc}.
+	 */
 	public static <T> Posting unifyNc(Unifiable<T> u, Unifiable<T> v) {
 		return Unification.of(u, v, true)
 				.named(pkg -> pkg.format(u) + " ≡_nc " + pkg.format(v));

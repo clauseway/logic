@@ -16,6 +16,7 @@ import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
+import org.clauseway.logic.goals.Packaged;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.LVar;
 import org.clauseway.logic.unification.MiniKanren;
@@ -108,8 +109,10 @@ public class Residues implements Semilattice<Residues>, PartialOrder<Residues> {
 	 * IN, narrow: what {@code world} knows JUST about the anchor. The
 	 * anchor's free vars become slots (first-occurrence order — the walked
 	 * anchor reified with anys IS the bindings factor's image); per store,
-	 * knowledge not expressible over them is split away — sound by
-	 * containment, re-verified at consumption. The comparable KEY citizen.
+	 * bound names resolve to their values first, so knowledge about a bound
+	 * variable keys as knowledge about its value, and knowledge not
+	 * expressible over the slots is split away — sound by containment,
+	 * re-verified at consumption. The comparable KEY citizen.
 	 * A store that cannot project cannot enter the key, and unkeyed
 	 * knowledge means silently wrong reuse — refused loudly.
 	 */
@@ -163,19 +166,22 @@ public class Residues implements Semilattice<Residues>, PartialOrder<Residues> {
 	private static Fiber<Residues> ofRelevant(Knowledge callerPkg, java.util.Map<LVar<?>, Any<?>> callVars) {
 		java.util.List<LVar<?>> slots = new java.util.ArrayList<>(callVars.keySet());
 		Renaming canonical = Renaming.of(callVars);
-		return callerPkg.getStores().values().foldLeft(
-						Fiber.<Map<Class<?>, Theory<?>>> done(HashMap.empty()),
-						(acc, store) -> acc.flatMap(residues -> {
+		return resolution(callerPkg.substitution()).flatMap(resolution ->
+				callerPkg.getStores().values().foldLeft(
+						Fiber.done(HashMap.empty()),
+						(Fiber<Map<Class<?>, Theory<?>>> acc, Packaged store) -> acc.flatMap(residues -> {
 							if (!(store instanceof Constraint) || ((Constraint<?>) store).getTheory().isEmpty()) {
 								return Fiber.done(residues);
 							}
 							// the key citizen: the covered half of the name
 							// cut, in canonical names — pure theory work
-							return ((Constraint<?>) store).getTheory().split(slots)._1.rename(canonical)
-									.map(keyed -> keyed.isEmpty()
-											? residues
-											: residues.put(((Constraint<?>) store).getFactor().getClass(), keyed));
-						}))
+							Constraint<?> cs = (Constraint<?>) store;
+							return cs.getTheory().rename(resolution).flatMap(
+									resolved -> resolved.split(slots)._1.rename(canonical)
+											.map(keyed -> keyed.isEmpty()
+													? residues
+													: residues.put(cs.getFactor().getClass(), keyed)));
+						})))
 				.map(Residues::of);
 	}
 
@@ -193,8 +199,8 @@ public class Residues implements Semilattice<Residues>, PartialOrder<Residues> {
 		Renaming canonicalization = Renaming.of(anyVars);
 		return resolution(answerPkg.substitution()).flatMap(resolution ->
 						answerPkg.getStores().values().foldLeft(
-								Fiber.<Map<Class<?>, Theory<?>>> done(HashMap.empty()),
-								(acc, store) -> acc.flatMap(residues -> {
+								Fiber.done(HashMap.empty()),
+								(Fiber<Map<Class<?>, Theory<?>>> acc, Packaged store) -> acc.flatMap(residues -> {
 									if (!(store instanceof Constraint) || ((Constraint<?>) store).getTheory().isEmpty()) {
 										return Fiber.done(residues);
 									}

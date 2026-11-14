@@ -6,6 +6,11 @@ semiring-weighted inference, self-planning queries, and pluggable, fair
 search. Embeddable: your data stays Java objects, your queries are Java
 expressions, and answers come back as a `java.util.stream.Stream`.
 
+The essay that argues for this stack, the development notes and the
+tutorial are at [clauseway.org](https://clauseway.org/): start with the
+[blog](https://clauseway.org/blog/) or the
+[tutorial](https://clauseway.org/tutorial/).
+
 ```java
 Unifiable<LList<Integer>> xs = lvar(), ys = lvar(), zs = lvar();
 
@@ -133,7 +138,7 @@ Java 8, Apache-2.0, on Maven Central:
 <dependency>
     <groupId>org.clauseway</groupId>
     <artifactId>logic</artifactId>
-    <version>0.1.0</version>
+    <version>0.3.0</version>
 </dependency>
 ```
 
@@ -407,7 +412,7 @@ seams, backlog.
 
 ## Status
 
-0.1.0 on Maven Central — pre-1.0: the shape is settled, the API carries no
+0.3.0 on Maven Central — pre-1.0: the shape is settled, the API carries no
 compatibility guarantee until 1.0 and may move between minor versions. Built
 with viability as a constraint rather than a goal: the designs are the kind
 that could be real (honest concurrency, measured claims, no toy shortcuts).

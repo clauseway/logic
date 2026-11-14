@@ -17,6 +17,7 @@ import org.clauseway.functional.fibers.interpreter.ScopeProfiler;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.functional.fibers.schedulers.DepthFirstScheduler;
 import org.clauseway.logic.constraints.Constraints;
+import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.logic.debug.DebugStore;
 import org.clauseway.logic.debug.ProfilerStore;
 import org.clauseway.logic.debug.Trace;
@@ -207,11 +208,13 @@ public final class Query {
 
 	/**
 	 * The primitive: one emission per derivation, driven by the caller. The
-	 * solve runs under a {@link Barrier}: no pending search rides a raw package.
+	 * solve runs under a {@link Barrier}: no pending search rides a raw
+	 * package, and the verifiers have judged the settled one before it is
+	 * read ({@link Propagation#verifiedEach}).
 	 */
 	public Cont<Knowledge, Nothing> run() {
 		Goal entry = optimizer == null ? goal : goal.accept(optimizer);
-		return Barrier.of(entry).apply(root());
+		return Propagation.verifiedEach(Barrier.of(entry).apply(root()));
 	}
 
 	/**
@@ -219,11 +222,26 @@ public final class Query {
 	 * {@link Selection} with the reading still open — extraction and
 	 * multiplicity are chosen there before {@link Selection#rows()} streams.
 	 */
-	public Selection select(Unifiable<?> key, Unifiable<?>... keys) {
-		return new Selection(this,
-				Stream.concat(Stream.of(key), Arrays.stream(keys))
+	public Selection<Row> select(Unifiable<?> key, Unifiable<?>... keys) {
+		java.util.List<Unifiable<?>> selected = Stream.concat(Stream.of(key), Arrays.stream(keys))
+				.collect(Collectors.toList());
+		return new Selection<>(this, selected,
+				selected.stream().map(Object::toString).collect(Collectors.toList()),
+				false, false, Function.identity());
+	}
+
+	/**
+	 * The mapped reading: the selector's keys are the selected variables, and
+	 * every solution streams as the value the selector builds from it. A
+	 * cell that is not ground is refused where the selector reads it.
+	 */
+	public <D> Selection<D> select(Selector<D> selector) {
+		return new Selection<>(this,
+				StreamSupport.stream(selector.keys().spliterator(), false)
+						.collect(Collectors.<Unifiable<?>> toList()),
+				StreamSupport.stream(selector.names().spliterator(), false)
 						.collect(Collectors.toList()),
-				false, false);
+				false, false, selector::map);
 	}
 
 	/**

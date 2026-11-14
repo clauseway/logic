@@ -286,6 +286,26 @@ public class TabledUnderDomainsTest {
 	}
 
 	@Test
+	public void aNamedLocalKeepsItsNameThroughReplay() {
+		// the witness replays as a fresh variable, and a name the author gave
+		// it is the name the consumer reads it by
+		Tabled<Tuple1<Unifiable<Integer>>> belowLocal =
+				Tabling.define(args -> args.apply(x -> {
+					Unifiable<Integer> w = lvar("w");
+					return FiniteDomain.dom(x, dom(1, 2, 3)).and(Ints.lss(x, w));
+				}));
+		Unifiable<Integer> x = lvar("x");
+
+		List<String> rows = Query.of(belowLocal.apply(Tuple.of(x))).on(TestSchedulers.factory()).select(x).stream()
+				.map(Object::toString)
+				.collect(Collectors.toList());
+		assertThat(rows).isNotEmpty();
+		for (String row : rows) {
+			assertThat(row).startsWith("(<x>: ").contains("<w>");
+		}
+	}
+
+	@Test
 	public void twoArgsCoupledThroughALocalStayCoupled() {
 		// x,y ∈ {1,2}, w ∈ {2,3}, x+y=w with only (x,y) as args: the carried
 		// witness keeps the coupling — (2,2) must die (2+2=4 ∉ {2,3})

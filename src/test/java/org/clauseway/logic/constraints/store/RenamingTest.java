@@ -137,6 +137,30 @@ public class RenamingTest {
 	}
 
 	@Test
+	public void mintingKeepsAGivenName() {
+		// a body local the author named renders by that name after replay:
+		// a different variable, the same label
+		Unifiable<Integer> local = lvar("next");
+		Term<?> minted = Renaming.minting(Collections.<Name<?>, Term<?>> emptyMap())
+				.apply(local.getObjectTerm()).ground();
+
+		assertThat(minted).isNotEqualTo(local.getObjectTerm());
+		assertThat(minted.toString()).isEqualTo("<next>");
+	}
+
+	@Test
+	public void mintingDoesNotCopyAnAnonymousName() {
+		// an anonymous local renders by its own birth, never by the birth of
+		// the variable it replaced: two variables never print alike
+		Unifiable<Integer> local = lvar();
+		Term<?> minted = Renaming.minting(Collections.<Name<?>, Term<?>> emptyMap())
+				.apply(local.getObjectTerm()).ground();
+
+		assertThat(minted).isNotEqualTo(local.getObjectTerm());
+		assertThat(minted.toString()).isNotEqualTo(local.getObjectTerm().toString());
+	}
+
+	@Test
 	public void aDeeplyNestedTermDoesNotBlowTheStack() {
 		// nesting, not length: each level is an iterable wrapping the next,
 		// so any construction-time recursion in the rebuild pays one stack
