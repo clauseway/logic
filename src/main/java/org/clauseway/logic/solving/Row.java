@@ -124,7 +124,6 @@ public final class Row {
 				.flatMap(atom -> atom.watched().toJavaStream())
 				.flatMap(MiniKanren::namesIn)
 				.filter(name -> !seen.contains(name))
-				.distinct()
 				.sorted(Comparator.comparingInt(name -> rendering.indexOf(name.toString())))
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}

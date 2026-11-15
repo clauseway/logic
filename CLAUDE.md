@@ -11,7 +11,7 @@ tests.
 1. **TDD.** Write a failing test first, watch it fail, then make it pass. For a bug, first
    write a test that reproduces it.
 2. **The test suite is your safety net.** `mvn test` must end in `BUILD SUCCESS`. Never
-   commit or merge with a red suite. Count today: ~946 tests. If the count drops, you
+   commit or merge with a red suite. Count today: ~970 tests. If the count drops, you
    deleted or emptied a test — don't.
 3. **Test output must be pristine.** No `System.out.println` in tests or in `src/main`.
    Assert results; don't print them. (One intentional exception is documented below.)
@@ -63,6 +63,23 @@ These are subtle and easy to break silently:
 - **tabling** (`tabling/`) — parked-continuation scheduling, easy to deadlock;
 - **the fiber/scheduler substrate** in `functional`.
 Small, local, well-tested changes elsewhere don't need to ask.
+
+## Method: when a move fires
+
+`docs/method.md` holds the design method. These are the situations in which to open it:
+- A bug fix tempts a record of what was already delivered, a seen-map or a mode flag —
+  ask which law would make the bookkeeping unnecessary.
+- A result changes with the scheduler — that is a broken law; reach for the chaos harness
+  (schedule as adversary).
+- A name or theorem comes in from the literature — write its theorem import receipt,
+  including what it does not buy (golden rule 8).
+- A design leans on data kept normalized on every write — find the writes and take a
+  wall-clock reading per phase before trusting it.
+- A contract holds only while some global condition holds — name the condition, then
+  make it structural or refuse loudly.
+- A new data or control type needs a home — apply the three placement tests first.
+- An implementation lands — close the design when it lands: its document graduates in
+  the same change (golden rule 4 still gates the commit).
 
 ---
 
@@ -142,7 +159,7 @@ Key **seams** (the places behaviour is hooked):
   revision payloads (inferred prefixes, narrowed terms, runs). Propagators are
   store-internal (`finitedomain`'s private toolkit) — the framework owns parking, so
   `keep` is default-safe and evaporation is unrepresentable. The equal-domain check in
-  `finitedomain/DomainUpdate` is the termination guard of wake-on-narrowing — do not
+  `finitedomain/relations/DomainUpdate` is the termination guard of wake-on-narrowing — do not
   remove it. Raw `MiniKanren.unify` is legitimate only inside the unifier — the nogood
   trial mints through `unifyPrefix` like every other caller. Use a plain `Store` for transport (Table pattern).
   Constraint bodies wake on narrowing too — they must tolerate any mix of wide/ground
@@ -157,8 +174,7 @@ Key **seams** (the places behaviour is hooked):
 - **Sibling-disjunct `Call` ports fire together up front.** `Conde` materialises all fork
   options eagerly (apply-time, not step-time), so both branches announce `Call` before either
   body runs. This is cosmetic and not a scheduling bug — don't chase it.
-- **Don't reintroduce debug prints.** The old `Goal.debug` eager-println was removed. To
-  debug a logic program, use the tracer (below), not `System.out`.
+- **No debug prints.** To debug a logic program, use the tracer (below), not `System.out`.
 
 ---
 
@@ -176,18 +192,9 @@ arguments show their current (deep-walked) values. See `debug/Trace.java`, `debu
 
 ## Backlog (what's left, with risk)
 
-- **Public-API docs** — e.g. `FiniteDomain` has 13 public methods and no javadoc. Low risk.
+- **Public-API docs** — e.g. most of `FiniteDomain`'s public methods have no javadoc. Low risk.
 - **Dependency modernization** — assertj 3.4.1 and junit 4 are old. Low-medium risk; do
   it as its own change.
-- **Release** — DONE (October 2026): `functional` (as `functional-runtime`/`-types`/
-  `-algebra`/`-laws`/`-algebra-laws`), `logic` and `pldb` are 0.1.0 on Maven Central under
-  `org.clauseway`; masters carry the next version as `-SNAPSHOT`, cross-repo dependencies
-  on `master` are literal released versions. Since October 2026 `develop` publishes
-  snapshots and `master` releases on merge (rule 5).
-- **Constraint-propagation redesign** — DONE, all of it (July 2026): Phases 1–2,
-  the capability API (Steps 1–3.5), and the uniform store boundary
-  (`constraint-kernel.md` records the shape). The Neq→FD bridge was DROPPED (optimization-
-  only). Nothing remains on this line.
 - **Semiring-weighted inference** — turn the engine into a weighted-inference machine
   (counting, probability, shortest-path, MAP, provenance, learning) via one small `Semiring`
   abstraction. Follow `docs/design/semiring-inference.md`; Phase 1 (refactor `aggregate`
@@ -237,8 +244,7 @@ arguments show their current (deep-walked) values. See `debug/Trace.java`, `debu
   verified at labelling); entailment matching with named value-equal
   couplings (cross-lineage entry sharing); replay = rename ∘ absorb.
   Read before touching the tabling guard tests.
-- `../pldb/docs/design/domain-layer.md` — NORTH STAR (rewritten Aug 2026
-  by the external review; MOVED to pldb Sep 2026 — docs live with the
+- `../pldb/docs/design/domain-layer.md` — NORTH STAR (docs live with the
   code they read): the engine at the data boundary — cold solves over
   pinned sources, snapshot vectors, conditional answers as the domain
   result, caveated authorization as the driving slice; §3 and §11 are
@@ -263,7 +269,7 @@ arguments show their current (deep-walked) values. See `debug/Trace.java`, `debu
   through the source's declared serialization (native = honest
   SERIALIZABLE rented; simulated = Pin/Footprint proof above the
   backend). Read before touching pldb's transaction/ or sql/ write
-  path. `../pldb/docs/notes/table-as-the-source.md` (moved with it) is
+  path. `../pldb/docs/notes/table-as-the-source.md` is
   the read seam's AS BUILT. pldb's own docs/ holds the data-boundary
   design line; the glossary here remains the ONE vocabulary gate for
   all three repos.
@@ -272,8 +278,8 @@ arguments show their current (deep-walked) values. See `debug/Trace.java`, `debu
   and members); Step D (representation swaps) remains, benchmark-gated. Read
   before touching MiniKanren internals.
 - `docs/reference/table-completion.md` — AS BUILT: per-call completion detection
-  (the EnclosingCall coat, the anonymous master, the Region/ledger primitives —
-  lifted to functional's `fibers/primitives`, July 2026 — the two-edge graph and
+  (the EnclosingCall coat, the anonymous master, the Region/ledger primitives
+  in functional's `fibers/primitives`, the two-edge graph and
   its seal criterion). Read before touching tabling.
 - `docs/reference/star-tabling.md` — AS BUILT: closed-semiring (star) tabling —
   wait-mode explore with base/edge capture at produce, dependency-ordered
