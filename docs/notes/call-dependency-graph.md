@@ -25,9 +25,9 @@
      B and then fails: the edge is still there, where the closed
      mode's per-derivation record has none.
   3. **pldb's half.**
-     - carry the consumer's identity across `GoalProducer` (it runs
-       the rule on a clean package today, so the edge would land on
-       the root);
+     - carry the consumer's identity across `GoalProducer`, the door a
+       posted rule reads through (it runs the rule on a clean package
+       today, so the edge would land on the root);
      - file each source read under the consuming call;
      - state the law as a test: the graph's leaves equal the
        transaction's Footprint regions.
@@ -103,29 +103,21 @@ Table keeps the pair in a concurrent map from call to the set of
 calls it read. The cost is one map write per tabled call, not per
 answer.
 
-Two rulings the grain forces:
-
-- **Record at the call, not at capture.** The closed mode's record is
-  written when a derivation succeeds. A branch that read an entry and
-  then failed leaves nothing there, and that read is exactly the one a
-  later change can turn into an answer. `pins-stay-off-engine.md` makes
-  the same point about absence reads in dead branches. So the closed
-  mode's record cannot be reused for this, and this record cannot
-  replace it: star solving needs answers and coefficients, this needs
-  neither.
-- **Thread the identity through the package, not the frame.** The
-  glossary rules a package-threaded LEDGER out, because counters fork
-  with the world. An identity set once at body entry and never changed
-  is not a ledger; every branch of the body agrees on it. `Recurrent`
-  already rides the package the same way.
+The pair is noted when the body asks, not when it caches an answer.
+Take `eligible(X) :- member(X), paid(X)` with `paid(ann)` empty: the
+body reads `paid(ann)`, fails, and `eligible(ann)` seals empty without
+ever caching an answer. When Ann later pays, the only way to find
+`eligible(ann)` is the read that led to its failure. A record written
+on success would not have it. The closed mode's own record is written
+on success, so it is not this record.
 
 ## Leaves, and the Footprint
 
 A leaf is a read whose answers come from outside the solve. Logic can
 name the consumer; only pldb sees the read. Two gaps sit there
-(obligation 3): `GoalProducer` starts the rule on a clean package, so
-the consumer's identity stops at that boundary, and a sync source read
-is not an entry at all.
+(obligation 3): a posted rule reads through `GoalProducer`, which
+starts the rule on a clean package, so the consumer's identity stops
+at that boundary, and a sync source read is not an entry at all.
 
 The Footprint keeps its job. It is the commit's proof: the Pins are
 minted at the source and the map is one per transaction. The graph is
