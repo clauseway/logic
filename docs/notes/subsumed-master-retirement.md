@@ -3,7 +3,15 @@
 - **status**: hunch
 - **evidence held**: none (derivation sketch only)
 - **imports**: subsumptive reuse, subset property, master-from-key, replay = rename ∘ absorb, strict ascent
-- **obligations**: (1) redirect soundness mid-production — a narrow reader switching to the wide entry needs replay-from-zero through its filter, which redelivers; safe under idempotent ⊕, WRONG under counting (double-count) — the safe subset may be retire-only-before-first-answer; (2) measure the waste on real programs before building anything; (3) completion detection — the narrow entry's sleeper edges must survive the redirect or the ledger loses dependency information.
+- **obligations**:
+  1. **Redirect soundness mid-production** — a narrow reader switching
+     to the wide entry needs replay-from-zero through its filter, which
+     redelivers; safe under idempotent ⊕, WRONG under counting
+     (double-count) — the safe subset may be
+     retire-only-before-first-answer.
+  2. **Measure the waste** on real programs before building anything.
+  3. **Completion detection** — the narrow entry's sleeper edges must
+     survive the redirect or the ledger loses dependency information.
 - **links**: would graduate into tabled-constraints.md §5.4
 
 When a narrow entry (say `p(X,5)` under `X ∈ {1..3}`) has a live master and a

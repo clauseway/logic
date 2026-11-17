@@ -15,24 +15,27 @@
 - **imports**: ⋯import first-fail / smallest-domain-first dynamic
   variable ordering (Haralick & Elliott 1980, the standard CSP
   heuristic) — receipt owed when built.
-- **obligations**: (1) the AUDIT, first and cheap: per FD propagator
-  DIRECTION, which of three levels does it implement — INFERS from
-  domains (dom(z) ∩= dom(x) ⊕ dom(y), narrowing from the other two
-  DOMAINS with nothing ground), COMPUTES on ground (z from ground
-  x, y only), or merely CHECKS ground tuples? The design closes only
-  after this is known. (2) tier 1: replace the fixed keySet iteration
-  with a dynamic smallest-current-domain choice per step — no
-  semantics, no custody, no trial, FD-internal. (3) tier 2, per the
-  audit: lift every direction to the INFERENCE level — domain-from-
-  domains is the strong form and strictly subsumes compute-on-ground
-  (singleton inputs infer singleton outputs), and it fires DURING
-  search, not just at labelling — narrowing z the moment x and y
-  narrow, feeding first-fail better ordering signal and the
-  comparison fast path more decided alternatives. (4) the pin: the
-  scheduling benchmark both lanes (first-fail is enforce-side,
-  lane-agnostic — the job-shop's every `end` is `start + 1`,
-  functionally determined, and registration order may be enumerating
-  them).
+- **obligations**:
+  1. **The AUDIT**, first and cheap: per FD propagator DIRECTION,
+     which of three levels does it implement — INFERS from domains
+     (dom(z) ∩= dom(x) ⊕ dom(y), narrowing from the other two DOMAINS
+     with nothing ground), COMPUTES on ground (z from ground x, y
+     only), or merely CHECKS ground tuples? The design closes only
+     after this is known.
+  2. **Tier 1**: replace the fixed keySet iteration with a dynamic
+     smallest-current-domain choice per step — no semantics, no
+     custody, no trial, FD-internal.
+  3. **Tier 2**, per the audit: lift every direction to the INFERENCE
+     level — domain-from-domains is the strong form and strictly
+     subsumes compute-on-ground (singleton inputs infer singleton
+     outputs), and it fires DURING search, not just at labelling —
+     narrowing z the moment x and y narrow, feeding first-fail better
+     ordering signal and the comparison fast path more decided
+     alternatives.
+  4. **The pin**: the scheduling benchmark both lanes (first-fail is
+     enforce-side, lane-agnostic — the job-shop's every `end` is
+     `start + 1`, functionally determined, and registration order may
+     be enumerating them).
 - **links**: disjunction-store-pays-in-products.md (the benchmark
   this would move on both poles), couplings-are-syntactic.md (the
   sibling ceiling — this note is about labelling order, that one

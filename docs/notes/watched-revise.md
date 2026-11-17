@@ -11,13 +11,16 @@
 - **imports**: two watched literals ⋯import (SAT's quiescent-clause
   skip, Chaff 2001; travels with the unit-propagation glossary entry —
   receipt owed if built); revise, Watches (glossary).
-- **obligations**: (1) the custody law FIRST, failing against a naive
-  watch set, before any implementation — see the trap below; (2) the
-  sufficiency law in the imposition-law kit (#116's family): an
-  untouched disjunct's verdict cannot change; (3) census fractions as
-  benchmark assertions (fold counts drop ≥44%/≥73%) and the step pins
-  before/after as the real speedup receipt; (4) chaos-harness
-  order-independence — watched wakes change delivery order.
+- **obligations**:
+  1. **The custody law FIRST**, failing against a naive watch set,
+     before any implementation — see the trap below.
+  2. **The sufficiency law** in the imposition-law kit (#116's family):
+     an untouched disjunct's verdict cannot change.
+  3. **Census fractions as benchmark assertions** (fold counts drop
+     ≥44%/≥73%) and the step pins before/after as the real speedup
+     receipt.
+  4. **Chaos-harness order-independence** — watched wakes change
+     delivery order.
 - **links**: disjunction-store-pays-in-products.md (parks this on its
   trigger; holds the 2021 benchmark and the accounting), nogood-store
   §9 (the same mitigation on the negative side),

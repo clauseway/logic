@@ -14,14 +14,17 @@
   tier is ever built; the general core (duplicate-on-bind against a
   group) and the FD coupling (value elimination on bind) are folklore
   and need no receipt.
-- **obligations**: none live — this waits on its trigger, not on thinking.
-  When it fires: (1) the distinctness store, general core first (groups,
-  duplicate-on-bind, ⊆ subsumption — see below), with `Logic.distincto`
-  kept as the semantics reference (store answers ≡ relational answers,
-  chaos-checked — the FD-relations pattern); (2) a paired step pin against
-  the relational spelling, the kill-pins method; (3) the FD coupling only
-  behind the cross-store doctrine's probe, as earliness; (4) lengtho only
-  after distincto proves the seam.
+- **obligations**: none live — this waits on its trigger, not on
+  thinking. When it fires:
+  1. **The distinctness store**, general core first (groups,
+     duplicate-on-bind, ⊆ subsumption — see below), with
+     `Logic.distincto` kept as the semantics reference (store answers ≡
+     relational answers, chaos-checked — the FD-relations pattern).
+  2. **A paired step pin** against the relational spelling, the
+     kill-pins method.
+  3. **The FD coupling** only behind the cross-store doctrine's probe,
+     as earliness.
+  4. **lengtho** only after distincto proves the seam.
 - **links**: lattice-store.md (the instance catalogue this would extend),
   nogood-store.md §9 (the wholesale re-verify cost this routes around),
   ExclusionStepPinsTest (the measurement).

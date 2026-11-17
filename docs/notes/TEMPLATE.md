@@ -3,7 +3,10 @@
 - **status**: hunch | argued | receipted | verified | refuted | parked
 - **evidence held**: none | derivation | demonstration | measurement | negative witness
 - **imports**: <glossary terms it leans on; ⋯import theory needs a receipt>
-- **obligations**: <what would upgrade the status — each one a handable work order>
+- **obligations**: <what would upgrade the status — one numbered item per work order>
+  1. **<short label>** <the work order, handable on its own>
+     - <a part of it, when it has several>
+  2. **<short label>** <…>
 - **links**: <related notes / the doc this would graduate into>
 
 <The claim in plain words, a paragraph or two. What it buys, what it does

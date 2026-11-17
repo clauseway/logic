@@ -9,12 +9,14 @@
   door with `db.estimate` pricing
 - **imports**: none new; leans on the co-store (lattice-store.md §4)
   and the level-set delivery (weighted-tclp.md §5), both already ratified
-- **obligations**: (1) the extraction receipt — core store + a
-  materialized-answers candidate source, pldb re-seated on the same store
-  with its index-backed source, both suites green; (2) a neutral row
-  type in core (pldb's `Fact` stays home); (3) the naming session
-  entry — "table constraint" next to tabling's "table" in core is a
-  collision, the gate settles the core store's name before the move
+- **obligations**:
+  1. **The extraction receipt** — core store + a materialized-answers
+     candidate source, pldb re-seated on the same store with its
+     index-backed source, both suites green.
+  2. **A neutral row type in core** (pldb's `Fact` stays home).
+  3. **The naming session entry** — "table constraint" next to tabling's
+     "table" in core is a collision, the gate settles the core store's
+     name before the move.
 - **links**: negation-over-finite-goals.md (consumer under negation),
   lattice-store.md §4/§10 (the co-store slot — filled by NogoodConstraints
   composition per the stipulation, not by a sibling store),

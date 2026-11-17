@@ -13,15 +13,17 @@
   later state. Sound unconditionally, same license as the disjunction
   store's discharge.
 - **imports**: none new; the trial's verdicts, the pricing seat.
-- **obligations** (if ever built): (1) `Trial.entailed(posting, p)` —
-  isDone && isEntailed, the doom oracle's dual, same guard; (2) the
-  skip lives where `OrderingOptimizer.price` consults
-  `Bounded.answers(bound)` — one more verdict at the same seat,
-  dropping the conjunct from the rebuilt segment; (3) a receipt
-  mirroring deadPosts: an entailed post vanishes from the plan and the
-  step count shows it. Cheapest kill: the half-blind pass — the
-  optimizer prices against layer-boundary state, so mid-layer
-  entailments are invisible and the win may be too rare to price.
+- **obligations** (if ever built):
+  1. **`Trial.entailed(posting, p)`** — isDone && isEntailed, the doom
+     oracle's dual, same guard.
+  2. **The skip** lives where `OrderingOptimizer.price` consults
+     `Bounded.answers(bound)` — one more verdict at the same seat,
+     dropping the conjunct from the rebuilt segment.
+  3. **A receipt mirroring deadPosts**: an entailed post vanishes from
+     the plan and the step count shows it.
+  - Cheapest kill: the half-blind pass — the optimizer prices against
+    layer-boundary state, so mid-layer entailments are invisible and the
+    win may be too rare to price.
 - **links**: the trial's three-way (constraints/Trial), nogood-store §4
   (the doomed seam this extends), #116 (entailed-exact is the licensing
   law), weighted-disjunction-fold.md (the same verdict driving the

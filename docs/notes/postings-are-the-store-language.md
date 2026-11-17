@@ -11,19 +11,24 @@
   ladder rides, adopted)
 - **imports**: none new; "restate" extends the adopted term (answers as
   self-restating factors) from answers to the store face
-- **obligations**: (1) `restate` and its round-trip law —
-  absorb(restate(F)) ≡ F modulo normalize — into the laws kit (#116)
-  beside the imposition law; (2) DISCHARGED (Aug 2026, pldb `sql/`): the
-  FactSource probe ships — a lookup's region compiles per family to the
-  WHERE clause, the nogood compiler consumes literals through the closed
-  Posting.Visitor (the N+M receipt: one visitor, every posting row), and
-  the Renamer's resolution-as-binds row carried the crossing exactly as
-  this note's floor predicted; (3) the marshal round-trip law
-  (unmarshal ∘ marshal = identity on the posting) with the payload slot
-  and registry-name stability answered; (4) the depth-of-projection
-  policy on `about` (below) — decide per caller, don't inherit;
-  (5) rulings owed: restate's home (Projectable vs its own capability),
-  the payload slot's acceptance, depth as parameter vs fixed
+- **obligations**:
+  1. **`restate` and its round-trip law** — absorb(restate(F)) ≡ F
+     modulo normalize — into the laws kit (#116) beside the imposition
+     law.
+  2. **DISCHARGED** (Aug 2026, pldb `sql/`): the FactSource probe ships
+     — a lookup's region compiles per family to the WHERE clause, the
+     nogood compiler consumes literals through the closed
+     Posting.Visitor (the N+M receipt: one visitor, every posting row),
+     and the Renamer's resolution-as-binds row carried the crossing
+     exactly as this note's floor predicted.
+  3. **The marshal round-trip law** (unmarshal ∘ marshal = identity on
+     the posting) with the payload slot and registry-name stability
+     answered.
+  4. **The depth-of-projection policy on `about`** (below) — decide per
+     caller, don't inherit.
+  5. **Rulings owed**: restate's home (Projectable vs its own
+     capability), the payload slot's acceptance, depth as parameter vs
+     fixed.
 - **links**: nogood-store.md §2 (the vocabulary), constraint-kernel.md
   §2 (the doors that construct it), transcription-generifies.md (the
   claim this materializes), condition.md §8.1 (Residues, about/all),

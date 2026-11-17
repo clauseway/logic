@@ -6,16 +6,18 @@
   measurement — that absence is exactly why it is parked
 - **imports**: none new; pool, coverage, and land are
   `CachingAnswerSource`'s own vocabulary
-- **obligations**: (1) the trigger — a real workload showing
-  `TableParkingPropagator` wake cost in the profiler chains or the
-  step suite (apps/library is the expected first payer); (2) when
-  built: `covers`/`land` doors opened on `CachingAnswerSource` (its
-  sync `answers()` face becomes their composition), the propagator
-  holding one as a droppable memo, receipt = a second wake under a
-  narrower walked pattern serves without re-driving produce;
-  (3) `CachingAnswerSource` moves out of `pldb.sql` — backend-agnostic
-  by its own javadoc, and this would be its first non-SQL customer;
-  rides the build commit
+- **obligations**:
+  1. **The trigger** — a real workload showing `TableParkingPropagator`
+     wake cost in the profiler chains or the step suite (apps/library is
+     the expected first payer).
+  2. **When built**: `covers`/`land` doors opened on
+     `CachingAnswerSource` (its sync `answers()` face becomes their
+     composition), the propagator holding one as a droppable memo,
+     receipt = a second wake under a narrower walked pattern serves
+     without re-driving produce.
+  3. **`CachingAnswerSource` moves out of `pldb.sql`** —
+     backend-agnostic by its own javadoc, and this would be its first
+     non-SQL customer; rides the build commit.
 - **links**: sealed-table-zip.md (a different dial: replay imposition,
   not extension reads); docs/design/nogood-store.md (the Posting
   chokepoint the propagator answers through)
