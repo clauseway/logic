@@ -16,27 +16,31 @@
   glossary entry at ratification — it collides with the retired
   ckanren-era "Constraint" and the ruling must retire-or-distinguish,
   never alias.
-- **obligations**: (1) the Revision protocol cut: Revision returns the
-  updated Constraint{Theory, Factor} — the family updates its knowledge
-  and its own memo in one return, because only the factor knows the
-  incremental delta; reconstruction from the theory (cache = f(theory))
-  is the memo's DROPPABILITY guarantee — marshal never serializes it, a
-  fresh consumer rebuilds once — not its update path; crossings and
-  marshal read only the Theory half; (2) Theory implements Absorbing
-  by a capability read at the theory's doors (atom instanceof Absorbing —
-  Imposition declares it by its value's own absorption): the ⊥-scan
-  LatticeFactor.absorb already runs, moved to the doors, cached; (3)
-  the cascade drains the theory under its own lawful bound — the
-  MonotoneDrain signature is NOT touched; (4) crossings become pure
-  theory renames end to end and `rename` dies as a factor method; the
-  spent-drop (entries whose name resolved to a value) relocates to the
-  consumer's wholesale normalize, which already verifies ground-keyed
-  entries — CANARIES: answer-dedup and key pins, because answers carry
-  ground-keyed atoms until consumption where they used to shed them at
-  capture; fallback if the pins move: a family-owned settle pass at
-  capture, honestly named, still not rename; (5) the family signature
-  sweep: normalize×2, stated, enforce, reify all take the theory;
-  meet(Atom), isEmpty, rename, theory() deleted from Factor.
+- **obligations**:
+  1. **The Revision protocol cut**: Revision returns the updated
+     Constraint{Theory, Factor} — the family updates its knowledge and
+     its own memo in one return, because only the factor knows the
+     incremental delta; reconstruction from the theory (cache =
+     f(theory)) is the memo's DROPPABILITY guarantee — marshal never
+     serializes it, a fresh consumer rebuilds once — not its update
+     path; crossings and marshal read only the Theory half.
+  2. **Theory implements Absorbing** by a capability read at the
+     theory's doors (atom instanceof Absorbing — Imposition declares it
+     by its value's own absorption): the ⊥-scan LatticeFactor.absorb
+     already runs, moved to the doors, cached.
+  3. **The cascade drains the theory under its own lawful bound** — the
+     MonotoneDrain signature is NOT touched.
+  4. **Crossings become pure theory renames end to end** and `rename`
+     dies as a factor method; the spent-drop (entries whose name
+     resolved to a value) relocates to the consumer's wholesale
+     normalize, which already verifies ground-keyed entries — CANARIES:
+     answer-dedup and key pins, because answers carry ground-keyed atoms
+     until consumption where they used to shed them at capture; fallback
+     if the pins move: a family-owned settle pass at capture, honestly
+     named, still not rename.
+  5. **The family signature sweep**: normalize×2, stated, enforce, reify
+     all take the theory; meet(Atom), isEmpty, rename, theory() deleted
+     from Factor.
 - **links**: execution-plane.md (this REVISES its factor story — the
   doors stay, the state moves), propagator-index.md (the memo slot's
   first paying customer: a var→watchers index that must survive between

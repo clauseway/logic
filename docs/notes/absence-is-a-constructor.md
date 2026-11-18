@@ -13,21 +13,25 @@
   structural unification over the engine's own types (`LList`, `LTree`,
   tuples — `MiniKanren.mapStructure`); `Projected` and the generated
   projection rule (pldb, `Literal.projecting`). No theory import.
-- **obligations**: (1) `LOption<T>` in `unification/structures` —
-  `some(Term<T>)`, `none()`, `toOptional()`; `MiniKanren` walks, unifies
-  and reifies it as it does `LList`; (2) `Matche.none(Supplier<Goal>)`,
-  `Matche.some(Function<Unifiable<A>, Goal>)`; (3) `lval(null)` refuses
-  and `LVal.asVal` loses its null case — `NullPayloadTest` becomes the
-  refusal's receipt; (4) in pldb: `Property.nullable` and every
-  `requireNullable` path deleted, a `Codec.optional(inner)` combinator
-  mapping `None`↔NULL and `Some(v)`↔`inner`, `regionSql` emitting
-  `IS NULL` / `IS NOT NULL` / `= ?` from the probe's `LOption` shape,
-  `ColumnResolver.nullable` renamed to the codec's presence,
-  `Literal.Builder` claiming a `Projected` one level inside an `LOption`;
-  (5) `apps/cargo` as the receipt — `handlingEvent`'s voyage column
-  becomes `Unifiable<LOption<String>>`, `NO_VOYAGE` goes, the three
-  voyage denials become one `matche`. Status upgrades to receipted at
-  (1)–(3) green, verified at (5).
+- **obligations**:
+  1. **`LOption<T>` in `unification/structures`** — `some(Term<T>)`,
+     `none()`, `toOptional()`; `MiniKanren` walks, unifies and reifies
+     it as it does `LList`.
+  2. **`Matche.none(Supplier<Goal>)`**,
+     `Matche.some(Function<Unifiable<A>, Goal>)`.
+  3. **`lval(null)` refuses** and `LVal.asVal` loses its null case —
+     `NullPayloadTest` becomes the refusal's receipt.
+  4. **In pldb**: `Property.nullable` and every `requireNullable` path
+     deleted, a `Codec.optional(inner)` combinator mapping `None`↔NULL
+     and `Some(v)`↔`inner`, `regionSql` emitting `IS NULL` / `IS NOT
+     NULL` / `= ?` from the probe's `LOption` shape,
+     `ColumnResolver.nullable` renamed to the codec's presence,
+     `Literal.Builder` claiming a `Projected` one level inside an
+     `LOption`.
+  5. **`apps/cargo` as the receipt** — `handlingEvent`'s voyage column
+     becomes `Unifiable<LOption<String>>`, `NO_VOYAGE` goes, the three
+     voyage denials become one `matche`.
+  - Status upgrades to receipted at (1)–(3) green, verified at (5).
 - **links**: `../../pldb/docs/design/external-relations.md` (the backend
   contract this changes), `../../apps/cargo/NOTES.md` entries P3 and 6
   (the witness), `list-constraints.md` (the other structure note).

@@ -15,12 +15,14 @@
 - **imports**: proposed, not yet adopted — "constructive negation"
   (Chan 1988) and the positive/negative suspension-edge split of SLG
   resolution (Chen & Warren 1996); receipts owed at adoption time
-- **obligations**: (1) at front-door time, a logic-level pin on the
-  `q :- not(q)` shape asserting the named refusal (and mapping it to a
-  stratification error in the user's vocabulary); (2) the v1 boundary
-  receipts — free-arg literal-drop, the all-free empty-nogood failure,
-  the witness-coupled refusal; (3) at general-negation time, the
-  witness-labelling path (below) — decide, don't inherit
+- **obligations**:
+  1. **At front-door time**, a logic-level pin on the `q :- not(q)`
+     shape asserting the named refusal (and mapping it to a
+     stratification error in the user's vocabulary).
+  2. **The v1 boundary receipts** — free-arg literal-drop, the all-free
+     empty-nogood failure, the witness-coupled refusal.
+  3. **At general-negation time**, the witness-labelling path (below) —
+     decide, don't inherit.
 - **links**: nogood-store.md (the kernel this compiles into),
   group-seal.md (licensed over peer rings by the value-waiter EOF arm),
   transcription-generifies.md (answer deltas as literals),

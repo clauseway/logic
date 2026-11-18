@@ -26,22 +26,24 @@
 - **imports**: the trial's three-way verdicts, the pricing seat, #107
   (bounds are trust surfaces), #116 (the imposition law kit —
   entailed-exact is the licensing law).
-- **obligations**: (1) size the trial's public face — "impose this
-  posting/residue bundle on scratch, answer three ways" as an operation
-  pldb can reach (constraint core, STOP-listed, design-first); (2) the
-  cost discipline: statistics stay the fast path (empty bucket ⇒
-  REFUTED without imposing; the judge arbitrates only when statistics
-  say "maybe"), judging runs at posting time and commit points, never
-  per wake — the discipline that separates this from the disjunction
-  store's per-examination trial storm; (3) the oracle pair: a
-  doomed-derivation receipt (hand-rolled doom deleted, answers
-  identical) and the entailment-selection receipt ({≠2}⊕{≠3} at a
-  ground anchor discharging to one answer through the direct path);
-  (4) a name for the component, ratified in conversation. Cheapest
-  kill: the judge's imposition cost exceeding its pruning value on the
-  step-count pins — the ambient optimizer's +37% unfold tax (#147) is
-  the standing precedent for an always-on rewriter charging more than
-  it earns.
+- **obligations**:
+  1. **Size the trial's public face** — "impose this posting/residue
+     bundle on scratch, answer three ways" as an operation pldb can
+     reach (constraint core, STOP-listed, design-first).
+  2. **The cost discipline**: statistics stay the fast path (empty
+     bucket ⇒ REFUTED without imposing; the judge arbitrates only when
+     statistics say "maybe"), judging runs at posting time and commit
+     points, never per wake — the discipline that separates this from
+     the disjunction store's per-examination trial storm.
+  3. **The oracle pair**: a doomed-derivation receipt (hand-rolled doom
+     deleted, answers identical) and the entailment-selection receipt
+     ({≠2}⊕{≠3} at a ground anchor discharging to one answer through the
+     direct path).
+  4. **A name for the component**, ratified in conversation.
+  - Cheapest kill: the judge's imposition cost exceeding its pruning
+    value on the step-count pins — the ambient optimizer's +37% unfold
+    tax (#147) is the standing precedent for an always-on rewriter
+    charging more than it earns.
 - **links**: entailed-conjunct-skip.md (the ENTAILED reading at the
   pricing seat — this note's umbrella covers it), nogood-store §4 (the
   doomed seam), the posted table's verdict ladder

@@ -37,40 +37,44 @@
   deliberately does NOT do; independent and-parallelism and its strict
   independence condition as the probe this note redirected. First-fail
   travels with labelling-order-blind.md's entry.
-- **obligations**: (1) the spike, as a Query slot so no existing test
-  moves: a `Deferred` store beside `Suspensions` (a persistent list of
-  parked goals); `Conde.apply` appends itself and succeeds when the
-  store is present, forks as today when absent (one map lookup — zero
-  cost absent); the expansion loop owned by Propagation at the four
-  seams that today refuse under pending suspensions (reify, capture,
-  the tabled master entry, the tabled answer leaving); the barrier
-  sites expand before running — `Barrier`, `Condu`, `Conda`, negation,
-  closed aggregates, AND EVERY TABLED CALL (§ what it does not buy).
-  (2) one first-fail sort at enforce over FD domains and parked condes
-  together — the piece that reproduces the 4× (the space domain of size
-  two labels before the three-way fork, which then collapses); this is
-  labelling-order-blind.md tier 1 plus the merge. (3) the doom sweep:
-  before any fork, drop every alternative whose leading postings are
-  Doomed, impose a lone survivor as a unit, propagate, repeat to
-  quiescence; only then fork the smallest live disjunction — judging
-  at the exit, never per wake (one-speculative-judge.md's cost
-  discipline), the lawful replacement for the deliberation prototype's
-  store-name string check. (4) the instrument: a third lane in
-  SchedulingBenchmarkTest (the conde spelling under the slot) and the
-  variable-spaces workload restored; pins to hold within the exit-cycle
-  cost (~10%): race at five 36.9–37.2k, branch-basis race 32.9–33.5k,
-  genesis depth-first 1.6–2.0k; the win to approach: 4× over conde on
-  variable spaces. (5) decisions owed the human before a line: slot
-  then default, or default; whether tracing keeps eager forks (as it
-  keeps depth-first); the kill criterion (the pins above; the ambient
-  optimizer's +37% unfold tax is the precedent for an always-on
-  mechanism charging more than it earns). (6) weighted inference: ⊗
-  must commute under this rule, since fork order stops being textual —
-  check the shipped rings; a non-commutative provenance ring is
-  excluded. (7) if the pins hold: OrderingOptimizer, DoomPruner,
-  CascadingOptimizer and the ambient delivery are deletable as a
-  separate change; `Barrier` survives as the one marker meaning "this
-  conjunct is control."
+- **obligations**:
+  1. **The spike**, as a Query slot so no existing test moves: a
+     `Deferred` store beside `Suspensions` (a persistent list of parked
+     goals); `Conde.apply` appends itself and succeeds when the store is
+     present, forks as today when absent (one map lookup — zero cost
+     absent); the expansion loop owned by Propagation at the four seams
+     that today refuse under pending suspensions (reify, capture, the
+     tabled master entry, the tabled answer leaving); the barrier sites
+     expand before running — `Barrier`, `Condu`, `Conda`, negation,
+     closed aggregates, AND EVERY TABLED CALL (§ what it does not buy).
+  2. **One first-fail sort at enforce** over FD domains and parked
+     condes together — the piece that reproduces the 4× (the space
+     domain of size two labels before the three-way fork, which then
+     collapses); this is labelling-order-blind.md tier 1 plus the merge.
+  3. **The doom sweep**: before any fork, drop every alternative whose
+     leading postings are Doomed, impose a lone survivor as a unit,
+     propagate, repeat to quiescence; only then fork the smallest live
+     disjunction — judging at the exit, never per wake
+     (one-speculative-judge.md's cost discipline), the lawful
+     replacement for the deliberation prototype's store-name string
+     check.
+  4. **The instrument**: a third lane in SchedulingBenchmarkTest (the
+     conde spelling under the slot) and the variable-spaces workload
+     restored; pins to hold within the exit-cycle cost (~10%): race at
+     five 36.9–37.2k, branch-basis race 32.9–33.5k, genesis depth-first
+     1.6–2.0k; the win to approach: 4× over conde on variable spaces.
+  5. **Decisions owed the human before a line**: slot then default, or
+     default; whether tracing keeps eager forks (as it keeps
+     depth-first); the kill criterion (the pins above; the ambient
+     optimizer's +37% unfold tax is the precedent for an always-on
+     mechanism charging more than it earns).
+  6. **Weighted inference**: ⊗ must commute under this rule, since fork
+     order stops being textual — check the shipped rings; a
+     non-commutative provenance ring is excluded.
+  7. **If the pins hold**: OrderingOptimizer, DoomPruner,
+     CascadingOptimizer and the ambient delivery are deletable as a
+     separate change; `Barrier` survives as the one marker meaning "this
+     conjunct is control.".
 - **links**: constraint.md §3 and §6 (the staged fork's sentence; the
   deliberation prototype), disjunction-store-pays-in-products.md (the
   economics, the verdict, the concession this note is the third corner

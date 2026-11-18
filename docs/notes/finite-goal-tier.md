@@ -8,15 +8,18 @@
   empty stores read as no-knowledge (same file)
 - **imports**: none new; De Morgan / clausal normalization in plain
   words
-- **obligations**: (1) the cheapest kill — a spike typing ONE
-  combinator (`any` as posting) and negating through it; requires the
-  disjunction store, already §6's next stage; (2) the three-tier
-  practicality question — covariant combinator overloads, wrapper
-  preservation (`named`, `Bounded`) at the middle tier — prototype
-  before committing; (3) the naming family (below); (4) the standing
-  unease: should trial impositions splice woken suspension bodies at
-  all (the human's reservation, August 2026 — left as-is, receipted,
-  revisit with the suspensions-as-factors line)
+- **obligations**:
+  1. **The cheapest kill** — a spike typing ONE combinator (`any` as
+     posting) and negating through it; requires the disjunction store,
+     already §6's next stage.
+  2. **The three-tier practicality question** — covariant combinator
+     overloads, wrapper preservation (`named`, `Bounded`) at the middle
+     tier — prototype before committing.
+  3. **The naming family** (below).
+  4. **The standing unease**: should trial impositions splice woken
+     suspension bodies at all (the human's reservation, August 2026 —
+     left as-is, receipted, revisit with the suspensions-as-factors
+     line).
 - **links**: nogood-store.md §2 (the built conjunctive tier) and §6
   (either — `any`-as-posting's home), negation-over-finite-goals.md
   (tabling reframed as finitization evidence), sealed-table-zip.md

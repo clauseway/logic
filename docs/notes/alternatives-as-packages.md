@@ -11,18 +11,20 @@
   named in disjunction-store-pays-in-products' accounting, mixed record
   noted there); agreement move (named in the same note's verdict as
   shelved machinery).
-- **obligations**: (1) design pass on the entailment check — with
-  maintained worlds, "entailed" stops being "scratch unchanged" and
-  becomes "this world's delta over base is empty", which is
-  answers-as-diffs' representation; the check must be shown cheaper
-  than the trial it replaces, or the idea dies; (2) the exclusion
-  discipline as a law: worlds carry no disjunction store (rival-worlds
-  semantics preserved verbatim from the trial's
-  {@code withoutStore}), and stay settled — runs discarded at each
-  application, suspensions refused; (3) if built, the same receipts as
-  watched-revise: census-derived targets, step pins before/after on
-  both benchmark poles; (4) memory sanity — k persistent
-  structure-shared worlds per disjunct, measured not assumed.
+- **obligations**:
+  1. **Design pass on the entailment check** — with maintained worlds,
+     "entailed" stops being "scratch unchanged" and becomes "this
+     world's delta over base is empty", which is answers-as-diffs'
+     representation; the check must be shown cheaper than the trial it
+     replaces, or the idea dies.
+  2. **The exclusion discipline as a law**: worlds carry no disjunction
+     store (rival-worlds semantics preserved verbatim from the trial's
+     {@code withoutStore}), and stay settled — runs discarded at each
+     application, suspensions refused.
+  3. **If built, the same receipts as watched-revise**: census-derived
+     targets, step pins before/after on both benchmark poles.
+  4. **Memory sanity** — k persistent structure-shared worlds per
+     disjunct, measured not assumed.
 - **links**: watched-revise.md (composes: a watch check is a cheaper
   gate than even an incremental application — the two attack different
   halves of the waste), disjunction-store-pays-in-products.md (the

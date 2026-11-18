@@ -15,14 +15,16 @@
   boolean store's discharge instantiates; Condition's "dominated drops"
   is the same identity), distributivity; nothing new to ratify until
   built.
-- **obligations** (all trigger-gated): (1) build the fold exactly as §
-  below, then MEASURE — counting-semiring receipts (summed weights =
-  conde derivation counts on decided shapes; weighted-conde parity when
-  owed rivals fork) and the scheduling benchmark under counting; (2)
-  the human's ruling, August 2026: the upgrades (§ upgrades) are built
-  ONLY after the base fold is created and measured; (3) per-alternative
-  weight extraction and the store's access to ⊕ are the build's two
-  open designs — the second is the first-class-weight decision point.
+- **obligations** (all trigger-gated):
+  1. **Build the fold** exactly as § below, then MEASURE —
+     counting-semiring receipts (summed weights = conde derivation
+     counts on decided shapes; weighted-conde parity when owed rivals
+     fork) and the scheduling benchmark under counting.
+  2. **The human's ruling, August 2026**: the upgrades (§ upgrades) are
+     built ONLY after the base fold is created and measured.
+  3. **Per-alternative weight extraction and the store's access to ⊕**
+     are the build's two open designs — the second is the
+     first-class-weight decision point.
 - **links**: disjunction-store-pays-in-products.md (the boolean store's
   economics), condition.md §8 (weight ⊗ Condition — upgrade 1's home),
   weighted-tclp.md §4 (level sets — upgrade 2's home; the per-piece

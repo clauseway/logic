@@ -17,26 +17,31 @@
   term: **structural contract** — the phrase `MiniKanren`'s javadoc
   already uses for how tuples opt in; needs ratifying before any doc
   leans on it.
-- **obligations**: (1) name the contract as an interface the engine owns:
-  a value's KIND (its constructor's identity; a nullary constructor is an
-  equality atom, as the empty list and `none()` are today), its MEMBERS
-  in order (fixed arity per constructor, every member a `Term`), and
-  REBUILD from mapped members; route `decompose`, `mapStructure` and
-  `namesIn` through it; the four kinds become its instances; laws pinned —
-  `rebuild(members(x)) ≡ x`, kind mismatch fails, arity mismatch fails,
-  `StructuralClassesTest`'s pin that a foreign `Iterable` is an atom
-  stays exactly as it is (signing is explicit, never inferred). (2) One
-  generic `Matche` arm builder from a constructor — the arm mints fresh
-  members, unifies the scrutinee with the rebuilt shape, hands the
-  members to the body — with `llist`/`loption` as its named instances.
-  (3) A user instance as the receipt: a domain value object (a cargo
-  `Leg`, say) signed and unified member-wise from a test, without the
-  engine knowing its class. (4) The boundary stated in pldb: a signed
-  value is structure in LOGIC, not in STORAGE — a structured cell is
-  still the first-normal-form refusal at the wire face, and `LOption` is
-  the one kind that ships a codec because a NULL is the one structure SQL
-  already has. Status upgrades to argued at (1) with laws green, to
-  receipted at (3).
+- **obligations**:
+  1. **Name the contract** as an interface the engine owns: a value's
+     KIND (its constructor's identity; a nullary constructor is an
+     equality atom, as the empty list and `none()` are today), its
+     MEMBERS in order (fixed arity per constructor, every member a
+     `Term`), and REBUILD from mapped members; route `decompose`,
+     `mapStructure` and `namesIn` through it; the four kinds become its
+     instances; laws pinned — `rebuild(members(x)) ≡ x`, kind mismatch
+     fails, arity mismatch fails, `StructuralClassesTest`'s pin that a
+     foreign `Iterable` is an atom stays exactly as it is (signing is
+     explicit, never inferred).
+  2. **One generic `Matche` arm builder** from a constructor — the arm
+     mints fresh members, unifies the scrutinee with the rebuilt shape,
+     hands the members to the body — with `llist`/`loption` as its named
+     instances.
+  3. **A user instance as the receipt**: a domain value object (a cargo
+     `Leg`, say) signed and unified member-wise from a test, without the
+     engine knowing its class.
+  4. **The boundary stated in pldb**: a signed value is structure in
+     LOGIC, not in STORAGE — a structured cell is still the
+     first-normal-form refusal at the wire face, and `LOption` is the
+     one kind that ships a codec because a NULL is the one structure SQL
+     already has.
+  - Status upgrades to argued at (1) with laws green, to receipted at
+    (3).
 - **links**: absence-is-a-constructor.md (the fourth instance, and the
   one with a storage story), list-constraints.md (what a kind may want
   beyond unification — a store — which this note does not touch),

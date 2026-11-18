@@ -8,26 +8,28 @@
 - **imports**: none new; "zip" is the human's conversational name for
   folding a sealed answer set into one Disjunct — glossary
   entry owed if it sticks
-- **obligations**: (1) the disjunction store's design pass must cover the
-  zip and the mode carve, not just the user door — PARTLY MET (Aug 14):
-  DisjunctionConstraints shipped and the zip's construction is now
-  fully derivable from shipped pieces, see the mechanical spec below;
-  (2) MET (Aug 2026, disjunctive-store branch): the Projectable face
-  shipped with three tabling receipts — disjuncts ride answers, decide
-  at the consumer, enumerate at the caller's ground floor, and key the
-  call; the zip has no remaining prerequisite besides deciding to
-  build it; (3) the
-  measurement, trigger-gated (the human's framing, August 2026): only
-  if we ever decide to drop streaming — race drip-per-answer replay
-  against wait-for-seal + one-record emit on real workloads; no
-  scheduling and no promised speedup before (2) lands; (4) when built,
-  the flattened clause owes CROSS-ANSWER absorption: each answer's
-  Condition is an antichain internally, but flattening across answers
-  can admit dominated alternatives (answer A's region covered by
-  B's) — harmless (conde replay has the same redundancy; discharge
-  catches some) but it is orConjunct's job done late on the store
-  side, and the first concrete payer for the deferred
-  alternative-subsumption dual
+- **obligations**:
+  1. **The disjunction store's design pass** must cover the zip and the
+     mode carve, not just the user door — PARTLY MET (Aug 14):
+     DisjunctionConstraints shipped and the zip's construction is now
+     fully derivable from shipped pieces, see the mechanical spec below.
+  2. **MET** (Aug 2026, disjunctive-store branch): the Projectable face
+     shipped with three tabling receipts — disjuncts ride answers,
+     decide at the consumer, enumerate at the caller's ground floor, and
+     key the call; the zip has no remaining prerequisite besides
+     deciding to build it.
+  3. **The measurement**, trigger-gated (the human's framing, August
+     2026): only if we ever decide to drop streaming — race
+     drip-per-answer replay against wait-for-seal + one-record emit on
+     real workloads; no scheduling and no promised speedup before (2)
+     lands.
+  4. **When built**, the flattened clause owes CROSS-ANSWER absorption:
+     each answer's Condition is an antichain internally, but flattening
+     across answers can admit dominated alternatives (answer A's region
+     covered by B's) — harmless (conde replay has the same redundancy;
+     discharge catches some) but it is orConjunct's job done late on the
+     store side, and the first concrete payer for the deferred
+     alternative-subsumption dual.
 - **links**: condition.md §8.3 (the imposition spectrum this extends),
   nogood-store.md §6 (the disjunction sibling), finite-goal-tier.md (the
   tree this materializes), negation-over-finite-goals.md (the De

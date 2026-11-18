@@ -6,23 +6,27 @@
   reading, the ring's ⊕), not from a demonstration
 - **imports**: none new — Suspensions, Condition, Residues, trial,
   Renaming (glossary)
-- **obligations**: (1) schema-ify the mint sites: Projection's goals
-  carry (template, actuals) and rebuild predicate and body positionally
-  over the renamed watched terms — capture-free by construction, the
-  Propagator rebuild discipline; a suspension minted outside a schema'd
-  site refuses to cross loudly; (2) named-schema identity: a crossable
-  suspension compares by (name, watched actuals) with predicate and
-  body EXCLUDED, under the propagator contract that the name determines
-  the semantics — pinned by a ⊗-idempotence receipt (the same pending
-  condition arriving from two combined regions collapses to one
-  conjunct, one re-park); (3) the discharge trial at consumption:
-  refuted ⇒ region dies, entailed ⇒ conjunct crosses off, undecided ⇒
-  re-park and owe — pinned per direction; (4) billing: the re-parked
-  suspension counts against the CONSUMER's region ledger, pinned in the
-  #68 family; (5) structural-only leq between suspension conjuncts —
-  regions bearing them never absorb in ⊕, pinned as a law; (6) the #68
-  guard relaxes ONLY for schema-crossed suspensions, refusal stays for
-  everything else. Task #136 holds the design pass.
+- **obligations**:
+  1. **Schema-ify the mint sites**: Projection's goals carry (template,
+     actuals) and rebuild predicate and body positionally over the
+     renamed watched terms — capture-free by construction, the
+     Propagator rebuild discipline; a suspension minted outside a
+     schema'd site refuses to cross loudly.
+  2. **Named-schema identity**: a crossable suspension compares by
+     (name, watched actuals) with predicate and body EXCLUDED, under the
+     propagator contract that the name determines the semantics — pinned
+     by a ⊗-idempotence receipt (the same pending condition arriving
+     from two combined regions collapses to one conjunct, one re-park).
+  3. **The discharge trial at consumption**: refuted ⇒ region dies,
+     entailed ⇒ conjunct crosses off, undecided ⇒ re-park and owe —
+     pinned per direction.
+  4. **Billing**: the re-parked suspension counts against the CONSUMER's
+     region ledger, pinned in the #68 family.
+  5. **Structural-only leq between suspension conjuncts** — regions
+     bearing them never absorb in ⊕, pinned as a law.
+  6. **The #68 guard** relaxes ONLY for schema-crossed suspensions,
+     refusal stays for everything else.
+  - Task #136 holds the design pass.
 - **links**: condition.md §8.3 (the open question this answers — stage
   H owes it the driver-side framing), watched-revise.md (the capture
   trap's first sighting), the shelved assembler doc (the
