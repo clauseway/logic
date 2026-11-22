@@ -140,6 +140,25 @@ difference in either direction is a bug in one of the two records.
    only in the world it was computed in, so it must carry that world's
    Pins.
 
+Two readers for steps 1 and 2, from November 22 2026:
+
+- **The tree with counts.** One line per call, with its arguments as
+  asked and its answer count, and for a call answered by a source the
+  statement and its row count. A line with zero answers is where a
+  result went missing. This is a shape, not built.
+- **Asking again.** For one surprising line, the rule's body is asked
+  again over the same sealed Table with the tracer on. A scratch probe
+  (run, not kept): a recursive `path` over a three-node cycle, solved
+  on a held `Table`; a second traced `Query` over that Table read the
+  sealed entries with no new production and showed which literal held
+  or failed, for a present answer and a missing one. Two things it
+  showed besides: goal labels must be rendered from the state
+  (`named(p -> …)`) or the trace carries no values, and the Fail port
+  can fire before an Exit, so a box has failed only if it never exits.
+  On a cycle "why not" goes round, and a reader has to stop at a call
+  it has already shown. Recalled prior art, not looked up: XSB's
+  justifier builds explanations from completed tables after the fact.
+
 Step 3 is gated. pldb's `table-as-the-source.md` rules cross-solve
 reuse of a rule's extension as "none engine-side" and names the
 reopening trigger; `domain-layer.md` rules truth maintenance out until
